@@ -84,6 +84,26 @@ def test_constructed_no_llm_degraded():
     assert len(g.step_results) >= 1
 
 
+def test_constructed_offline_uses_final_token_as_answer():
+    item = make_constructed(answer_key="60")
+    g = StepGrader(llm=None).grade_item(
+        item,
+        "先算 15 × 4，把 15 加四次，最后答案：60",
+    )
+    assert g.final_correct is True
+    assert g.grading_degraded is True
+
+
+def test_constructed_offline_rejects_wrong_final_token():
+    item = make_constructed(answer_key="60")
+    g = StepGrader(llm=None).grade_item(
+        item,
+        "先算 15 × 4，我误算得到最后答案：55",
+    )
+    assert g.final_correct is False
+    assert g.grading_degraded is True
+
+
 def test_normalize_answer_strips_and_casefolds():
     assert normalize_answer("  Hello  World ") == "hello world"
 

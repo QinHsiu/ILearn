@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import random
+from fractions import Fraction
+
 from ilearn.core.schemas import (
     AssessmentItem,
     AssessmentPaper,
@@ -46,6 +48,43 @@ MIX_BLUEPRINT: list[tuple[Difficulty, ItemType]] = [
 
 class AssessmentBuildError(Exception):
     """Raised when the fixed mix quotas cannot be satisfied."""
+
+
+def _replacement_distractor(value: str, used: set[str]) -> str:
+    """Create a nearby distinct distractor for a rendered duplicate."""
+    for delta in range(1, 20):
+        try:
+            if ":" in value:
+                left, right = value.split(":", 1)
+                candidate = f"{left}:{int(right) + delta}"
+            elif "/" in value:
+                fraction = Fraction(value)
+                candidate = str(fraction + delta)
+            else:
+                number = float(value.replace(",", ""))
+                candidate_number = number + delta
+                candidate = (
+                    str(int(candidate_number))
+                    if candidate_number.is_integer()
+                    else str(round(candidate_number, 2))
+                )
+        except (ValueError, ZeroDivisionError):
+            candidate = f"{value}（备选{delta + 1}）"
+        if candidate not in used:
+            return candidate
+    raise AssessmentBuildError("could not create unique choice distractors")
+
+
+def _unique_choices(choices: list[str]) -> list[str]:
+    unique: list[str] = []
+    used: set[str] = set()
+    for choice in choices:
+        candidate = choice
+        if candidate in used:
+            candidate = _replacement_distractor(choice, used)
+        unique.append(candidate)
+        used.add(candidate)
+    return unique
 
 
 class AssessmentBuilder:
@@ -108,6 +147,9 @@ class AssessmentBuilder:
             if choices_template
             else None
         )
+        if choices is not None:
+            choices = _unique_choices(choices)
+            self._rng.shuffle(choices)
 
         rubric_raw = record.get("rubric_steps") or []
         rubric_steps = [

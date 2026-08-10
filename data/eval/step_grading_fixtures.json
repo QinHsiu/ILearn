@@ -199,5 +199,20 @@
     "student_answer": "55",
     "expected_final_correct": false,
     "expected_error_tags": ["incomplete"]
+  },
+  {
+    "id": "constructed_worked_final_answer",
+    "item": {
+      "id": "eval_x4",
+      "stem": "计算 15 × 4，并写出主要过程。",
+      "type": "constructed",
+      "difficulty": "easy",
+      "knowledge_ids": ["mult_basic"],
+      "answer_key": "60",
+      "rubric_steps": ["列式", "计算", "写出最终答案"]
+    },
+    "student_answer": "15 times 4 means adding four fifteens; final answer: 60",
+    "expected_final_correct": true,
+    "expected_error_tags": []
   }
 ]

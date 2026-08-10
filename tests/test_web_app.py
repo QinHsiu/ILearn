@@ -77,6 +77,7 @@ def test_report_helpers_prepare_readable_summary():
     mastery = [
         {
             "knowledge_id": "fraction",
+            "knowledge_name": "分数加法",
             "score_rate": 0.75,
             "level": "unstable",
             "error_tag_counts": {"calc_error": 2},
@@ -86,7 +87,7 @@ def test_report_helpers_prepare_readable_summary():
     assert grade_summary(grades) == {"correct": 1, "total": 2, "degraded": 1}
     assert mastery_rows(mastery) == [
         {
-            "知识点": "fraction",
+            "知识点": "分数加法",
             "掌握率": "75%",
             "水平": "需巩固",
             "主要错因": "计算错误 × 2",

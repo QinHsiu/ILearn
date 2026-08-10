@@ -6,11 +6,14 @@ import json
 from pathlib import Path
 
 import typer
+from dotenv import load_dotenv
 
+from ilearn.core.grading import StepGrader
 from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.schemas import StudentProfile
 from ilearn.eval.runner import run_eval
 from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
+from ilearn.providers.llm import LLMClient
 from ilearn.storage.sessions import SessionStore
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -22,10 +25,17 @@ _REPORT_EXCERPT_LINES = 12
 app = typer.Typer(help="ILearn MVP CLI")
 
 
+def _load_configured_llm() -> LLMClient | None:
+    load_dotenv()
+    configured_llm = LLMClient.from_env()
+    return configured_llm if configured_llm.available() else None
+
+
 def _build_orchestrator(sessions_dir: Path | None = None) -> Orchestrator:
+    llm = _load_configured_llm()
     store = SessionStore(sessions_dir or _DEFAULT_SESSIONS_DIR)
     curriculum = PilotBeijingRenjiaoProvider(_DEFAULT_PILOT_DATA)
-    return Orchestrator(store=store, curriculum=curriculum, llm=None)
+    return Orchestrator(store=store, curriculum=curriculum, llm=llm)
 
 
 def _session_artifact_dir(session_id: str, sessions_dir: Path) -> Path:
@@ -106,7 +116,7 @@ def eval(
         typer.echo(f"Fixtures not found: {fixtures}", err=True)
         raise typer.Exit(code=1)
 
-    metrics = run_eval(fixtures)
+    metrics = run_eval(fixtures, grader=StepGrader(_load_configured_llm()))
     typer.echo(f"accuracy: {metrics.accuracy:.4f}")
     typer.echo(f"macro_f1: {metrics.macro_f1:.4f}")
     typer.echo(f"json_valid_rate: {metrics.json_valid_rate:.4f}")

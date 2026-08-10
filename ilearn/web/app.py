@@ -115,7 +115,9 @@ def mastery_rows(mastery: list[dict[str, Any]]) -> list[dict[str, str]]:
             ) or "—"
         rows.append(
             {
-                "知识点": str(item.get("knowledge_id", "—")),
+                "知识点": str(
+                    item.get("knowledge_name") or item.get("knowledge_id", "—")
+                ),
                 "掌握率": f"{float(item.get('score_rate', 0)):.0%}",
                 "水平": _LEVEL_LABELS.get(item.get("level"), str(item.get("level", "—"))),
                 "主要错因": error_text,
@@ -229,11 +231,11 @@ def _answer_widget(st: Any, item: dict[str, Any]) -> str:
         ) or ""
     if item.get("type") == "constructed":
         return st.text_area(
-            "写出答案和主要步骤",
+            "请填写最终答案（可附主要步骤）",
             value=current,
             key=key,
             height=150,
-            placeholder="请写出答案，并简要说明你的计算过程…",
+            placeholder="请优先写最终答案；如有需要，可继续写计算过程…",
         )
     return st.text_input(
         "填写答案",

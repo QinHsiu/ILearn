@@ -6,7 +6,7 @@ import json
 import os
 from typing import Any
 
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 
 class LLMError(Exception):
@@ -93,6 +93,8 @@ class LLMClient:
                 return _parse_json_content(content)
             except (json.JSONDecodeError, ValueError) as exc:
                 last_error = exc
+            except (OpenAIError, OSError) as exc:
+                raise LLMError(f"LLM request failed: {exc}") from exc
         raise LLMError(
             f"failed to parse JSON from LLM response after retry: {last_error}"
         )

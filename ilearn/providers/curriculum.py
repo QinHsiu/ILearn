@@ -43,6 +43,11 @@ def _frac(n: Any, d: Any) -> Fraction:
     return Fraction(int(n), int(d))
 
 
+def _ratio(a: Any, b: Any) -> str:
+    """Format an ordered ratio without converting it to a decimal."""
+    return f"{int(a)}:{int(b)}"
+
+
 _SAFE_FUNCS = {
     "round": round,
     "abs": abs,
@@ -51,6 +56,7 @@ _SAFE_FUNCS = {
     "gcd": math.gcd,
     "lcm": _lcm,
     "frac": _frac,
+    "ratio": _ratio,
 }
 
 

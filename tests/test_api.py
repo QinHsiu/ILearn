@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -88,3 +89,22 @@ def test_cors_allows_streamlit_origin(tmp_path):
     )
     assert r.status_code == 200
     assert r.headers.get("access-control-allow-origin") == "http://localhost:8501"
+
+
+@patch("ilearn.api.app.Orchestrator")
+@patch("ilearn.api.app.LLMClient.from_env")
+@patch("ilearn.api.app.load_dotenv")
+def test_create_app_loads_dotenv_and_wires_available_llm(
+    mock_load_dotenv,
+    mock_from_env,
+    mock_orchestrator,
+    tmp_path,
+):
+    llm = MagicMock()
+    llm.available.return_value = True
+    mock_from_env.return_value = llm
+
+    create_app(sessions_dir=tmp_path, pilot_data_dir=PILOT_DATA)
+
+    mock_load_dotenv.assert_called_once()
+    assert mock_orchestrator.call_args.kwargs["llm"] is llm

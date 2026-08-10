@@ -53,6 +53,66 @@ def test_instantiated_items_have_stems_and_keys(builder):
             assert item.answer_key is not None
 
 
+def test_every_choice_key_is_present_across_grades_and_seeds():
+    provider = PilotBeijingRenjiaoProvider(ROOT)
+    for grade in (4, 5, 6):
+        for seed in range(50):
+            paper = AssessmentBuilder(provider, rng=random.Random(seed)).build(
+                StudentProfile(region="北京", grade=grade, age=grade + 6)
+            )
+            for item in paper.items:
+                if item.type == "choice":
+                    assert item.answer_key in item.choices, (grade, seed, item.id)
+
+
+def test_correct_choice_position_is_shuffled_across_builds():
+    provider = PilotBeijingRenjiaoProvider(ROOT)
+    correct_indices = []
+    for seed in range(30):
+        paper = AssessmentBuilder(provider, rng=random.Random(seed)).build(
+            StudentProfile(region="北京", grade=5, age=11)
+        )
+        correct_indices.extend(
+            item.choices.index(item.answer_key)
+            for item in paper.items
+            if item.type == "choice"
+        )
+    assert any(index != 0 for index in correct_indices)
+
+
+def test_rendered_choice_options_are_unique_across_grades_and_seeds():
+    provider = PilotBeijingRenjiaoProvider(ROOT)
+    for grade in (4, 5, 6):
+        for seed in range(50):
+            paper = AssessmentBuilder(provider, rng=random.Random(seed)).build(
+                StudentProfile(region="北京", grade=grade, age=grade + 6)
+            )
+            for item in paper.items:
+                if item.type == "choice":
+                    assert len(item.choices) == len(set(item.choices)), (
+                        grade,
+                        seed,
+                        item.id,
+                        item.choices,
+                    )
+
+
+def test_seeded_papers_can_use_different_template_ids():
+    provider = PilotBeijingRenjiaoProvider(ROOT)
+    for grade in (4, 5, 6):
+        profile = StudentProfile(region="北京", grade=grade, age=grade + 6)
+        paper_template_sets = {
+            frozenset(
+                item.id.rsplit("__", 1)[0]
+                for item in AssessmentBuilder(
+                    provider, rng=random.Random(seed)
+                ).build(profile).items
+            )
+            for seed in range(10)
+        }
+        assert len(paper_template_sets) > 1
+
+
 def test_no_duplicate_template_ids_in_paper(builder):
     paper = builder.build(StudentProfile(region="北京", grade=5, age=11), n=20)
     template_ids = [item.id.rsplit("__", 1)[0] for item in paper.items]

@@ -272,6 +272,33 @@ def test_ability_scores_in_range(diagnoser, profile_beijing):
         assert tag in {"logic", "spatial", "mental_math"}
 
 
+def test_ability_error_penalty_is_mean_per_item(diagnoser, profile_beijing):
+    items = [
+        AssessmentItem(
+            id=f"i{index}",
+            stem="fraction question",
+            type="fill",
+            difficulty="easy",
+            knowledge_ids=["frac_add_same"],
+            answer_key="1",
+        )
+        for index in range(20)
+    ]
+    grades = [
+        make_grade(
+            item.id,
+            index < 10,
+            ["frac_add_same"],
+            error_tags=[] if index < 10 else ["calc_error"],
+        )
+        for index, item in enumerate(items)
+    ]
+
+    diagnosis = diagnoser.diagnose(profile_beijing, make_paper(*items), grades)
+
+    assert diagnosis.ability_scores["logic"] == pytest.approx(47.5)
+
+
 def test_interventions_sorted_weakest_first(diagnoser, profile_beijing):
     paper = make_paper(
         AssessmentItem(

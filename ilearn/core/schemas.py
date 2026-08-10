@@ -105,6 +105,7 @@ class KnowledgeMastery(BaseModel):
     """Aggregated mastery for one knowledge node."""
 
     knowledge_id: str
+    knowledge_name: str | None = None
     score_rate: float = Field(ge=0.0, le=1.0)
     error_tag_counts: dict[str, int] = Field(default_factory=dict)
     level: MasteryLevel

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from ilearn.core.schemas import (
@@ -17,6 +18,9 @@ from ilearn.providers.llm import LLMClient, LLMError
 
 _VALID_ERROR_TAGS = set(ERROR_TAGS)
 _CHOICE_LETTERS = {"A", "B", "C", "D", "E"}
+_FINAL_TOKEN = re.compile(
+    r"-?\d+(?:\.\d+)?(?:[/:]-?\d+(?:\.\d+)?)?%?|[A-Za-z]+|[\u4e00-\u9fff]+"
+)
 
 _GRADE_SYSTEM_PROMPT = """You are a math tutor grader for elementary students (grades 4-6).
 Respond with ONLY a JSON object (no markdown) matching this schema:
@@ -51,6 +55,13 @@ def answers_match(student: str, key: str) -> bool:
         return abs(s_val - k_val) / max(abs(k_val), 1e-9) < 1e-6
     except ValueError:
         return False
+
+
+def _offline_constructed_answer_matches(answer: str, key: str) -> bool:
+    if answers_match(answer, key):
+        return True
+    tokens = _FINAL_TOKEN.findall(answer)
+    return bool(tokens) and answers_match(tokens[-1], key)
 
 
 def _heuristic_error_tags(item: AssessmentItem, answer: str, correct: bool) -> list[ErrorTag]:
@@ -252,7 +263,7 @@ class StepGrader:
             return llm_result
 
         fallback_correct = (
-            answers_match(answer, item.answer_key)
+            _offline_constructed_answer_matches(answer, item.answer_key)
             if item.answer_key is not None
             else False
         )

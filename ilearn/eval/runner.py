@@ -59,8 +59,26 @@ def macro_f1_error_tags(
 ) -> float:
     if not expected_list:
         return 0.0
-    pairs = zip(expected_list, predicted_list, strict=True)
-    scores = [tag_set_f1(set(exp), set(pred)) for exp, pred in pairs]
+    pairs = [
+        (set(expected), set(predicted))
+        for expected, predicted in zip(expected_list, predicted_list, strict=True)
+    ]
+    labels = set().union(*(expected | predicted for expected, predicted in pairs))
+    if not labels:
+        return 1.0
+    scores = []
+    for label in labels:
+        true_positive = sum(
+            label in expected and label in predicted for expected, predicted in pairs
+        )
+        false_positive = sum(
+            label not in expected and label in predicted for expected, predicted in pairs
+        )
+        false_negative = sum(
+            label in expected and label not in predicted for expected, predicted in pairs
+        )
+        denominator = 2 * true_positive + false_positive + false_negative
+        scores.append(2 * true_positive / denominator if denominator else 0.0)
     return sum(scores) / len(scores)
 
 

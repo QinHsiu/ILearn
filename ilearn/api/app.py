@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from dotenv import load_dotenv
 from pydantic import BaseModel
 
 from ilearn.core.orchestrator import Orchestrator
@@ -51,6 +52,11 @@ def create_app(
     llm: LLMClient | None = None,
 ) -> FastAPI:
     """Build a FastAPI app wired to the ILearn orchestrator."""
+    load_dotenv()
+    if llm is None:
+        llm = LLMClient.from_env()
+    if not llm.available():
+        llm = None
     store = SessionStore(sessions_dir or _DEFAULT_SESSIONS_DIR)
     curriculum = PilotBeijingRenjiaoProvider(pilot_data_dir or _DEFAULT_PILOT_DATA)
     orchestrator = Orchestrator(store=store, curriculum=curriculum, llm=llm)

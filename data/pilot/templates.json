@@ -943,7 +943,7 @@
       "a": "int:10-30",
       "b": "int:10-30"
     },
-    "answer_expr": "a/b",
+    "answer_expr": "ratio(a,b)",
     "rubric_steps": [
       "比的前项后项"
     ],
@@ -1389,6 +1389,81 @@
     "answer_expr": "round(3.14*(R*R-r*r), 2)",
     "rubric_steps": [
       "大圆减小圆"
+    ]
+  },
+  {
+    "id": "g4_easy_choice_spare_21",
+    "grades": [
+      4
+    ],
+    "item_type": "choice",
+    "difficulty": "easy",
+    "knowledge_ids": [
+      "mult_3digit"
+    ],
+    "stem_template": "口算：{a} + 1 = ?",
+    "slots": {
+      "a": "int:10-30"
+    },
+    "answer_expr": "a+1",
+    "rubric_steps": [
+      "整数加法"
+    ],
+    "choices_template": [
+      "{ans}",
+      "{a}",
+      "{a+2}",
+      "{a+3}"
+    ]
+  },
+  {
+    "id": "g5_easy_choice_spare_21",
+    "grades": [
+      5
+    ],
+    "item_type": "choice",
+    "difficulty": "easy",
+    "knowledge_ids": [
+      "dec_mult"
+    ],
+    "stem_template": "计算：{a} × 2 = ?",
+    "slots": {
+      "a": "int:3-9"
+    },
+    "answer_expr": "a*2",
+    "rubric_steps": [
+      "整数乘法"
+    ],
+    "choices_template": [
+      "{ans}",
+      "{a}",
+      "{a*2+1}",
+      "{a*2-1}"
+    ]
+  },
+  {
+    "id": "g6_easy_choice_spare_21",
+    "grades": [
+      6
+    ],
+    "item_type": "choice",
+    "difficulty": "easy",
+    "knowledge_ids": [
+      "percent"
+    ],
+    "stem_template": "{a}% 写成小数是多少？",
+    "slots": {
+      "a": "choice:10,20,25,50"
+    },
+    "answer_expr": "a/100",
+    "rubric_steps": [
+      "百分数化小数"
+    ],
+    "choices_template": [
+      "{ans}",
+      "{a}",
+      "{a+1}",
+      "1"
     ]
   }
 ]

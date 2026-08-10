@@ -48,9 +48,9 @@ streamlit run ilearn/web/app.py
 
 ## CLI
 
-### 端到端测评（离线演示）
+### 端到端测评
 
-使用试卷 `answer_key` 自动作答，无需 LLM API Key：
+使用试卷 `answer_key` 自动作答；配置 LLM 时会用于构造题分步批改，未配置时自动使用规则/离线降级批改：
 
 ```powershell
 python -m ilearn.cli.main run --region 北京 --grade 5 --age 11 --auto-answer
@@ -87,7 +87,7 @@ python -m ilearn.cli.main eval
 | 变量 | 说明 |
 | --- | --- |
 | `ILEARN_LLM_BASE_URL` | OpenAI 兼容 API 基址（可选） |
-| `ILEARN_LLM_API_KEY` | API Key；未设置时 CLI/API 可走离线/降级路径 |
+| `ILEARN_LLM_API_KEY` | API Key；设置后 API/CLI 使用 LLM，未设置时客观题走规则、构造题走最终答案提取等离线降级路径 |
 | `ILEARN_LLM_MODEL` | 模型名（默认 `gpt-4o-mini`） |
 | `ILEARN_API_BASE` | Streamlit 连接的 FastAPI 地址（默认 `http://127.0.0.1:8000`） |
 
@@ -104,7 +104,7 @@ python -m pytest -q
 - 分步批改、错误标签、学情 Top-5、1–2 周学习计划（JSON + Markdown）
 - FastAPI + Streamlit 四步向导 + CLI `run` / `eval`
 - 会话持久化：`data/sessions/`（JSON，无数据库）
-- OpenAI 兼容 LLM（构造题批改、叙述润色；模板优先出题）
+- OpenAI 兼容 LLM（配置后用于构造题批改；未配置或请求失败时使用规则/离线降级，且结果标记 `grading_degraded`）
 
 ## 非目标（本版不做）
 

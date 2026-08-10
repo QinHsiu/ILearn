@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from openai import OpenAIError
 
 from ilearn.providers.llm import LLMClient, LLMError, _parse_json_content, _strip_json_fences
 
@@ -111,3 +112,14 @@ def test_chat_json_raises_after_two_parse_failures(mock_openai):
     with pytest.raises(LLMError, match="after retry"):
         client.chat_json("s", "u")
     assert mock_client.chat.completions.create.call_count == 2
+
+
+@patch("ilearn.providers.llm.OpenAI")
+def test_chat_json_wraps_api_errors_as_llm_error(mock_openai):
+    mock_client = MagicMock()
+    mock_openai.return_value = mock_client
+    mock_client.chat.completions.create.side_effect = OpenAIError("network failed")
+
+    client = LLMClient(api_key="sk-test")
+    with pytest.raises(LLMError, match="request failed"):
+        client.chat_json("s", "u")

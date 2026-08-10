@@ -98,6 +98,11 @@ class Diagnoser:
             knowledge_mastery.append(
                 KnowledgeMastery(
                     knowledge_id=knowledge_id,
+                    knowledge_name=(
+                        knowledge_by_id[knowledge_id].name
+                        if knowledge_id in knowledge_by_id
+                        else knowledge_id
+                    ),
                     score_rate=score_rate,
                     error_tag_counts=dict(error_tag_counts),
                     level=_mastery_level(score_rate),
@@ -188,10 +193,8 @@ class Diagnoser:
                 grades
             )
             penalty = sum(
-                _error_penalty(list(grade.error_tags))
-                for grade in grades
-                if not grade.final_correct
-            )
+                _error_penalty(list(grade.error_tags)) for grade in grades
+            ) / len(grades)
             ability_scores[tag] = round(
                 max(0.0, min(100.0, correct_rate * 100.0 - penalty)), 1
             )
