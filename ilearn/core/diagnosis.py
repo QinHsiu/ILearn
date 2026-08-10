@@ -94,6 +94,35 @@ def _sm2_quality(grade_row: GradeResult) -> int:
     return 1
 
 
+def _incorrect_evidence_count(
+    evidence: list[KnowledgeEvidence] | None,
+    knowledge_id: str,
+) -> int:
+    if not evidence:
+        return 0
+    return sum(
+        1
+        for ev in evidence
+        if ev.knowledge_id == knowledge_id and not ev.correct
+    )
+
+
+def is_leech(
+    portrait: LearnerPortrait,
+    knowledge_id: str,
+    *,
+    threshold: int = 3,
+    evidence: list[KnowledgeEvidence] | None = None,
+) -> bool:
+    """True when incorrect evidence for a knowledge node reaches the leech threshold."""
+    if evidence is not None:
+        return _incorrect_evidence_count(evidence, knowledge_id) >= threshold
+    rec = portrait.mastery_records.get(knowledge_id)
+    if rec is None:
+        return False
+    return rec.probe_mastery < 0.3 and rec.evidence_count >= threshold
+
+
 class Diagnoser:
     """Aggregate knowledge mastery, abilities, and Top-5 interventions."""
 
@@ -105,6 +134,9 @@ class Diagnoser:
         profile: StudentProfile,
         paper: AssessmentPaper,
         grades: list[GradeResult],
+        *,
+        portrait: LearnerPortrait | None = None,
+        evidence: list[KnowledgeEvidence] | None = None,
     ) -> DiagnosisReport:
         grade_by_id = {grade.item_id: grade for grade in grades}
         knowledge_by_id = {
@@ -144,7 +176,12 @@ class Diagnoser:
                 )
             )
 
-        interventions = self._build_interventions(knowledge_mastery, knowledge_by_id)
+        interventions = self._build_interventions(
+            knowledge_mastery,
+            knowledge_by_id,
+            portrait=portrait or LearnerPortrait(student_key=""),
+            evidence=evidence,
+        )
         ability_scores = self._compute_ability_scores(
             paper, grade_by_id, knowledge_by_id
         )
@@ -168,10 +205,17 @@ class Diagnoser:
         self,
         knowledge_mastery: list[KnowledgeMastery],
         knowledge_by_id: dict[str, object],
+        *,
+        portrait: LearnerPortrait,
+        evidence: list[KnowledgeEvidence] | None = None,
     ) -> list[Intervention]:
         candidates = sorted(
             (km for km in knowledge_mastery if km.level != "mastered"),
-            key=lambda km: (km.score_rate, km.knowledge_id),
+            key=lambda km: (
+                not is_leech(portrait, km.knowledge_id, evidence=evidence),
+                km.score_rate,
+                km.knowledge_id,
+            ),
         )[:5]
 
         interventions: list[Intervention] = []
@@ -184,6 +228,7 @@ class Diagnoser:
                 if dominant
                 else "基础巩固"
             )
+            leech = is_leech(portrait, km.knowledge_id, evidence=evidence)
             if dominant and dominant in _ERROR_TAG_LABELS:
                 why = (
                     f"得分率 {km.score_rate:.0%}，主要问题："
@@ -191,6 +236,8 @@ class Diagnoser:
                 )
             else:
                 why = f"得分率 {km.score_rate:.0%}，需要加强练习"
+            if leech:
+                why = f"{why}；连续多次未掌握（需重点突破）"
             interventions.append(
                 Intervention(
                     knowledge_id=km.knowledge_id,
@@ -198,6 +245,7 @@ class Diagnoser:
                     why=why,
                     what_to_fix_first=fix_first,
                     priority=priority,
+                    leech=leech,
                 )
             )
         return interventions

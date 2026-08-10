@@ -220,6 +220,7 @@ class Intervention(BaseModel):
     why: str
     what_to_fix_first: str
     priority: int = Field(ge=1)
+    leech: bool = False
 
 
 class DiagnosisReport(BaseModel):
