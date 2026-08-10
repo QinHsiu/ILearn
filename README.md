@@ -78,7 +78,7 @@ python -m ilearn.cli.main run --region 北京 --grade 5 --age 11 --answers-file 
 python -m ilearn.cli.main eval
 ```
 
-打印 `accuracy`、`macro_f1`、`json_valid_rate`。
+打印 `accuracy`、`macro_f1`、`json_valid_rate`（默认离线规则批改；加 `--use-llm` 才用已配置的 LLM）。
 
 ## 环境变量
 

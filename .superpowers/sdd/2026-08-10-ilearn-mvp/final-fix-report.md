@@ -36,3 +36,12 @@ After implementation, the same focused set passed: `68 passed`.
 - Generated distractor repair guarantees uniqueness but is heuristic; pedagogical distractor quality should be reviewed when the pilot template set expands.
 - The suite reports upstream/deprecation warnings from Starlette/httpx and `datetime.utcnow()`; they are non-blocking for this fix scope.
 - Pre-existing untracked session artifacts and `scripts/` were left untouched and excluded from commits.
+
+## Re-review follow-up (2026-08-10)
+
+- **Spare template tags:** Rewrote `g4_easy_choice_spare_21` stem to `{a} × {b}` (mult_3digit) and `g5_easy_choice_spare_21` to `{a}.{b} × 10` (dec_mult) so `knowledge_ids` match stem content.
+- **Offline eval:** `ilearn eval` now defaults to `StepGrader(None)`; pass `--use-llm` to use a configured LLM. README eval section updated one line.
+
+### Verification
+
+- `python -m pytest -q` → `93 passed, 0 failed`.

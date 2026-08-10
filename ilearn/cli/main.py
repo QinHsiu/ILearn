@@ -110,13 +110,19 @@ def eval(
         "--fixtures",
         help="Path to step-grading fixtures JSON",
     ),
+    use_llm: bool = typer.Option(
+        False,
+        "--use-llm",
+        help="Use configured LLM for constructed-item grading (default: offline rules only)",
+    ),
 ) -> None:
     """Evaluate step grading against fixture expectations."""
     if not fixtures.is_file():
         typer.echo(f"Fixtures not found: {fixtures}", err=True)
         raise typer.Exit(code=1)
 
-    metrics = run_eval(fixtures, grader=StepGrader(_load_configured_llm()))
+    llm = _load_configured_llm() if use_llm else None
+    metrics = run_eval(fixtures, grader=StepGrader(llm))
     typer.echo(f"accuracy: {metrics.accuracy:.4f}")
     typer.echo(f"macro_f1: {metrics.macro_f1:.4f}")
     typer.echo(f"json_valid_rate: {metrics.json_valid_rate:.4f}")

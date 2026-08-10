@@ -1401,19 +1401,21 @@
     "knowledge_ids": [
       "mult_3digit"
     ],
-    "stem_template": "口算：{a} + 1 = ?",
+    "stem_template": "计算：{a} × {b} = ?",
     "slots": {
-      "a": "int:10-30"
+      "a": "int:12-99",
+      "b": "int:2-9"
     },
-    "answer_expr": "a+1",
+    "answer_expr": "a*b",
     "rubric_steps": [
-      "整数加法"
+      "列竖式或口算",
+      "核对进位"
     ],
     "choices_template": [
       "{ans}",
-      "{a}",
-      "{a+2}",
-      "{a+3}"
+      "{a+b}",
+      "{a*b+10}",
+      "{a*b-10}"
     ]
   },
   {
@@ -1426,19 +1428,20 @@
     "knowledge_ids": [
       "dec_mult"
     ],
-    "stem_template": "计算：{a} × 2 = ?",
+    "stem_template": "计算：{a}.{b} × 10 = ?",
     "slots": {
-      "a": "int:3-9"
+      "a": "int:1-9",
+      "b": "int:1-9"
     },
-    "answer_expr": "a*2",
+    "answer_expr": "a*10+b",
     "rubric_steps": [
-      "整数乘法"
+      "小数点右移"
     ],
     "choices_template": [
       "{ans}",
-      "{a}",
-      "{a*2+1}",
-      "{a*2-1}"
+      "{a}.{b}",
+      "{a}+{b}",
+      "10"
     ]
   },
   {
