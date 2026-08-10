@@ -21,6 +21,14 @@ _DEFAULT_PLAN_DAYS = 7
 _MAX_PLAN_DAYS = 14
 _DEFAULT_DAILY_MINUTES = 40
 
+_ERROR_TAG_LABELS: dict[str, str] = {
+    "concept_gap": "概念缺口",
+    "calc_error": "计算错误",
+    "misread": "审题失误",
+    "method_wrong": "方法不当",
+    "incomplete": "步骤不完整",
+}
+
 
 def _default_pilot_dir() -> Path:
     return Path(__file__).resolve().parents[2] / "data" / "pilot"
@@ -234,6 +242,7 @@ class Planner:
         ]
         for milestone in milestones:
             lines.append(f"- {milestone}")
+        lines.extend(self._render_intervention_block(diagnosis))
         lines.extend(["", "## 每日安排", ""])
         for day in days:
             focus_text = "、".join(day.focus_knowledge_ids) or "综合复习"
@@ -246,3 +255,40 @@ class Planner:
             "> 本计划为智能助手建议，不能替代教师专业评价。"
         )
         return "\n".join(lines).strip()
+
+    @staticmethod
+    def _dominant_error_tag(diagnosis: DiagnosisReport) -> str | None:
+        counts: dict[str, int] = {}
+        for mastery in diagnosis.knowledge_mastery:
+            for tag, count in mastery.error_tag_counts.items():
+                counts[tag] = counts.get(tag, 0) + count
+        if not counts:
+            return None
+        return max(counts, key=counts.get)
+
+    def _render_intervention_block(self, diagnosis: DiagnosisReport) -> list[str]:
+        if not diagnosis.interventions:
+            return []
+        top = min(diagnosis.interventions, key=lambda item: item.priority)
+        dominant = self._dominant_error_tag(diagnosis)
+        tag_label = (
+            _ERROR_TAG_LABELS.get(dominant, dominant or "学习困难")
+            if dominant
+            else "待观察"
+        )
+        return [
+            "",
+            "## 干预建议",
+            "",
+            "### 当前认知",
+            f"- 重点知识点：{top.title}",
+            f"- 现状：{top.why}",
+            "",
+            "### 预测难点",
+            f"- 主要错误类型：{tag_label}",
+            f"- 优先修复：{top.what_to_fix_first}",
+            "",
+            "### 教学方案",
+            f"- 建议先巩固「{top.title}」的基础概念与例题",
+            f"- 针对{tag_label}进行专项练习与步骤核对",
+        ]
