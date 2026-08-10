@@ -149,9 +149,23 @@ def eval(
         "--mathtutorbench",
         help="Run mistake-location benchmark (MathTutorBench-style fixtures)",
     ),
+    completeness: bool = typer.Option(
+        False,
+        "--completeness",
+        "--tutor-gym",
+        help="Run TutorGym-style step completeness benchmark",
+    ),
 ) -> None:
     """Evaluate step grading against fixture expectations."""
     llm = _load_configured_llm() if use_llm else None
+
+    if completeness:
+        eval_agent = EvalAgent(fixtures_dir=_DEFAULT_FIXTURES.parent, llm=llm)
+        report = eval_agent.run_completeness()
+        typer.echo(f"total: {report['total']}")
+        typer.echo(f"completeness: {report['completeness']:.4f}")
+        typer.echo(f"avg_step_score: {report.get('avg_step_score', 0.0):.4f}")
+        return
 
     if mathtutorbench:
         fixtures_path = _MISTAKE_LOCATION_FIXTURES
