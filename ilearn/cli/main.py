@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from ilearn.core.grading import StepGrader
 from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.schemas import SessionPhase, StudentProfile
+from ilearn.agents.eval_agent import EvalAgent
 from ilearn.eval.runner import run_eval
 from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
 from ilearn.providers.llm import LLMClient
@@ -137,6 +138,11 @@ def eval(
         "--use-llm",
         help="Use configured LLM for constructed-item grading (default: offline rules only)",
     ),
+    agents: bool = typer.Option(
+        False,
+        "--agents",
+        help="Grade via PracticeAgent and print agent trace",
+    ),
 ) -> None:
     """Evaluate step grading against fixture expectations."""
     if not fixtures.is_file():
@@ -144,6 +150,16 @@ def eval(
         raise typer.Exit(code=1)
 
     llm = _load_configured_llm() if use_llm else None
+    if agents:
+        eval_agent = EvalAgent(fixtures_dir=fixtures.parent, llm=llm)
+        report = eval_agent.run_step_grading(fixtures_path=fixtures)
+        typer.echo(f"accuracy: {report['accuracy']:.4f}")
+        typer.echo(f"step_f1: {report['step_f1']:.4f}")
+        typer.echo(f"json_valid_rate: {report['json_valid_rate']:.4f}")
+        typer.echo(f"total: {report['total']}")
+        typer.echo(f"agents_invoked: {', '.join(report['agents_invoked'])}")
+        return
+
     metrics = run_eval(fixtures, grader=StepGrader(llm))
     typer.echo(f"accuracy: {metrics.accuracy:.4f}")
     typer.echo(f"macro_f1: {metrics.macro_f1:.4f}")

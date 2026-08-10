@@ -8,8 +8,11 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from ilearn.agents.practice import PracticeAgent
+from ilearn.agents.protocol import AgentContext, SessionPhase
 from ilearn.core.grading import StepGrader
-from ilearn.core.schemas import AssessmentItem
+from ilearn.core.schemas import AssessmentItem, AssessmentPaper, StudentAnswer, StudentProfile
+from ilearn.providers.llm import LLMClient
 
 
 class GradingFixture(BaseModel):
@@ -116,3 +119,56 @@ def run_eval(
         macro_f1=macro_f1_error_tags(expected_tags, predicted_tags),
         json_valid_rate=1.0,
     )
+
+
+def run_step_grading_benchmark(
+    fixtures_path: Path,
+    *,
+    llm: LLMClient | None = None,
+) -> dict[str, Any]:
+    """Run step-grading fixtures through PracticeAgent and return an agent-aware report."""
+    fixtures = load_fixtures(fixtures_path)
+    if not fixtures:
+        return {
+            "total": 0,
+            "accuracy": 0.0,
+            "step_f1": 0.0,
+            "json_valid_rate": 0.0,
+            "agents_invoked": ["practice"],
+        }
+
+    agent = PracticeAgent(llm)
+    profile = StudentProfile(region="北京", grade=5, age=11)
+    expected_correct: list[bool] = []
+    predicted_correct: list[bool] = []
+    expected_tags: list[list[str]] = []
+    predicted_tags: list[list[str]] = []
+
+    for fixture in fixtures:
+        item = AssessmentItem.model_validate(fixture.item)
+        paper = AssessmentPaper(
+            items=[item],
+            grade=5,
+            curriculum_label="eval-fixture",
+        )
+        ctx = AgentContext(
+            session_id=f"eval-{fixture.id}",
+            phase=SessionPhase.GRADE,
+            profile=profile,
+            paper=paper,
+            answers=[StudentAnswer(item_id=item.id, answer_text=fixture.student_answer)],
+        )
+        result = agent.run(ctx)
+        grade = result.payload["grades"][0]
+        expected_correct.append(fixture.expected_final_correct)
+        predicted_correct.append(grade.final_correct)
+        expected_tags.append(fixture.expected_error_tags)
+        predicted_tags.append(list(grade.error_tags))
+
+    return {
+        "total": len(fixtures),
+        "accuracy": final_correct_accuracy(expected_correct, predicted_correct),
+        "step_f1": macro_f1_error_tags(expected_tags, predicted_tags),
+        "json_valid_rate": 1.0,
+        "agents_invoked": ["practice"],
+    }
