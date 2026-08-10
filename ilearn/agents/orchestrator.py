@@ -31,6 +31,7 @@ from ilearn.core.schemas import (
     DiagnosisReport,
     GradeResult,
     LearningPlanReport,
+    PendingQuestion,
     SessionPhase,
     SessionState,
     StudentAnswer,
@@ -141,6 +142,14 @@ class MultiAgentOrchestrator:
             set(result.payload) & {"paper"},
         )
         session.paper = result.payload["paper"]
+        session.pending_questions = [
+            PendingQuestion(
+                question_id=item.id,
+                expected_answer=item.answer_key or "",
+                paper_id=session.session_id,
+            )
+            for item in session.paper.items
+        ]
         session.answers = []
         session.image_answers = []
         session.grades = []
@@ -164,11 +173,14 @@ class MultiAgentOrchestrator:
     ) -> SessionState:
         session = self._store.load(session_id)
         paper = self._require_paper(session)
-        known_ids = {item.id for item in paper.items}
-        unknown_ids = set(answers) - known_ids
-        if unknown_ids:
-            unknown = ", ".join(sorted(unknown_ids))
-            raise ValueError(f"answers contain unknown item ids: {unknown}")
+        if session.pending_questions:
+            known_ids = {
+                question.question_id for question in session.pending_questions
+            }
+            unknown_ids = set(answers) - known_ids
+            if unknown_ids:
+                unknown = ", ".join(sorted(unknown_ids))
+                raise ValueError(f"answers contain unknown item ids: {unknown}")
 
         session.answers = [
             StudentAnswer(item_id=item.id, answer_text=answers.get(item.id, ""))
