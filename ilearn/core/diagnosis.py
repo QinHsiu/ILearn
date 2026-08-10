@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 
 from ilearn.core.schemas import (
@@ -11,8 +12,10 @@ from ilearn.core.schemas import (
     GradeResult,
     Intervention,
     KnowledgeMastery,
+    LearnerPortrait,
     MasteryLevel,
     StudentProfile,
+    WeaknessEntry,
 )
 from ilearn.providers.curriculum import CurriculumProvider, PilotBeijingRenjiaoProvider
 
@@ -199,3 +202,50 @@ class Diagnoser:
                 max(0.0, min(100.0, correct_rate * 100.0 - penalty)), 1
             )
         return ability_scores
+
+
+def _knowledge_name(
+    curriculum: CurriculumProvider,
+    knowledge_id: str,
+    grade: int | None = None,
+) -> str:
+    grades = [grade] if grade is not None else (4, 5, 6)
+    for lookup_grade in grades:
+        for node in curriculum.list_knowledge(lookup_grade):
+            if node.id == knowledge_id:
+                return node.name
+    return knowledge_id
+
+
+class PortraitUpdater:
+    """Append weakness entries and decay knowledge state from incorrect grades."""
+
+    @staticmethod
+    def update(
+        portrait: LearnerPortrait,
+        grades: list[GradeResult],
+        session_id: str,
+        curriculum: CurriculumProvider,
+        grade: int | None = None,
+    ) -> LearnerPortrait:
+        for grade_row in grades:
+            if grade_row.final_correct:
+                continue
+            for kid in grade_row.knowledge_ids:
+                portrait.weakness_log.append(
+                    WeaknessEntry(
+                        knowledge_id=kid,
+                        topic=_knowledge_name(curriculum, kid, grade),
+                        logic_gap=(
+                            grade_row.error_tags[0]
+                            if grade_row.error_tags
+                            else "unknown"
+                        ),
+                        session_id=session_id,
+                    )
+                )
+                portrait.knowledge_state[kid] = min(
+                    portrait.knowledge_state.get(kid, 1.0), 0.4
+                )
+        portrait.updated_at = datetime.utcnow()
+        return portrait

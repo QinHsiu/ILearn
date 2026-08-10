@@ -1,0 +1,50 @@
+[
+  {
+    "id": "handwritten_addition_correct",
+    "item": {
+      "id": "vision_c1",
+      "stem": "计算 12+8",
+      "type": "constructed",
+      "difficulty": "easy",
+      "knowledge_ids": ["g5_add"],
+      "answer_key": "20",
+      "rubric_steps": ["列式", "计算", "写答"]
+    },
+    "image_path": "mock://vision/handwritten_addition_correct.png",
+    "mime_type": "image/png",
+    "expected_final_correct": true,
+    "expected_error_tags": []
+  },
+  {
+    "id": "handwritten_decimal_calc_error",
+    "item": {
+      "id": "vision_c2",
+      "stem": "计算 2.5×4",
+      "type": "constructed",
+      "difficulty": "medium",
+      "knowledge_ids": ["g5_decimal_multiply"],
+      "answer_key": "10",
+      "rubric_steps": ["列式", "计算", "写答"]
+    },
+    "image_path": "mock://vision/handwritten_decimal_calc_error.jpeg",
+    "mime_type": "image/jpeg",
+    "expected_final_correct": false,
+    "expected_error_tags": ["calc_error"]
+  },
+  {
+    "id": "handwritten_fraction_incomplete",
+    "item": {
+      "id": "vision_c3",
+      "stem": "计算 1/2+1/3",
+      "type": "constructed",
+      "difficulty": "hard",
+      "knowledge_ids": ["g5_fraction_add"],
+      "answer_key": "5/6",
+      "rubric_steps": ["通分", "相加", "约分"]
+    },
+    "image_path": "mock://vision/handwritten_fraction_incomplete.webp",
+    "mime_type": "image/webp",
+    "expected_final_correct": false,
+    "expected_error_tags": ["incomplete"]
+  }
+]

@@ -78,6 +78,64 @@ def test_missing_session_returns_404(tmp_path):
     assert r.status_code == 404
 
 
+def test_phase_endpoint(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post("/sessions", json={"region": "北京", "grade": 5, "age": 11}).json()[
+        "session_id"
+    ]
+    c.post(f"/sessions/{sid}/assessment")
+    phase = c.get(f"/sessions/{sid}/phase").json()
+    assert phase["phase"] == "practice"
+    assert phase["loop_count"] == 0
+
+
+def test_submit_images_accepts_base64(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post("/sessions", json={"region": "北京", "grade": 5, "age": 11}).json()[
+        "session_id"
+    ]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    item_id = paper["items"][0]["id"]
+    r = c.post(
+        f"/sessions/{sid}/submit-images",
+        json={
+            "images": [
+                {
+                    "item_id": item_id,
+                    "image_base64": "aGVsbG8=",
+                    "mime_type": "image/png",
+                }
+            ]
+        },
+    )
+    assert r.status_code == 200
+    state = r.json()
+    assert len(state["image_answers"]) == 1
+    assert state["image_answers"][0]["item_id"] == item_id
+
+
+def test_followup_endpoint(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post("/sessions", json={"region": "北京", "grade": 5, "age": 11}).json()[
+        "session_id"
+    ]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    answers = {item["id"]: "wrong" for item in paper["items"]}
+    c.post(f"/sessions/{sid}/submit", json={"answers": answers})
+    c.post(f"/sessions/{sid}/grade")
+    c.post(f"/sessions/{sid}/diagnose")
+    c.post(f"/sessions/{sid}/plan")
+
+    r = c.post(f"/sessions/{sid}/followup")
+    assert r.status_code == 200
+    followup_paper = r.json()
+    assert 1 <= len(followup_paper["items"]) <= 10
+
+    phase = c.get(f"/sessions/{sid}/phase").json()
+    assert phase["phase"] == "practice"
+    assert phase["loop_count"] == 1
+
+
 def test_cors_allows_streamlit_origin(tmp_path):
     c = _client(tmp_path)
     r = c.options(
