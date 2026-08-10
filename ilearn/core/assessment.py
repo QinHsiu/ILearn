@@ -8,9 +8,11 @@ from fractions import Fraction
 from ilearn.core.schemas import (
     AssessmentItem,
     AssessmentPaper,
+    BlueprintSlot,
     Difficulty,
     ItemTemplate,
     ItemType,
+    PaperBlueprint,
     StudentProfile,
 )
 from ilearn.providers.curriculum import (
@@ -44,6 +46,66 @@ MIX_BLUEPRINT: list[tuple[Difficulty, ItemType]] = [
     ("hard", "choice"),
     ("hard", "fill"),
 ]
+
+
+def build_blueprint(
+    profile: StudentProfile,
+    weak_ids: list[str] | None = None,
+) -> PaperBlueprint:
+    """Build a 20-slot blueprint; optionally target weak knowledge nodes."""
+    weak_queue = list(weak_ids) if weak_ids else []
+    slots: list[BlueprintSlot] = []
+    for difficulty, item_type in MIX_BLUEPRINT:
+        kid = weak_queue.pop(0) if weak_queue else None
+        slots.append(
+            BlueprintSlot(
+                difficulty=difficulty,
+                item_type=item_type,
+                knowledge_id=kid,
+            )
+        )
+    return PaperBlueprint(grade=profile.grade, slots=slots)
+
+
+def fill_blueprint(
+    profile: StudentProfile,
+    blueprint: PaperBlueprint,
+    curriculum: CurriculumProvider,
+    *,
+    rng: random.Random | None = None,
+) -> AssessmentPaper:
+    """Instantiate blueprint slots into a full assessment paper."""
+    builder = AssessmentBuilder(curriculum, rng=rng)
+    used_template_ids: set[str] = set()
+    items = [
+        builder.instantiate_slot(profile, slot, index, used_template_ids)
+        for index, slot in enumerate(blueprint.slots)
+    ]
+    return AssessmentPaper(
+        items=items,
+        grade=profile.grade,
+        curriculum_label=curriculum.label,
+        blueprint=blueprint,
+        paper_version="1.0.0",
+    )
+
+
+def validate_paper(paper: AssessmentPaper) -> None:
+    """Ensure paper meets fixed size and difficulty quotas."""
+    if len(paper.items) != 20:
+        raise AssessmentBuildError("paper must have 20 items")
+    easy = sum(1 for item in paper.items if item.difficulty == "easy")
+    medium = sum(1 for item in paper.items if item.difficulty == "medium")
+    hard = sum(1 for item in paper.items if item.difficulty == "hard")
+    if (easy, medium, hard) != (10, 8, 2):
+        raise AssessmentBuildError(f"difficulty quota mismatch: {(easy, medium, hard)}")
+    choice = sum(1 for item in paper.items if item.type == "choice")
+    fill = sum(1 for item in paper.items if item.type == "fill")
+    constructed = sum(1 for item in paper.items if item.type == "constructed")
+    if (choice, fill, constructed) != (8, 8, 4):
+        raise AssessmentBuildError(
+            f"type quota mismatch: {(choice, fill, constructed)}"
+        )
 
 
 class AssessmentBuildError(Exception):
@@ -132,7 +194,49 @@ class AssessmentBuilder:
             items=items,
             grade=grade,
             curriculum_label=self._provider.label,
+            paper_version="1.0.0",
         )
+
+    def instantiate_slot(
+        self,
+        profile: StudentProfile,
+        slot: BlueprintSlot,
+        index: int,
+        used_template_ids: set[str],
+    ) -> AssessmentItem:
+        """Pick and instantiate one template matching a blueprint slot."""
+        grade = profile.grade
+        candidates = [
+            template
+            for template in self._provider.list_templates(
+                grade,
+                difficulty=slot.difficulty,
+                item_type=slot.item_type,
+            )
+            if template.id not in used_template_ids
+            and (
+                slot.knowledge_id is None
+                or slot.knowledge_id in template.knowledge_ids
+            )
+        ]
+        if not candidates:
+            candidates = [
+                template
+                for template in self._provider.list_templates(
+                    grade,
+                    difficulty=slot.difficulty,
+                    item_type=slot.item_type,
+                )
+                if template.id not in used_template_ids
+            ]
+        if not candidates:
+            raise AssessmentBuildError(
+                f"no unused template for grade={grade} "
+                f"difficulty={slot.difficulty} type={slot.item_type}"
+            )
+        template = self._rng.choice(candidates)
+        used_template_ids.add(template.id)
+        return self._instantiate(template, index)
 
     def build_followup(
         self,

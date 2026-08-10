@@ -75,6 +75,21 @@ class AssessmentItem(BaseModel):
     choices: list[str] | None = None
 
 
+class BlueprintSlot(BaseModel):
+    """Single slot in a fixed 20-item paper blueprint."""
+
+    difficulty: Difficulty
+    item_type: ItemType
+    knowledge_id: str | None = None
+
+
+class PaperBlueprint(BaseModel):
+    """Two-phase paper assembly plan matching MIX_BLUEPRINT quotas."""
+
+    grade: Literal[4, 5, 6]
+    slots: list[BlueprintSlot]
+
+
 class AssessmentPaper(BaseModel):
     """Fixed-size assessment paper assembled from pilot templates."""
 
@@ -82,6 +97,8 @@ class AssessmentPaper(BaseModel):
     grade: Literal[4, 5, 6]
     curriculum_label: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    blueprint: PaperBlueprint | None = None
+    paper_version: str = "1.0.0"
 
 
 class StudentAnswer(BaseModel):
