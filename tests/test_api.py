@@ -1,0 +1,90 @@
+from pathlib import Path
+
+from fastapi.testclient import TestClient
+
+from ilearn.api.app import create_app
+
+PILOT_DATA = Path(__file__).resolve().parents[1] / "data" / "pilot"
+
+
+def _client(tmp_path):
+    return TestClient(
+        create_app(
+            sessions_dir=tmp_path,
+            pilot_data_dir=PILOT_DATA,
+            llm=None,
+        )
+    )
+
+
+def test_session_assessment_flow(tmp_path):
+    c = _client(tmp_path)
+    r = c.post("/sessions", json={"region": "北京", "grade": 5, "age": 11})
+    assert r.status_code == 200
+    sid = r.json()["session_id"]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    assert len(paper["items"]) == 20
+
+
+def test_full_session_api_flow(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post(
+        "/sessions", json={"region": "北京", "grade": 5, "age": 11}
+    ).json()["session_id"]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    answers = {item["id"]: (item.get("answer_key") or "") for item in paper["items"]}
+
+    submit = c.post(f"/sessions/{sid}/submit", json={"answers": answers})
+    assert submit.status_code == 200
+
+    run = c.post(f"/sessions/{sid}/run")
+    assert run.status_code == 200
+    state = run.json()
+    assert len(state["grades"]) == 20
+    assert state["diagnosis"] is not None
+    assert state["plan"] is not None
+
+    report = c.get(f"/sessions/{sid}/report")
+    assert report.status_code == 200
+    body = report.json()
+    assert "markdown" in body
+    assert "session" in body
+    assert "计划" in body["markdown"] or "学习计划" in body["markdown"]
+
+
+def test_stepwise_endpoints(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post(
+        "/sessions", json={"region": "北京", "grade": 5, "age": 11}
+    ).json()["session_id"]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    answers = {item["id"]: (item.get("answer_key") or "") for item in paper["items"]}
+    c.post(f"/sessions/{sid}/submit", json={"answers": answers})
+
+    grades = c.post(f"/sessions/{sid}/grade").json()
+    assert len(grades) == 20
+
+    diagnosis = c.post(f"/sessions/{sid}/diagnose").json()
+    assert "knowledge_mastery" in diagnosis
+
+    plan = c.post(f"/sessions/{sid}/plan").json()
+    assert "markdown" in plan
+
+
+def test_missing_session_returns_404(tmp_path):
+    c = _client(tmp_path)
+    r = c.post("/sessions/nope/assessment")
+    assert r.status_code == 404
+
+
+def test_cors_allows_streamlit_origin(tmp_path):
+    c = _client(tmp_path)
+    r = c.options(
+        "/sessions",
+        headers={
+            "Origin": "http://localhost:8501",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+    assert r.status_code == 200
+    assert r.headers.get("access-control-allow-origin") == "http://localhost:8501"
