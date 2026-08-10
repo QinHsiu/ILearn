@@ -140,6 +140,15 @@ class KnowledgeEvidence(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class GradingReceipt(BaseModel):
+    """Provenance metadata binding a grade to its source paper and grader."""
+
+    paper_created_at: datetime
+    grader_version: str
+    model_id: str | None = None
+    graded_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 class GradeResult(BaseModel):
     """Step-level grading output for one assessment item (spec §5.1)."""
 
@@ -151,6 +160,7 @@ class GradeResult(BaseModel):
     knowledge_ids: list[str] = Field(default_factory=list)
     hint_level_suggestion: HintLevel = "none"
     grading_degraded: bool = False
+    receipt: GradingReceipt | None = None
 
 
 class KnowledgeMastery(BaseModel):

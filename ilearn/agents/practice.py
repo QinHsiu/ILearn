@@ -20,8 +20,13 @@ class PracticeAgent:
             raise ValueError("PracticeAgent requires paper in context")
         answer_map = {entry.item_id: entry.answer_text for entry in ctx.answers}
         item_by_id = {item.id: item for item in ctx.paper.items}
+        paper_created_at = ctx.paper.created_at
         grades_by_id = {
-            item_id: self._text_grader.grade_item(item_by_id[item_id], text)
+            item_id: self._text_grader.grade_item(
+                item_by_id[item_id],
+                text,
+                paper_created_at=paper_created_at,
+            )
             for item_id, text in answer_map.items()
             if item_id in item_by_id
         }
