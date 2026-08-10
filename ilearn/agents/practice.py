@@ -5,6 +5,7 @@ from __future__ import annotations
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.evidence import make_evidence_id
 from ilearn.core.grader import ItemGrader
+from ilearn.core.hints import fail_streak_for_item, hint_for_error
 from ilearn.core.ocr import OcrExtractor
 from ilearn.core.schemas import (
     AssessmentItem,
@@ -123,6 +124,19 @@ class PracticeAgent:
             # Do not clear grading_degraded based on OCR success alone: the text
             # grading step below may have degraded independently of OCR quality.
             grades_by_id[image_answer.item_id] = grade
+        hints: dict[str, str] = {}
+        for item_id, grade in list(grades_by_id.items()):
+            if not grade.final_correct:
+                error_tag = grade.error_tags[0] if grade.error_tags else None
+                streak = fail_streak_for_item(ctx.grades, item_id)
+                level, hint_text = hint_for_error(error_tag, streak)
+                item = item_by_id.get(item_id)
+                if item is not None and item.answer_key:
+                    hint_text = hint_text.replace(item.answer_key, "")
+                    hint_text = " ".join(hint_text.split())
+                grade = grade.model_copy(update={"hint_level_suggestion": level})
+                hints[item_id] = hint_text
+                grades_by_id[item_id] = grade
         grades = list(grades_by_id.values())
         all_attempts: list[StepAttempt] = []
         for item_id, grade in grades_by_id.items():
@@ -134,6 +148,7 @@ class PracticeAgent:
             phase=SessionPhase.DIAGNOSE,
             payload={
                 "grades": grades,
+                "hints": hints,
                 "step_attempts": all_attempts,
                 "evidence": evidence_from_grades(ctx.session_id, grades),
             },
