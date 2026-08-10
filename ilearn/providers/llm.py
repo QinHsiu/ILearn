@@ -60,6 +60,10 @@ class LLMClient:
     def available(self) -> bool:
         return bool(self.api_key and self.api_key.strip())
 
+    def vision_available(self) -> bool:
+        """Return whether an authenticated vision-capable model is configured."""
+        return self.available() and bool(os.getenv("ILEARN_VISION_MODEL") or self.model)
+
     def _get_client(self) -> OpenAI:
         if not self.available():
             raise LLMError("LLM client is not available (missing API key)")
@@ -97,4 +101,48 @@ class LLMClient:
                 raise LLMError(f"LLM request failed: {exc}") from exc
         raise LLMError(
             f"failed to parse JSON from LLM response after retry: {last_error}"
+        )
+
+    def grade_image_json(
+        self,
+        system: str,
+        image_base64: str,
+        mime_type: str,
+        user: str,
+    ) -> dict[str, Any]:
+        """Grade an image through an OpenAI-compatible multimodal completion."""
+        if not self.vision_available():
+            raise LLMError("vision client is not available")
+
+        last_error: Exception | None = None
+        for _ in range(2):
+            try:
+                response = self._get_client().chat.completions.create(
+                    model=os.getenv("ILEARN_VISION_MODEL") or self.model,
+                    messages=[
+                        {"role": "system", "content": system},
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": user},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:{mime_type};base64,{image_base64}"
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                )
+                content = response.choices[0].message.content
+                if not content:
+                    raise LLMError("empty response from vision LLM")
+                return _parse_json_content(content)
+            except (json.JSONDecodeError, ValueError) as exc:
+                last_error = exc
+            except (OpenAIError, OSError) as exc:
+                raise LLMError(f"vision LLM request failed: {exc}") from exc
+        raise LLMError(
+            f"failed to parse JSON from vision LLM response after retry: {last_error}"
         )
