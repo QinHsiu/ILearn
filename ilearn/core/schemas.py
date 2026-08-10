@@ -46,6 +46,9 @@ class StudentProfile(BaseModel):
     age: int = Field(ge=6, le=18)
 
 
+KcType = Literal["fact", "skill", "principle"]
+
+
 class KnowledgeNode(BaseModel):
     """Curriculum knowledge unit from the pilot pack."""
 
@@ -53,6 +56,7 @@ class KnowledgeNode(BaseModel):
     grade: Literal[4, 5, 6]
     name: str
     ability_tags: list[str] = Field(default_factory=list)
+    kc_type: KcType | None = None
 
 
 class ItemTemplate(BaseModel):

@@ -10,6 +10,7 @@ from ilearn.core.replan import replan_adjustments, should_replan
 from ilearn.core.schemas import (
     DiagnosisReport,
     KnowledgeMastery,
+    KnowledgeNode,
     LearnerPortrait,
     LearningPlanReport,
     PlanDay,
@@ -28,6 +29,28 @@ _ERROR_TAG_LABELS: dict[str, str] = {
     "method_wrong": "方法不当",
     "incomplete": "步骤不完整",
 }
+
+_KC_TASK_TEMPLATES: dict[str, str] = {
+    "fact": "检索练习：默写或辨认「{name}」关键结论",
+    "skill": "变式练习：完成「{name}」同类题 2 道",
+    "principle": "解释为什么：用自己的话说明「{name}」的道理",
+}
+
+
+def task_for_kc(kc_type: str, knowledge_name: str) -> str:
+    template = _KC_TASK_TEMPLATES.get(kc_type, _KC_TASK_TEMPLATES["skill"])
+    return template.format(name=knowledge_name)
+
+
+def resolve_kc_type(node: KnowledgeNode) -> str:
+    if node.kc_type is not None:
+        return node.kc_type
+    tags = set(node.ability_tags)
+    if "记忆" in tags:
+        return "fact"
+    if "理解" in tags:
+        return "principle"
+    return "skill"
 
 
 def _default_pilot_dir() -> Path:
@@ -201,15 +224,18 @@ class Planner:
         day_num: int,
     ) -> list[str]:
         name = self._knowledge_name(knowledge_id, knowledge_by_id)
+        node = knowledge_by_id.get(knowledge_id)
+        kc_type = resolve_kc_type(node) if isinstance(node, KnowledgeNode) else "skill"
+        kc_task = task_for_kc(kc_type, name)
         if day_num == 1:
             return [
                 f"复习「{name}」核心概念与例题",
-                f"完成3道「{name}」基础练习并订正",
+                kc_task,
                 "记录仍不确定的步骤或疑问",
             ]
         if day_num % 2 == 0:
             return [
-                f"继续练习「{name}」中等难度题目",
+                kc_task,
                 "对照评分标准检查解题步骤是否完整",
             ]
         return [
