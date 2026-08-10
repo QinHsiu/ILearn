@@ -73,6 +73,7 @@ class AssessmentItem(BaseModel):
     answer_key: str | None = None
     rubric_steps: list[str] = Field(default_factory=list)
     choices: list[str] | None = None
+    curriculum_objective_ids: list[str] = Field(default_factory=list)
 
 
 class BlueprintSlot(BaseModel):
@@ -274,6 +275,7 @@ class CurriculumCitation(BaseModel):
     title: str
     excerpt: str
     source_label: str
+    source_id: str | None = None
 
 
 class SessionState(BaseModel):

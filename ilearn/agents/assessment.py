@@ -30,4 +30,14 @@ class AssessmentAgent:
             blueprint = build_blueprint(ctx.profile, weak_list)
             paper = fill_blueprint(ctx.profile, blueprint, self._curriculum)
             validate_paper(paper)
+
+        citation_ids = [
+            c.source_id if c.source_id else c.citation_id
+            for c in (ctx.metadata.get("citations") or [])
+        ]
+        citation_ids = [x for x in citation_ids if x]
+        for item in paper.items:
+            if not item.curriculum_objective_ids and citation_ids:
+                item.curriculum_objective_ids = citation_ids[:1]
+
         return AgentResult(phase=SessionPhase.PRACTICE, payload={"paper": paper})

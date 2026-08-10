@@ -17,8 +17,10 @@ _GRADE_DEFAULT_QUERY = {
 
 
 def _syllabus_to_citation(entry: dict) -> CurriculumCitation:
+    citation_id = entry["citation_id"]
     return CurriculumCitation(
-        citation_id=entry["citation_id"],
+        citation_id=citation_id,
+        source_id=citation_id,
         title=entry["title"],
         excerpt=entry["excerpt"],
         source_label=entry["source_label"],

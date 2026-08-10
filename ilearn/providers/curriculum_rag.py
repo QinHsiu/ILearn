@@ -84,6 +84,7 @@ def _to_citation(entry: dict) -> CurriculumCitation:
     source_id = entry.get("source_id", entry.get("citation_id", "unknown"))
     return CurriculumCitation(
         citation_id=source_id,
+        source_id=source_id,
         title=entry.get("title", ""),
         excerpt=entry.get("excerpt", ""),
         source_label=entry.get("source_label", "北京·人教·小学数学"),
