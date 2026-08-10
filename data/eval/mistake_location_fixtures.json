@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ml_01",
+    "stem": "计算 12+8",
+    "answer_key": "20",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["12+8", "19", "答：19"],
+    "gold_first_error_step": 2
+  },
+  {
+    "id": "ml_02",
+    "stem": "计算 15-7",
+    "answer_key": "8",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["15-7", "8", "答：8"],
+    "gold_first_error_step": null
+  },
+  {
+    "id": "ml_03",
+    "stem": "计算 6×7",
+    "answer_key": "42",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["6×7", "41", "答：41"],
+    "gold_first_error_step": 2
+  },
+  {
+    "id": "ml_04",
+    "stem": "计算 56÷8",
+    "answer_key": "7",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["56÷8", "7", "答：6"],
+    "gold_first_error_step": 3
+  },
+  {
+    "id": "ml_05",
+    "stem": "计算 3.5+1.2",
+    "answer_key": "4.7",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["3.5+1.2", "4.6", "答：4.6"],
+    "gold_first_error_step": 2
+  },
+  {
+    "id": "ml_06",
+    "stem": "计算 1/4+2/4",
+    "answer_key": "3/4",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["1/4+2/4", "3/4", "答：3/4"],
+    "gold_first_error_step": null
+  },
+  {
+    "id": "ml_07",
+    "stem": "长方形长5cm宽3cm，求面积",
+    "answer_key": "15",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["5×3", "14", "答：14平方厘米"],
+    "gold_first_error_step": 2
+  },
+  {
+    "id": "ml_08",
+    "stem": "计算 24÷6",
+    "answer_key": "4",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["24÷6", "4", "答：4"],
+    "gold_first_error_step": null
+  },
+  {
+    "id": "ml_09",
+    "stem": "计算 9+6",
+    "answer_key": "15",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["9+6", "14", "答：14"],
+    "gold_first_error_step": 2
+  },
+  {
+    "id": "ml_10",
+    "stem": "计算 100-37",
+    "answer_key": "63",
+    "rubric_steps": ["列式", "计算", "写答"],
+    "student_steps": ["100-37", "63", "答：62"],
+    "gold_first_error_step": 3
+  }
+]

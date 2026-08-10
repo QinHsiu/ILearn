@@ -22,6 +22,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _DEFAULT_SESSIONS_DIR = _PROJECT_ROOT / "data" / "sessions"
 _DEFAULT_PILOT_DATA = _PROJECT_ROOT / "data" / "pilot"
 _DEFAULT_FIXTURES = _PROJECT_ROOT / "data" / "eval" / "step_grading_fixtures.json"
+_MISTAKE_LOCATION_FIXTURES = _PROJECT_ROOT / "data" / "eval" / "mistake_location_fixtures.json"
 _REPORT_EXCERPT_LINES = 12
 
 app = typer.Typer(help="ILearn MVP CLI")
@@ -143,8 +144,27 @@ def eval(
         "--agents",
         help="Grade via PracticeAgent and print agent trace",
     ),
+    mathtutorbench: bool = typer.Option(
+        False,
+        "--mathtutorbench",
+        help="Run mistake-location benchmark (MathTutorBench-style fixtures)",
+    ),
 ) -> None:
     """Evaluate step grading against fixture expectations."""
+    llm = _load_configured_llm() if use_llm else None
+
+    if mathtutorbench:
+        fixtures_path = _MISTAKE_LOCATION_FIXTURES
+        if not fixtures_path.is_file():
+            typer.echo(f"Fixtures not found: {fixtures_path}", err=True)
+            raise typer.Exit(code=1)
+        eval_agent = EvalAgent(fixtures_dir=fixtures_path.parent, llm=llm)
+        report = eval_agent.run_mistake_location(fixtures_path=fixtures_path)
+        typer.echo(f"total: {report['total']}")
+        typer.echo(f"step_f1: {report['step_f1']:.4f}")
+        typer.echo(f"first_error_acc: {report['first_error_acc']:.4f}")
+        return
+
     if not fixtures.is_file():
         typer.echo(f"Fixtures not found: {fixtures}", err=True)
         raise typer.Exit(code=1)
