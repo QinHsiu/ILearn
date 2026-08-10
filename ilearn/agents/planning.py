@@ -27,7 +27,7 @@ class PlanningAgent:
     def run(self, ctx: AgentContext) -> AgentResult:
         if ctx.diagnosis is None:
             raise ValueError("PlanningAgent requires diagnosis in context")
-        plan = self._planner.plan(ctx.profile, ctx.diagnosis)
+        plan = self._planner.plan(ctx.profile, ctx.diagnosis, portrait=ctx.portrait)
         citations = ctx.metadata.get("citations", [])
         if citations:
             plan.markdown += "\n\n## 课标依据\n" + "\n".join(

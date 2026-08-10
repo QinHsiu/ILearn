@@ -262,6 +262,7 @@ class LearnerPortrait(BaseModel):
     student_key: str
     knowledge_state: dict[str, float] = Field(default_factory=dict)
     mastery_records: dict[str, MasteryRecord] = Field(default_factory=dict)
+    review_states: dict[str, "ReviewState"] = Field(default_factory=dict)
     ability_ema: dict[str, float] = Field(default_factory=dict)
     weakness_log: list[WeaknessEntry] = Field(default_factory=list)
     dimensions: PortraitDimensions = Field(default_factory=PortraitDimensions)
@@ -291,3 +292,8 @@ class SessionState(BaseModel):
     portrait: LearnerPortrait | None = None
     loop_count: int = 0
     evidence_log: list[KnowledgeEvidence] = Field(default_factory=list)
+
+
+from ilearn.core.review import ReviewState  # noqa: E402
+
+LearnerPortrait.model_rebuild()

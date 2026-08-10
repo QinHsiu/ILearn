@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
+from ilearn.core.review import due_knowledge_ids
 from ilearn.core.schemas import (
     DiagnosisReport,
+    LearnerPortrait,
     LearningPlanReport,
     PlanDay,
     StudentProfile,
@@ -33,6 +36,8 @@ class Planner:
         diagnosis: DiagnosisReport,
         daily_minutes: int = _DEFAULT_DAILY_MINUTES,
         plan_days: int = _DEFAULT_PLAN_DAYS,
+        portrait: LearnerPortrait | None = None,
+        today: date | None = None,
     ) -> LearningPlanReport:
         plan_days = min(max(1, plan_days), _MAX_PLAN_DAYS)
         knowledge_by_id = {
@@ -40,13 +45,22 @@ class Planner:
         }
 
         focus_order = self._focus_knowledge_order(diagnosis)
+        review_ids = (
+            due_knowledge_ids(portrait, today or date.today())
+            if portrait is not None
+            else []
+        )
         goal = (
             f"在{plan_days}天内巩固{profile.grade}年级数学薄弱知识点，"
             "提升测评正确率与解题稳定性"
         )
         milestones = self._build_milestones(plan_days, focus_order, knowledge_by_id)
         days = self._build_days(
-            plan_days, focus_order, knowledge_by_id, daily_minutes
+            plan_days,
+            focus_order,
+            knowledge_by_id,
+            daily_minutes,
+            review_ids=review_ids,
         )
         markdown = self._render_plan_markdown(
             profile, diagnosis, goal, milestones, days, daily_minutes
@@ -100,7 +114,10 @@ class Planner:
         focus_order: list[str],
         knowledge_by_id: dict[str, object],
         daily_minutes: int,
+        *,
+        review_ids: list[str] | None = None,
     ) -> list[PlanDay]:
+        review_ids = review_ids or []
         days: list[PlanDay] = []
         for day_num in range(1, plan_days + 1):
             if focus_order:
@@ -110,6 +127,13 @@ class Planner:
             else:
                 focus_ids = []
                 tasks = ["复习已掌握内容，完成5道同年级综合题并核对答案"]
+            if review_ids and day_num == 1:
+                review_tasks = [
+                    f"复习「{self._knowledge_name(kid, knowledge_by_id)}」（间隔复习）"
+                    for kid in review_ids
+                ]
+                tasks = review_tasks + tasks
+                focus_ids = list(dict.fromkeys(review_ids + focus_ids))
             days.append(
                 PlanDay(
                     day=day_num,
