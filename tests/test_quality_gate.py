@@ -7,6 +7,7 @@ from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
+    KnowledgeMastery,
     LearnerPortrait,
     LearningPlanReport,
     SessionPhase,
@@ -83,11 +84,47 @@ class _InvalidDiagnosisAgent:
 
     def run(self, ctx):
         self.call_count += 1
+        assert ctx.portrait is not None
+        ctx.portrait.knowledge_state["rejected-mutation"] = 1.0
         return AgentResult(
             phase=SessionPhase.PLAN,
             payload={
                 "diagnosis": DiagnosisReport(curriculum_label="test"),
-                "portrait": LearnerPortrait(student_key="test_g5"),
+                "portrait": ctx.portrait,
+            },
+        )
+
+
+class _InvalidThenValidMutatingDiagnosisAgent:
+    name = "diagnosis"
+
+    def __init__(self) -> None:
+        self.call_count = 0
+
+    def run(self, ctx):
+        self.call_count += 1
+        assert ctx.portrait is not None
+        mutation_count = ctx.portrait.knowledge_state.get("retry-mutation", 0.0) + 1
+        ctx.portrait.knowledge_state["retry-mutation"] = mutation_count
+        mastery = (
+            []
+            if self.call_count == 1
+            else [
+                KnowledgeMastery(
+                    knowledge_id="valid-kc",
+                    score_rate=1.0,
+                    level="mastered",
+                )
+            ]
+        )
+        return AgentResult(
+            phase=SessionPhase.PLAN,
+            payload={
+                "diagnosis": DiagnosisReport(
+                    knowledge_mastery=mastery,
+                    curriculum_label="test",
+                ),
+                "portrait": ctx.portrait,
             },
         )
 
@@ -139,6 +176,7 @@ def test_diagnosis_quality_failure_retries_then_returns_minimal_report(tmp_path)
     session.grades = [
         GradeResult(item_id=paper.items[0].id, final_correct=False)
     ]
+    session.portrait = LearnerPortrait(student_key="test_g5")
     store.save(session)
     invalid_agent = _InvalidDiagnosisAgent()
     orchestrator._diagnosis = invalid_agent
@@ -149,7 +187,31 @@ def test_diagnosis_quality_failure_retries_then_returns_minimal_report(tmp_path)
     assert diagnosis.knowledge_mastery == []
     assert diagnosis.interventions == []
     assert "quality_gate_degraded" in diagnosis.flags
-    assert store.load(session_id).diagnosis == diagnosis
+    persisted = store.load(session_id)
+    assert persisted.diagnosis == diagnosis
+    assert persisted.portrait is not None
+    assert "rejected-mutation" not in persisted.portrait.knowledge_state
+
+
+def test_diagnosis_retry_discards_mutations_from_rejected_attempt(tmp_path):
+    orchestrator, store, session_id = _orchestrator(tmp_path)
+    paper = orchestrator.generate_assessment(session_id)
+    session = store.load(session_id)
+    session.grades = [
+        GradeResult(item_id=paper.items[0].id, final_correct=False)
+    ]
+    session.portrait = LearnerPortrait(student_key="test_g5")
+    store.save(session)
+    mutating_agent = _InvalidThenValidMutatingDiagnosisAgent()
+    orchestrator._diagnosis = mutating_agent
+
+    diagnosis = orchestrator.diagnose(session_id)
+
+    persisted = store.load(session_id)
+    assert mutating_agent.call_count == 2
+    assert diagnosis.knowledge_mastery[0].knowledge_id == "valid-kc"
+    assert persisted.portrait is not None
+    assert persisted.portrait.knowledge_state["retry-mutation"] == 1.0
 
 
 def test_plan_quality_failure_retries_then_returns_minimal_report(tmp_path):

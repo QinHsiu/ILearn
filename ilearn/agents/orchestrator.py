@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 
 from ilearn.agents.assessment import AssessmentAgent
@@ -28,7 +29,6 @@ from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
-    LearnerPortrait,
     LearningPlanReport,
     SessionPhase,
     SessionState,
@@ -71,20 +71,22 @@ class MultiAgentOrchestrator:
         metadata: dict | None = None,
     ) -> AgentContext:
         return trim_context(
-            AgentContext(
-                session_id=session.session_id,
-                phase=phase or session.phase,
-                profile=session.profile,
-                paper=session.paper,
-                answers=list(session.answers),
-                image_answers=list(session.image_answers),
-                grades=list(session.grades),
-                diagnosis=session.diagnosis,
-                plan=session.plan,
-                portrait=session.portrait,
-                loop_count=session.loop_count,
-                evidence_log=list(session.evidence_log),
-                metadata=metadata or {},
+            deepcopy(
+                AgentContext(
+                    session_id=session.session_id,
+                    phase=phase or session.phase,
+                    profile=session.profile,
+                    paper=session.paper,
+                    answers=list(session.answers),
+                    image_answers=list(session.image_answers),
+                    grades=list(session.grades),
+                    diagnosis=session.diagnosis,
+                    plan=session.plan,
+                    portrait=session.portrait,
+                    loop_count=session.loop_count,
+                    evidence_log=list(session.evidence_log),
+                    metadata=metadata or {},
+                )
             )
         )
 
@@ -186,11 +188,10 @@ class MultiAgentOrchestrator:
             valid_diagnosis_result,
         )
         if degraded:
-            portrait = result.payload.get("portrait")
             result = degraded_diagnosis_result(
                 session.profile,
                 self._require_paper(session).curriculum_label,
-                portrait if isinstance(portrait, LearnerPortrait) else session.portrait,
+                session.portrait,
             )
         assert_writes_allowed(
             self._diagnosis.name,
