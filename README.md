@@ -6,7 +6,7 @@
 
 ## 安装
 
-Python 3.11+。在项目根目录（`projects/ILearn`）执行：
+Python 3.11+。在仓库根目录执行：
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -127,6 +127,5 @@ ilearn/
   eval/        # 分步批改 fixtures 评估
 data/pilot/    # 试点知识点与题目模板
 data/sessions/ # 运行产物
+scripts/       # 试点题库生成脚本（可选）
 ```
-
-设计说明见 `docs/superpowers/specs/2026-08-10-ilearn-mvp-design.md`。

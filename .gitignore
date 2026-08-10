@@ -3,3 +3,12 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .env
+
+# Local design notes and agent workspace (not for public repo)
+doc/
+docs/
+.superpowers/
+
+# Runtime session artifacts
+data/sessions/*
+!data/sessions/.gitkeep
