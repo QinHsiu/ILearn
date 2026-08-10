@@ -21,6 +21,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
 
+[project.scripts]
+ilearn = "ilearn.cli.main:app"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["ilearn*"]
