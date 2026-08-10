@@ -48,19 +48,9 @@ class _SuccessfulVisionLLM:
         self, system: str, image_base64: str, mime_type: str, user: str
     ) -> dict:
         return {
-            "final_correct": True,
+            "pages": [{"page_index": 0, "text": "12+8=20"}],
             "steps": ["12+8=20"],
-            "step_results": [
-                {
-                    "step_index": 0,
-                    "step_text": "12+8=20",
-                    "status": "correct",
-                    "comment": "计算正确",
-                }
-            ],
-            "error_tags": [],
-            "knowledge_ids": ["g5_add"],
-            "hint_level_suggestion": "none",
+            "confidence": 0.95,
         }
 
 

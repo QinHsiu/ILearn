@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.grader import ItemGrader
-from ilearn.core.grading import VisionGrader
+from ilearn.core.ocr import OcrExtractor
 from ilearn.providers.llm import LLMClient
 
 
@@ -13,7 +13,7 @@ class PracticeAgent:
 
     def __init__(self, llm: LLMClient | None = None) -> None:
         self._text_grader = ItemGrader(llm)
-        self._vision_grader = VisionGrader(llm)
+        self._ocr = OcrExtractor(llm)
 
     def run(self, ctx: AgentContext) -> AgentResult:
         if ctx.paper is None:
@@ -34,11 +34,22 @@ class PracticeAgent:
             item = item_by_id.get(image_answer.item_id)
             if item is None:
                 continue
-            grades_by_id[image_answer.item_id] = self._vision_grader.grade_image(
+            ocr_result = self._ocr.extract(
                 item,
                 image_answer.image_base64,
                 image_answer.mime_type,
             )
+            answer_text = "\n".join(ocr_result.steps) if ocr_result.steps else ""
+            grade = self._text_grader.grade_item(
+                item,
+                answer_text,
+                paper_created_at=paper_created_at,
+            )
+            if ocr_result.degraded or ocr_result.confidence < 0.5:
+                grade.grading_degraded = True
+            elif not ocr_result.degraded:
+                grade.grading_degraded = False
+            grades_by_id[image_answer.item_id] = grade
         return AgentResult(
             phase=SessionPhase.DIAGNOSE,
             payload={"grades": list(grades_by_id.values())},

@@ -38,20 +38,6 @@ Respond with ONLY a JSON object (no markdown) matching this schema:
 Use controlled error_tags only. Align step_results to rubric_steps when provided.
 """
 
-_VISION_SYSTEM_PROMPT = """Extract handwritten math steps from the image and grade them against the rubric.
-Return ONLY a JSON object matching these GradeResult fields:
-{
-  "final_correct": boolean,
-  "steps": [string],
-  "step_results": [{"step_index": int, "step_text": string, "status": "correct"|"incorrect"|"partial", "comment": string}],
-  "error_tags": [one or more of: concept_gap, calc_error, misread, method_wrong, incomplete],
-  "knowledge_ids": [string],
-  "hint_level_suggestion": "none"|"low"|"medium"|"high"
-}
-Use controlled error_tags only. Align step_results to rubric_steps when provided.
-"""
-
-
 def normalize_answer(text: str) -> str:
     """Normalize whitespace and case for text comparison."""
     return " ".join(text.strip().split()).casefold()
@@ -191,30 +177,13 @@ def _build_user_prompt(
 
 
 class VisionGrader:
-    """Grade handwritten image answers with a vision LLM when available."""
+    """Thin wrapper: OCR extraction followed by text step grading."""
 
     def __init__(self, llm: LLMClient | None) -> None:
-        self._llm = llm
+        from ilearn.core.ocr import OcrExtractor
 
-    @staticmethod
-    def _degraded_result(item: AssessmentItem) -> GradeResult:
-        rubric_step = item.rubric_steps[0] if item.rubric_steps else "作答"
-        return GradeResult(
-            item_id=item.id,
-            final_correct=False,
-            steps=["（离线模式：无法识别手写图片）"],
-            step_results=[
-                StepResult(
-                    step_index=0,
-                    step_text=rubric_step,
-                    status="partial",
-                    comment="VL 不可用，已降级",
-                )
-            ],
-            error_tags=["incomplete"],
-            knowledge_ids=list(item.knowledge_ids),
-            grading_degraded=True,
-        )
+        self._ocr = OcrExtractor(llm)
+        self._grader = StepGrader(llm)
 
     def grade_image(
         self,
@@ -222,19 +191,15 @@ class VisionGrader:
         image_base64: str,
         mime_type: str,
     ) -> GradeResult:
-        if self._llm is None or not self._llm.vision_available():
-            return self._degraded_result(item)
-
-        try:
-            data = self._llm.grade_image_json(
-                _VISION_SYSTEM_PROMPT,
-                image_base64,
-                mime_type,
-                _build_user_prompt(item, "(answer supplied as image)"),
-            )
-            return _parse_llm_grade(item, data)
-        except LLMError:
-            return self._degraded_result(item)
+        ocr_result = self._ocr.extract(item, image_base64, mime_type)
+        answer_text = "\n".join(ocr_result.steps) if ocr_result.steps else ""
+        result = self._grader.grade_item(item, answer_text)
+        result.item_id = item.id
+        if ocr_result.degraded or ocr_result.confidence < 0.5:
+            result.grading_degraded = True
+        elif not ocr_result.degraded:
+            result.grading_degraded = False
+        return result
 
 
 class StepGrader:
