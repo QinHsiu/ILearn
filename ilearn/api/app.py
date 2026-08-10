@@ -15,6 +15,7 @@ from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
+    ImageAnswer,
     LearningPlanReport,
     SessionState,
     StudentProfile,
@@ -38,6 +39,15 @@ class CreateSessionResponse(BaseModel):
 
 class SubmitRequest(BaseModel):
     answers: dict[str, str]
+
+
+class ImageSubmitRequest(BaseModel):
+    images: list[ImageAnswer]
+
+
+class PhaseResponse(BaseModel):
+    phase: str
+    loop_count: int
 
 
 class ReportResponse(BaseModel):
@@ -112,6 +122,21 @@ def create_app(
     @app.post("/sessions/{session_id}/run", response_model=SessionState)
     def run(session_id: str) -> SessionState:
         return orchestrator.run_after_submit(session_id)
+
+    @app.get("/sessions/{session_id}/phase", response_model=PhaseResponse)
+    def get_phase(session_id: str) -> PhaseResponse:
+        session = store.load(session_id)
+        return PhaseResponse(phase=session.phase.value, loop_count=session.loop_count)
+
+    @app.post("/sessions/{session_id}/submit-images", response_model=SessionState)
+    def submit_images(session_id: str, body: ImageSubmitRequest) -> SessionState:
+        session = store.load(session_id)
+        session.image_answers = body.images
+        return store.save(session)
+
+    @app.post("/sessions/{session_id}/followup", response_model=AssessmentPaper)
+    def followup(session_id: str) -> AssessmentPaper:
+        return orchestrator.start_practice_loop(session_id)
 
     return app
 
