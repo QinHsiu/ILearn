@@ -26,6 +26,7 @@ from ilearn.core.schemas import (
     WeaknessEvent,
 )
 from ilearn.core.evidence import claim_refs
+from ilearn.eval.gap import gap_flag
 from ilearn.providers.curriculum import CurriculumProvider, PilotBeijingRenjiaoProvider
 
 _ERROR_FIX_HINTS: dict[str, str] = {
@@ -189,6 +190,8 @@ class Diagnoser:
         evidence_refs = claim_refs(
             [ev.evidence_id for ev in evidence] if evidence else []
         )
+        effective_portrait = portrait or LearnerPortrait(student_key="")
+        flags = gap_flag(effective_portrait)
 
         region_mismatch: str | None = None
         if not _is_beijing_region(profile.region):
@@ -204,6 +207,7 @@ class Diagnoser:
             curriculum_label=paper.curriculum_label,
             region_mismatch_disclaimer=region_mismatch,
             evidence_refs=evidence_refs,
+            flags=flags,
         )
 
     def _build_interventions(

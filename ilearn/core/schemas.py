@@ -233,6 +233,7 @@ class DiagnosisReport(BaseModel):
     curriculum_label: str
     region_mismatch_disclaimer: str | None = None
     evidence_refs: list[str] = Field(default_factory=list)
+    flags: list[str] = Field(default_factory=list)
 
 
 class PlanDay(BaseModel):
