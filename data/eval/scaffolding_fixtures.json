@@ -1,0 +1,38 @@
+[
+  {
+    "id": "sc_01",
+    "stem": "分数加法",
+    "error_tag": "concept_gap",
+    "gold_hint_level": "medium"
+  },
+  {
+    "id": "sc_02",
+    "stem": "计算 12+8",
+    "error_tag": "calc_error",
+    "gold_hint_level": "low"
+  },
+  {
+    "id": "sc_03",
+    "stem": "应用题读题",
+    "error_tag": "misread",
+    "gold_hint_level": "low"
+  },
+  {
+    "id": "sc_04",
+    "stem": "列方程",
+    "error_tag": "method_wrong",
+    "gold_hint_level": "high"
+  },
+  {
+    "id": "sc_05",
+    "stem": "分步解答",
+    "error_tag": "incomplete",
+    "gold_hint_level": "medium"
+  },
+  {
+    "id": "sc_06",
+    "stem": "小数乘法",
+    "error_tag": "concept_gap",
+    "gold_hint_level": "medium"
+  }
+]

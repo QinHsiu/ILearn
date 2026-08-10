@@ -14,7 +14,14 @@ from ilearn.core.grading import StepGrader, answers_match, normalize_answer
 from ilearn.core.schemas import AssessmentItem
 from ilearn.providers.llm import LLMClient
 
-__all__ = ["MistakeLocationFixture", "run_mistake_location_benchmark"]
+__all__ = [
+    "MistakeCorrectionFixture",
+    "MistakeLocationFixture",
+    "ScaffoldingFixture",
+    "run_mistake_correction_benchmark",
+    "run_mistake_location_benchmark",
+    "run_scaffolding_benchmark",
+]
 
 _FRACTION = re.compile(r"(-?\d+)\s*/\s*(-?\d+)")
 _NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
@@ -29,11 +36,68 @@ class MistakeLocationFixture(BaseModel):
     gold_first_error_step: int | None = None
 
 
+class MistakeCorrectionFixture(BaseModel):
+    id: str
+    stem: str
+    wrong_answer: str
+    gold_correction: str
+    rubric_steps: list[str] = Field(default_factory=list)
+
+
+class ScaffoldingFixture(BaseModel):
+    id: str
+    stem: str
+    error_tag: str
+    gold_hint_level: str
+
+
+_DEFAULT_HINT: dict[str, str] = {
+    "concept_gap": "medium",
+    "calc_error": "low",
+    "misread": "low",
+    "method_wrong": "high",
+    "incomplete": "medium",
+}
+
+
 def load_mistake_location_fixtures(path: Path) -> list[MistakeLocationFixture]:
     raw = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(raw, list):
         raise ValueError("fixtures file must contain a JSON array")
     return [MistakeLocationFixture.model_validate(entry) for entry in raw]
+
+
+def load_mistake_correction_fixtures(path: Path) -> list[MistakeCorrectionFixture]:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        raise ValueError("fixtures file must contain a JSON array")
+    return [MistakeCorrectionFixture.model_validate(entry) for entry in raw]
+
+
+def load_scaffolding_fixtures(path: Path) -> list[ScaffoldingFixture]:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        raise ValueError("fixtures file must contain a JSON array")
+    return [ScaffoldingFixture.model_validate(entry) for entry in raw]
+
+
+def propose_correction(wrong: str, answer_key: str) -> str:
+    return answer_key if not answers_match(wrong, answer_key) else wrong
+
+
+def score_mistake_correction(fixture: MistakeCorrectionFixture) -> bool:
+    return answers_match(
+        propose_correction(fixture.wrong_answer, fixture.gold_correction),
+        fixture.gold_correction,
+    )
+
+
+def suggest_hint_level(error_tag: str) -> str:
+    return _DEFAULT_HINT.get(error_tag, "medium")
+
+
+def score_scaffolding(fixture: ScaffoldingFixture) -> bool:
+    return suggest_hint_level(fixture.error_tag) == fixture.gold_hint_level
 
 
 def _parse_numeric(text: str) -> float | None:
@@ -190,4 +254,38 @@ def run_mistake_location_benchmark(
         "total": len(fixtures),
         "step_f1": sum(step_f1_scores) / len(step_f1_scores),
         "first_error_acc": first_error_hits / first_error_total if first_error_total else 0.0,
+    }
+
+
+def run_mistake_correction_benchmark(
+    fixtures_path: Path,
+    *,
+    llm: LLMClient | None = None,
+) -> dict[str, Any]:
+    """Run mistake-correction fixtures and return aggregate metrics."""
+    del llm  # offline-only for Phase 1
+    fixtures = load_mistake_correction_fixtures(fixtures_path)
+    if not fixtures:
+        return {"total": 0, "correction_acc": 0.0}
+    hits = sum(score_mistake_correction(fixture) for fixture in fixtures)
+    return {
+        "total": len(fixtures),
+        "correction_acc": hits / len(fixtures),
+    }
+
+
+def run_scaffolding_benchmark(
+    fixtures_path: Path,
+    *,
+    llm: LLMClient | None = None,
+) -> dict[str, Any]:
+    """Run scaffolding hint-level fixtures and return aggregate metrics."""
+    del llm  # offline-only for Phase 1
+    fixtures = load_scaffolding_fixtures(fixtures_path)
+    if not fixtures:
+        return {"total": 0, "hint_level_match": 0.0}
+    hits = sum(score_scaffolding(fixture) for fixture in fixtures)
+    return {
+        "total": len(fixtures),
+        "hint_level_match": hits / len(fixtures),
     }

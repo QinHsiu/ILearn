@@ -1,0 +1,44 @@
+[
+  {
+    "id": "mc_01",
+    "stem": "计算 12+8",
+    "wrong_answer": "19",
+    "gold_correction": "20",
+    "rubric_steps": ["列式", "计算"]
+  },
+  {
+    "id": "mc_02",
+    "stem": "计算 15-7",
+    "wrong_answer": "9",
+    "gold_correction": "8",
+    "rubric_steps": ["列式", "计算"]
+  },
+  {
+    "id": "mc_03",
+    "stem": "计算 6×7",
+    "wrong_answer": "41",
+    "gold_correction": "42",
+    "rubric_steps": ["列式", "计算"]
+  },
+  {
+    "id": "mc_04",
+    "stem": "计算 56÷8",
+    "wrong_answer": "6",
+    "gold_correction": "7",
+    "rubric_steps": ["列式", "计算"]
+  },
+  {
+    "id": "mc_05",
+    "stem": "计算 3/4 + 1/4",
+    "wrong_answer": "3/8",
+    "gold_correction": "1",
+    "rubric_steps": ["列式", "计算"]
+  },
+  {
+    "id": "mc_06",
+    "stem": "计算 25×4",
+    "wrong_answer": "90",
+    "gold_correction": "100",
+    "rubric_steps": ["列式", "计算"]
+  }
+]

@@ -23,6 +23,8 @@ _DEFAULT_SESSIONS_DIR = _PROJECT_ROOT / "data" / "sessions"
 _DEFAULT_PILOT_DATA = _PROJECT_ROOT / "data" / "pilot"
 _DEFAULT_FIXTURES = _PROJECT_ROOT / "data" / "eval" / "step_grading_fixtures.json"
 _MISTAKE_LOCATION_FIXTURES = _PROJECT_ROOT / "data" / "eval" / "mistake_location_fixtures.json"
+_MISTAKE_CORRECTION_FIXTURES = _PROJECT_ROOT / "data" / "eval" / "mistake_correction_fixtures.json"
+_SCAFFOLDING_FIXTURES = _PROJECT_ROOT / "data" / "eval" / "scaffolding_fixtures.json"
 _REPORT_EXCERPT_LINES = 12
 
 app = typer.Typer(help="ILearn MVP CLI")
@@ -155,6 +157,16 @@ def eval(
         "--tutor-gym",
         help="Run TutorGym-style step completeness benchmark",
     ),
+    mistake_correction: bool = typer.Option(
+        False,
+        "--mistake-correction",
+        help="Run mistake-correction benchmark (MathTutorBench-style fixtures)",
+    ),
+    scaffolding: bool = typer.Option(
+        False,
+        "--scaffolding",
+        help="Run scaffolding hint-level benchmark (MathTutorBench-style fixtures)",
+    ),
 ) -> None:
     """Evaluate step grading against fixture expectations."""
     llm = _load_configured_llm() if use_llm else None
@@ -165,6 +177,28 @@ def eval(
         typer.echo(f"total: {report['total']}")
         typer.echo(f"completeness: {report['completeness']:.4f}")
         typer.echo(f"avg_step_score: {report.get('avg_step_score', 0.0):.4f}")
+        return
+
+    if mistake_correction:
+        fixtures_path = _MISTAKE_CORRECTION_FIXTURES
+        if not fixtures_path.is_file():
+            typer.echo(f"Fixtures not found: {fixtures_path}", err=True)
+            raise typer.Exit(code=1)
+        eval_agent = EvalAgent(fixtures_dir=fixtures_path.parent, llm=llm)
+        report = eval_agent.run_mistake_correction(fixtures_path=fixtures_path)
+        typer.echo(f"total: {report['total']}")
+        typer.echo(f"correction_acc: {report['correction_acc']:.4f}")
+        return
+
+    if scaffolding:
+        fixtures_path = _SCAFFOLDING_FIXTURES
+        if not fixtures_path.is_file():
+            typer.echo(f"Fixtures not found: {fixtures_path}", err=True)
+            raise typer.Exit(code=1)
+        eval_agent = EvalAgent(fixtures_dir=fixtures_path.parent, llm=llm)
+        report = eval_agent.run_scaffolding(fixtures_path=fixtures_path)
+        typer.echo(f"total: {report['total']}")
+        typer.echo(f"hint_level_match: {report['hint_level_match']:.4f}")
         return
 
     if mathtutorbench:
