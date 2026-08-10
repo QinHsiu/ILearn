@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
+from ilearn.core.evidence import make_evidence_id
 from ilearn.core.grader import ItemGrader
 from ilearn.core.ocr import OcrExtractor
 from ilearn.core.schemas import (
@@ -58,6 +59,7 @@ def evidence_from_grades(
         for knowledge_id in grade.knowledge_ids:
             events.append(
                 KnowledgeEvidence(
+                    evidence_id=make_evidence_id(),
                     session_id=session_id,
                     item_id=grade.item_id,
                     knowledge_id=knowledge_id,

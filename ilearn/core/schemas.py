@@ -5,10 +5,15 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from typing import Literal
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 from ilearn.core.datetime_utils import utc_now
+
+
+def _new_evidence_id() -> str:
+    return uuid4().hex
 
 ERROR_TAGS = ("concept_gap", "calc_error", "misread", "method_wrong", "incomplete")
 
@@ -148,6 +153,7 @@ class StepVerdict(BaseModel):
 class KnowledgeEvidence(BaseModel):
     """Observed evidence linking an item attempt to a knowledge node."""
 
+    evidence_id: str = Field(default_factory=_new_evidence_id)
     session_id: str
     item_id: str
     knowledge_id: str

@@ -1,6 +1,23 @@
 """Helpers for recording and querying knowledge evidence on a session."""
 
+from uuid import uuid4
+
 from ilearn.core.schemas import KnowledgeEvidence, SessionState
+
+
+def make_evidence_id() -> str:
+    return uuid4().hex
+
+
+def claim_refs(evidence_ids: list[str]) -> list[str]:
+    seen: set[str] = set()
+    refs: list[str] = []
+    for evidence_id in evidence_ids:
+        if not evidence_id or evidence_id in seen:
+            continue
+        seen.add(evidence_id)
+        refs.append(evidence_id)
+    return refs
 
 
 def _evidence_key(event: KnowledgeEvidence) -> tuple:
