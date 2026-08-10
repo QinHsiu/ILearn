@@ -27,7 +27,8 @@
 | **课标在环** | 地区 / 年级课标约束 + 可切换 retriever（`keyword` / `hash_vector`）；多地区 source packs（北京 + 上海 stub）；当前试点「北京·人教」，计划可追溯到纲要依据 |
 | **批改可审计** | Host-owned `ItemGrader`；OCR 与判分分离；`GradingReceipt` 绑定试卷与 grader 版本 |
 | **掌握度不糊弄** | practice / probe 双轨 + `KnowledgeEvidence` 证据日志，避免「带提示做对」当成已掌握 |
-| **多 Agent 编排** | 六大 Agent + 明确状态机，而不是一个巨型 prompt |
+| **多 Agent 编排** | 5 个流水线 Agent + Tutor + Eval，由状态机编排，而不是一个巨型 prompt |
+| **编排可观测** | 上下文预算裁剪、`decision_log`、阶段质量门（失败重试一次再 degrade）、PendingQuestion 绑题、写能力白名单 |
 | **开箱可跑** | 无 LLM 也能离线演示全流程；配置 OpenAI 兼容 API 即升级构造题 / 手写 VL |
 
 ---
@@ -40,7 +41,7 @@
 | **分步批改** | 客观题规则 + 构造题 LLM；手写图 OCR → 文本批改；错误标签受控、结果可降级标记；**动态三级 Hint Ladder**（错因 + 连续失败升级，不泄答案） |
 | **学情诊断** | 知识点掌握、五维画像、Top-N 干预建议、SM-2 间隔复习；leech 检测、evidence_id 引用、practice–probe gap 标记 |
 | **学习计划** | 1–2 周 Markdown / JSON 计划，含课标 citation、复习日、**挫败感知 replan**、**draft/superseded 版本历史**、KC 类型任务文案 |
-| **苏格拉底辅导** | **TutorAgent** 离线状态机（locate_gap → hint → retry → explain）；`orchestrator.tutor_start` 入口；消息不含 `answer_key` |
+| **苏格拉底辅导** | **TutorAgent** 离线状态机（locate_gap → hint → retry → explain）；`orchestrator.tutor_start`（HTTP 暂未暴露）；消息不含 `answer_key` |
 | **巩固闭环** | 诊断后按薄弱点自动触发练→评→练（`loop_count` ≤ 2） |
 | **离线评测** | 分步 fixtures、mistake_location、步骤完整度基准 |
 
@@ -48,17 +49,17 @@
 
 ## 多 Agent 架构
 
-六个专职 Agent + TutorAgent，由 `MultiAgentOrchestrator` 驱动（`ilearn.core.orchestrator.Orchestrator` 为兼容门面）。
+由 `MultiAgentOrchestrator` 驱动（`ilearn.core.orchestrator.Orchestrator` 为兼容门面）：
 
-| Agent | 一句话职责 |
-| --- | --- |
-| **AssessmentAgent** | 蓝图 → 填槽 → 校验，产出诊断卷 / 巩固卷 |
-| **PracticeAgent** | 文本与图片作答批改；OCR → `ItemGrader` |
-| **DiagnosisAgent** | 掌握度、证据、画像、干预建议 |
-| **PlanningAgent** | 个性化计划、课标依据、复习任务、挫败 replan、`request_replan` 版本化 |
-| **CurriculumAgent** | 课标检索与 citation（`ILEARN_RETRIEVER_BACKEND` 可切换 keyword / hash_vector） |
-| **TutorAgent** | 苏格拉底辅导状态机（hint 升级，不泄答案） |
-| **EvalAgent** | 离线基准跑分 |
+| Agent | 角色 | 一句话职责 |
+| --- | --- | --- |
+| **CurriculumAgent** | 流水线 | 课标检索与 citation（`ILEARN_RETRIEVER_BACKEND`：`keyword` / `hash_vector`） |
+| **AssessmentAgent** | 流水线 | 蓝图 → 填槽 → 校验，产出诊断卷 / 巩固卷 |
+| **PracticeAgent** | 流水线 | 文本与图片作答批改；OCR → `ItemGrader` |
+| **DiagnosisAgent** | 流水线 | 掌握度、证据、画像、干预建议 |
+| **PlanningAgent** | 流水线 | 个性化计划、课标依据、复习任务、挫败 replan、`request_replan` 版本化 |
+| **TutorAgent** | 辅导（可选） | 苏格拉底状态机（hint 升级，不泄答案）；入口 `orchestrator.tutor_start`（**HTTP 暂未暴露**） |
+| **EvalAgent** | 评测（离线） | 基准跑分；走 CLI `ilearn eval`，不进会话流水线 |
 
 ### 会话阶段
 
@@ -69,12 +70,12 @@ ONBOARD → ASSESS → PRACTICE → GRADE → DIAGNOSE → PLAN → PRACTICE_LOO
 | 阶段 | 谁在干活 | 落盘什么 |
 | --- | --- | --- |
 | ONBOARD | — | `StudentProfile` |
-| ASSESS | Curriculum + Assessment | `AssessmentPaper`, citations |
+| ASSESS | Curriculum + Assessment | `AssessmentPaper`, citations, `pending_questions` |
 | PRACTICE | 学习者 | `StudentAnswer[]` / `ImageAnswer[]` |
-| GRADE | Practice | `GradeResult[]`, `evidence_log` |
+| GRADE | Practice | `GradeResult[]`, `evidence_log`, `decision_log` |
 | DIAGNOSE | Diagnosis | `DiagnosisReport`, `LearnerPortrait` |
-| PLAN | Planning | `LearningPlanReport` |
-| PRACTICE_LOOP | Assessment | 巩固卷；`loop_count` ≤ 2 |
+| PLAN | Planning | `LearningPlanReport`（可含 plan_history） |
+| PRACTICE_LOOP | Assessment | 巩固卷 + 重绑 `pending_questions`；`loop_count` ≤ 2 |
 
 ---
 
@@ -90,22 +91,23 @@ copy .env.example .env
 python -m ilearn.cli.main agents run --region 北京 --grade 5 --age 11 --offline
 ```
 
-会话产物在 `data/sessions/<id>/`（`paper.json`、`report.md` 等）。
+会话产物在 `data/sessions/{session_id}/`（`paper.json`、`report.md` 等）。
 
 想看教学向导界面：先起 API，再起 Streamlit。
 
 ```powershell
-# 终端 1
+# 终端 1 — FastAPI（自带 OpenAPI）
 uvicorn ilearn.api.app:app --reload --host 127.0.0.1 --port 8000
 
-# 终端 2
+# 终端 2 — Streamlit 向导
 streamlit run ilearn/web/app.py --server.port 8501
 ```
 
 | 入口 | 地址 |
 | --- | --- |
-| API 文档 | http://127.0.0.1:8000/docs |
-| Streamlit | http://127.0.0.1:8501 |
+| **API 交互文档（Swagger）** | [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) |
+| API 备用文档（ReDoc） | [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) |
+| Streamlit 向导 | [http://127.0.0.1:8501](http://127.0.0.1:8501) |
 
 配置 LLM 后，去掉 `--offline`，构造题与 VL 手写批改走在线模型（见下方环境变量）。
 
@@ -137,19 +139,23 @@ python -m ilearn.cli.main eval --scaffolding         # MathTutorBench 脚手架 
 
 ## API
 
+启动 API 后，完整可点击契约见 **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**（ReDoc：[http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)）。下表与当前 `ilearn/api/app.py` 路由一致：
+
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | POST | `/sessions` | 建档 |
-| POST | `/sessions/{id}/assessment` | 组题 |
-| POST | `/sessions/{id}/submit` | 提交文本答案 |
-| POST | `/sessions/{id}/submit-images` | 提交手写图片（base64） |
-| POST | `/sessions/{id}/grade` | 批改 |
-| POST | `/sessions/{id}/diagnose` | 诊断 + 画像 |
-| POST | `/sessions/{id}/plan` | 学习计划 |
-| POST | `/sessions/{id}/run` | 批改 → 诊断 → 规划（含巩固环） |
-| POST | `/sessions/{id}/followup` | 手动启动巩固卷 |
-| GET | `/sessions/{id}/phase` | 当前阶段 |
-| GET | `/sessions/{id}/report` | Markdown 报告 |
+| POST | `/sessions/{session_id}/assessment` | 组题（写入 `pending_questions`） |
+| POST | `/sessions/{session_id}/submit` | 提交文本答案（校验题号绑定） |
+| POST | `/sessions/{session_id}/submit-images` | 提交手写图片（base64） |
+| POST | `/sessions/{session_id}/grade` | 批改 |
+| POST | `/sessions/{session_id}/diagnose` | 诊断 + 画像 |
+| POST | `/sessions/{session_id}/plan` | 学习计划 |
+| POST | `/sessions/{session_id}/run` | 批改 → 诊断 → 规划（含巩固环） |
+| POST | `/sessions/{session_id}/followup` | 手动启动巩固卷 |
+| GET | `/sessions/{session_id}/phase` | 当前阶段 |
+| GET | `/sessions/{session_id}/report` | Markdown 报告 |
+
+**尚未挂到 HTTP 的能力**（仅 orchestrator / CLI）：`request_replan`、`tutor_start`。会话里的 `decision_log` / `pending_questions` 会随 `SessionState` 在 submit 等响应中返回。
 
 Streamlit 若连非本机 API：
 
