@@ -9,12 +9,14 @@ from pathlib import Path
 from ilearn.core.datetime_utils import utc_now
 
 from ilearn.core.review import ReviewState, sm2_update
+from ilearn.core.mastery import apply_evidence_to_mastery
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
     HintLevel,
     Intervention,
+    KnowledgeEvidence,
     KnowledgeMastery,
     LearnerPortrait,
     MasteryLevel,
@@ -255,22 +257,32 @@ class PortraitUpdater:
         session_id: str,
         curriculum: CurriculumProvider,
         grade: int | None = None,
+        evidence: list[KnowledgeEvidence] | None = None,
     ) -> LearnerPortrait:
         now = utc_now()
-        for grade_row in grades:
-            observed = 1.0 if grade_row.final_correct else 0.0
-            quality = _sm2_quality(grade_row)
-            for kid in grade_row.knowledge_ids:
-                record = _get_mastery_record(portrait, kid)
-                record.evidence_count += 1
-                if grade_row.lane == "probe":
-                    record.probe_mastery = _ema_update(record.probe_mastery, observed)
-                    record.last_probe_at = now
-                else:
-                    record.practice_score = _ema_update(record.practice_score, observed)
+        if evidence:
+            apply_evidence_to_mastery(portrait, evidence)
 
-                review_state = portrait.review_states.get(kid, ReviewState())
-                portrait.review_states[kid] = sm2_update(review_state, quality)
+        for grade_row in grades:
+            if not evidence:
+                observed = 1.0 if grade_row.final_correct else 0.0
+                quality = _sm2_quality(grade_row)
+                for kid in grade_row.knowledge_ids:
+                    record = _get_mastery_record(portrait, kid)
+                    record.evidence_count += 1
+                    if grade_row.lane == "probe":
+                        record.probe_mastery = _ema_update(record.probe_mastery, observed)
+                        record.last_probe_at = now
+                    else:
+                        record.practice_score = _ema_update(record.practice_score, observed)
+
+                    review_state = portrait.review_states.get(kid, ReviewState())
+                    portrait.review_states[kid] = sm2_update(review_state, quality)
+            else:
+                quality = _sm2_quality(grade_row)
+                for kid in grade_row.knowledge_ids:
+                    review_state = portrait.review_states.get(kid, ReviewState())
+                    portrait.review_states[kid] = sm2_update(review_state, quality)
 
             if grade_row.final_correct:
                 continue
@@ -287,9 +299,10 @@ class PortraitUpdater:
                         session_id=session_id,
                     )
                 )
-                portrait.knowledge_state[kid] = min(
-                    portrait.knowledge_state.get(kid, 1.0), 0.4
-                )
+                if not evidence:
+                    portrait.knowledge_state[kid] = min(
+                        portrait.knowledge_state.get(kid, 1.0), 0.4
+                    )
         portrait.updated_at = now
         return portrait
 
