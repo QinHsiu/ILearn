@@ -26,6 +26,7 @@ from ilearn.core.quality_gate import (
 )
 from ilearn.core.report import render_full_report
 from ilearn.core.schemas import (
+    AgentDecision,
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
@@ -93,6 +94,28 @@ class MultiAgentOrchestrator:
     def create_session(self, profile: StudentProfile) -> str:
         return self._store.create(profile).session_id
 
+    @staticmethod
+    def _record_decision(
+        session: SessionState,
+        agent: str,
+        phase: SessionPhase,
+        reason: str,
+        *,
+        ok: bool = True,
+        degraded: bool = False,
+        evidence_ids: list[str] | None = None,
+    ) -> None:
+        session.decision_log.append(
+            AgentDecision(
+                agent=agent,
+                phase=phase,
+                reason=reason,
+                evidence_ids=evidence_ids or [],
+                ok=ok,
+                degraded=degraded,
+            )
+        )
+
     def current_phase(self, session_id: str) -> SessionPhase:
         return self._store.load(session_id).phase
 
@@ -124,6 +147,13 @@ class MultiAgentOrchestrator:
         session.diagnosis = None
         session.plan = None
         session.phase = result.phase
+        self._record_decision(
+            session,
+            self._assessment.name,
+            SessionPhase.ASSESS,
+            "assessment generated",
+            degraded=degraded,
+        )
         self._store.save(session)
         return session.paper
 
@@ -166,13 +196,21 @@ class MultiAgentOrchestrator:
             set(result.payload) & {"grades", "evidence"},
         )
         session.grades = result.payload["grades"]
-        for event in result.payload.get("evidence") or evidence_from_grades(
+        evidence_events = result.payload.get("evidence") or evidence_from_grades(
             session.session_id, session.grades
-        ):
+        )
+        for event in evidence_events:
             append_evidence(session, event)
         session.diagnosis = None
         session.plan = None
         session.phase = result.phase
+        self._record_decision(
+            session,
+            self._practice.name,
+            SessionPhase.GRADE,
+            "answers graded",
+            evidence_ids=[event.evidence_id for event in evidence_events],
+        )
         self._store.save(session)
         return session.grades
 
@@ -201,6 +239,13 @@ class MultiAgentOrchestrator:
         session.portrait = result.payload["portrait"]
         session.plan = None
         session.phase = result.phase
+        self._record_decision(
+            session,
+            self._diagnosis.name,
+            SessionPhase.DIAGNOSE,
+            "diagnosis completed",
+            degraded=degraded,
+        )
         self._store.save(session)
         return session.diagnosis
 
@@ -228,6 +273,13 @@ class MultiAgentOrchestrator:
         for entry in result.payload.get("plan_history_append", []):
             session.plan_history.append(entry)
         session.phase = result.phase
+        self._record_decision(
+            session,
+            self._planning.name,
+            SessionPhase.PLAN,
+            "learning plan created",
+            degraded=degraded,
+        )
         self._store.save(session)
         return session.plan
 
@@ -251,6 +303,12 @@ class MultiAgentOrchestrator:
         for entry in result.payload.get("plan_history_append", []):
             session.plan_history.append(entry)
         session.phase = result.phase
+        self._record_decision(
+            session,
+            self._planning.name,
+            SessionPhase.PLAN,
+            "learning plan revised",
+        )
         self._store.save(session)
         return session.plan
 
@@ -263,7 +321,15 @@ class MultiAgentOrchestrator:
             raise ValueError(f"unknown item id: {item_id}")
         grade = next((g for g in session.grades if g.item_id == item_id), None)
         error_tag = grade.error_tags[0] if grade and grade.error_tags else None
-        return self._tutor.start(item, error_tag)
+        turn = self._tutor.start(item, error_tag)
+        self._record_decision(
+            session,
+            self._tutor.name,
+            SessionPhase.PRACTICE,
+            "tutoring started",
+        )
+        self._store.save(session)
+        return turn
 
     def run_after_submit(self, session_id: str) -> SessionState:
         self.grade(session_id)
