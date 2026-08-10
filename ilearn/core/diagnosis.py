@@ -497,3 +497,66 @@ class PortraitDimensionUpdater:
                     )
 
         return portrait
+
+    @staticmethod
+    def apply_from_evidence(
+        portrait: LearnerPortrait,
+        events: list[KnowledgeEvidence],
+    ) -> LearnerPortrait:
+        if not events:
+            return portrait
+
+        hint_delta_by_level: dict[HintLevel, float] = {
+            "none": 0.0,
+            "low": 0.08,
+            "medium": 0.15,
+            "high": 0.25,
+        }
+        by_knowledge: dict[str, list[KnowledgeEvidence]] = defaultdict(list)
+        for ev in events:
+            by_knowledge[ev.knowledge_id].append(ev)
+            hint_delta = hint_delta_by_level.get(ev.hint_level, 0.0)
+            if hint_delta > 0.0:
+                current = portrait.dimensions.behavioral.get("hint_dependency", 0.0)
+                portrait.dimensions.behavioral["hint_dependency"] = _clamp_score(
+                    current + hint_delta
+                )
+            if ev.lane == "probe" and not ev.correct:
+                portrait.dimensions.metacognitive["probe_self_check"] = _clamp_score(
+                    portrait.dimensions.metacognitive.get("probe_self_check", 0.0) + 0.2
+                )
+            if ev.correct:
+                portrait.dimensions.cognitive["knowledge_application"] = _clamp_score(
+                    portrait.dimensions.cognitive.get("knowledge_application", 0.5)
+                    + 0.05
+                )
+            else:
+                portrait.dimensions.cognitive["knowledge_application"] = _clamp_score(
+                    portrait.dimensions.cognitive.get("knowledge_application", 0.5)
+                    - 0.05
+                )
+
+        for kid, kid_events in by_knowledge.items():
+            practice_events = [e for e in kid_events if e.lane == "practice"]
+            probe_events = [e for e in kid_events if e.lane == "probe"]
+            if practice_events and probe_events:
+                practice_rate = sum(1 for e in practice_events if e.correct) / len(
+                    practice_events
+                )
+                probe_rate = sum(1 for e in probe_events if e.correct) / len(
+                    probe_events
+                )
+                gap = practice_rate - probe_rate
+                if gap > 0.2:
+                    portrait.dimensions.metacognitive["practice_probe_gap"] = _clamp_score(
+                        gap
+                    )
+            record = portrait.mastery_records.get(kid)
+            if record is not None:
+                gap = record.practice_score - record.probe_mastery
+                if gap > 0.2:
+                    portrait.dimensions.metacognitive["practice_probe_gap"] = _clamp_score(
+                        gap
+                    )
+
+        return portrait
