@@ -7,7 +7,7 @@
 > **当前试点：** 小学数学（四至六年级）· 北京·人教课标包；架构按多学科 / 全学段扩展预留。
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-198%20passed-2ea44f)](./tests)
+[![Tests](https://img.shields.io/badge/tests-234%20passed-2ea44f)](./tests)
 [![GitHub](https://img.shields.io/badge/GitHub-QinHsiu%2FILearn-181717?logo=github)](https://github.com/QinHsiu/ILearn)
 
 ```text
@@ -37,9 +37,10 @@
 | 能力 | 你得到什么 |
 | --- | --- |
 | **课标约束组卷** | 诊断卷 20 题（难度 10/8/2，题型 8/8/4）；PaperBlueprint 两阶段组卷；巩固卷 1–10 题 |
-| **分步批改** | 客观题规则 + 构造题 LLM；手写图 OCR → 文本批改；错误标签受控、结果可降级标记 |
+| **分步批改** | 客观题规则 + 构造题 LLM；手写图 OCR → 文本批改；错误标签受控、结果可降级标记；**动态三级 Hint Ladder**（错因 + 连续失败升级，不泄答案） |
 | **学情诊断** | 知识点掌握、五维画像、Top-N 干预建议、SM-2 间隔复习；leech 检测、evidence_id 引用、practice–probe gap 标记 |
-| **学习计划** | 1–2 周 Markdown / JSON 计划，含课标 citation 与复习日 |
+| **学习计划** | 1–2 周 Markdown / JSON 计划，含课标 citation、复习日、**挫败感知 replan**、**draft/superseded 版本历史**、KC 类型任务文案 |
+| **苏格拉底辅导** | **TutorAgent** 离线状态机（locate_gap → hint → retry → explain）；`orchestrator.tutor_start` 入口；消息不含 `answer_key` |
 | **巩固闭环** | 诊断后按薄弱点自动触发练→评→练（`loop_count` ≤ 2） |
 | **离线评测** | 分步 fixtures、mistake_location、步骤完整度基准 |
 
@@ -47,15 +48,16 @@
 
 ## 多 Agent 架构
 
-六个专职 Agent，由 `MultiAgentOrchestrator` 驱动（`ilearn.core.orchestrator.Orchestrator` 为兼容门面）。
+六个专职 Agent + TutorAgent，由 `MultiAgentOrchestrator` 驱动（`ilearn.core.orchestrator.Orchestrator` 为兼容门面）。
 
 | Agent | 一句话职责 |
 | --- | --- |
 | **AssessmentAgent** | 蓝图 → 填槽 → 校验，产出诊断卷 / 巩固卷 |
 | **PracticeAgent** | 文本与图片作答批改；OCR → `ItemGrader` |
 | **DiagnosisAgent** | 掌握度、证据、画像、干预建议 |
-| **PlanningAgent** | 个性化计划、课标依据、复习任务 |
+| **PlanningAgent** | 个性化计划、课标依据、复习任务、挫败 replan、`request_replan` 版本化 |
 | **CurriculumAgent** | 课标检索与 citation |
+| **TutorAgent** | 苏格拉底辅导状态机（hint 升级，不泄答案） |
 | **EvalAgent** | 离线基准跑分 |
 
 ### 会话阶段
@@ -176,10 +178,10 @@ streamlit run ilearn/web/app.py
 
 ```powershell
 python -m pytest -q
-python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py tests/test_e2e_phase2a_diagnosis.py -v
+python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py tests/test_e2e_phase2a_diagnosis.py tests/test_e2e_phase2b.py -v
 ```
 
-当前仓库基线：**198** 项测试通过（离线可跑）。
+当前仓库基线：**234** 项测试通过（离线可跑）。
 
 ---
 
@@ -192,11 +194,12 @@ python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1
 - 首发试点学科 / 学段：**小学数学（四至六年级）**；默认诊断卷 20 题
 - 试点课标：**北京·人教**（`data/pilot/`）；非北京 region 在报告中标注课标不匹配
 - 分步批改、错误标签、学情 Top-5、学习者画像、1–2 周计划、巩固环（≤ 2）
+- Hint Ladder、挫败感知 replan、计划版本历史、KC 类型任务、TutorAgent 骨架
 - FastAPI + Streamlit + CLI；会话 JSON 持久化；OpenAI 兼容 LLM（可选）
 
 **本版不做**
 
-- TutorAgent 多轮苏格拉底辅导
+- TutorAgent 完整多轮 API/前端辅导环（骨架已有，见 `orchestrator.tutor_start`）
 - 多科目并行上线、实时网页课标爬取
 - 教师备课、班级报表、真实学生 PII
 - LangGraph / 向量课标库（当前为试点 JSON + keyword RAG）
@@ -207,7 +210,7 @@ python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1
 
 ```text
 ilearn/
-  agents/      # Assessment · Practice · Diagnosis · Planning · Curriculum · Eval
+  agents/      # Assessment · Practice · Diagnosis · Planning · Curriculum · Tutor · Eval
   core/        # 测评 · 批改 · 证据 · 诊断 · 规划 · OCR · 复习
   providers/   # 课标 · keyword RAG · LLM（含 VL）
   storage/     # 会话 JSON

@@ -1,7 +1,7 @@
 # ILearn 未完成 ToDo 全清单
 
 > **生成日期：** 2026-08-10  
-> **最后更新：** 2026-08-10（Phase1 收尾验收）  
+> **最后更新：** 2026-08-10（Phase 2b 规划/辅导验收）  
 > **对照基线：** `master`（Composition Phase 1 收尾完成；177 tests）  
 > **来源：** `OPTIMIZATION_BACKLOG.md`、`MULTI_AGENT_ARCHITECTURE.md`、`docs/superpowers` 计划/specs、`design_think.txt`、`evaluate.txt`、`INDEX.md`、Phase1 终审残留  
 > **说明：** 只列**未完成 / 部分完成 / 完全未做**项；已完成项不收录。状态：`partial` = 有骨架未闭环；`open` = 完全未做。
@@ -13,13 +13,13 @@
 | 类别 | 数量 | 说明 |
 |------|------|------|
 | A. Phase1 P0 收尾 | 0 open | ✅ A-01…A-05 done（A-03 向量 Qdrant 延至 Phase 2c） |
-| B. Backlog P1 | 18 | OPT-023…026 done Phase 2a |
-| C. Backlog P2 | 8 | OPT-074 done Phase 2a |
+| B. Backlog P1 | 12 | OPT-014/031…034 done Phase 2b |
+| C. Backlog P2 | 7 | OPT-060 done Phase 2b；OPT-074 done Phase 2a |
 | D. 架构 / Spec 延期能力 | 12 | 计划明示 Later |
 | E. design_think / evaluate 缺口 | 14 | 产品硬需求与评测景观 |
 | F. 文档 / 仓库运维 | 3 open | F-01…F-04 done；F-05…F-07 仍 open |
 | G. 工程债 / 终审遗留 | 0 open | G-01…G-06 done（G-05 Phase 2a 2026-08-10） |
-| **合计 open** | **55** | 去重后仍按条目全记；跨类引用用「见 xxx」 |
+| **合计 open** | **48** | 去重后仍按条目全记；跨类引用用「见 xxx」 |
 
 ---
 
@@ -47,11 +47,11 @@
 
 ### B2. PracticeAgent
 
-| ID | 标题 | 描述（摘要） | 依赖 |
-|----|------|--------------|------|
-| OPT-013 | 错因四分类扩展 error_tags | conceptual/procedural/strategic/representational 映射或扩展 | 无 |
-| OPT-014 | 动态三级 Hint Ladder | 按错因生成 hint；连续失败退出到讲解；不泄答案 | OPT-013 |
-| OPT-015 | PendingQuestion 服务端答案绑定 | question_id 绑定 expected_answer，防跨轮串题 | 无 |
+| ID | 标题 | 状态 | 说明 | 依赖 |
+|----|------|------|------|------|
+| OPT-013 | 错因四分类扩展 error_tags | open | conceptual/procedural/strategic/representational 映射或扩展 | 无 |
+| OPT-014 | 动态三级 Hint Ladder | **done** 2026-08-10 | 按错因生成 hint；连续失败升级；不泄答案 | OPT-013（映射未扩展，现有五 tag 已接入） |
+| OPT-015 | PendingQuestion 服务端答案绑定 | open | question_id 绑定 expected_answer，防跨轮串题 | 无 |
 
 ### B3. DiagnosisAgent
 
@@ -64,12 +64,12 @@
 
 ### B4. PlanningAgent
 
-| ID | 标题 | 描述（摘要） | 依赖 |
-|----|------|--------------|------|
-| OPT-031 | 挫败感知 replan | 连续低分/高 hint → 降难度/回退前置/信心重建 | OPT-022, OPT-030 |
-| OPT-032 | 计划 draft / approved / superseded | 重规划不覆盖旧计划；确认后发布 | 无 |
-| OPT-033 | 三段式干预建议模板 | 当前认知 — 预测难点 — 教学方案 | OPT-025 |
-| OPT-034 | KC 类型决定干预方式 | fact/skill/principle → 不同任务文案 | OPT-010 |
+| ID | 标题 | 状态 | 说明 | 依赖 |
+|----|------|------|------|------|
+| OPT-031 | 挫败感知 replan | **done** 2026-08-10 | 高挫败/hint 依赖 → 降难度/信心重建任务 | OPT-022 |
+| OPT-032 | 计划 draft / approved / superseded | **done** 2026-08-10 | 重规划保留 plan_history；旧版 superseded | 无 |
+| OPT-033 | 三段式干预建议模板 | **done** 2026-08-10 | 当前认知 — 预测难点 — 教学方案 | OPT-025 |
+| OPT-034 | KC 类型决定干预方式 | **done** 2026-08-10 | fact/skill/principle → 不同任务文案 | OPT-010 |
 
 ### B5. CurriculumAgent
 
@@ -98,17 +98,17 @@
 
 ## C. OPTIMIZATION_BACKLOG — P2（全部 open）
 
-| ID | 标题 | 描述（摘要） | 依赖 |
-|----|------|--------------|------|
-| OPT-005 | Chapter DAG 先修关系 | 知识点 prerequisite 图 + 环检测 | OPT-010 |
-| OPT-016 | Agent Capability 白名单 | 各 Agent 能力边界；越权 fail | 无 |
-| OPT-027 | 会后异步 Profiler 钩子 | GRADE 后异步提取 logic_gap | OPT-025 |
-| OPT-035 | 考试窗口驱动复习优先级 | 考试日期 → 计划压缩重点 | 无 |
-| OPT-043 | Syllabus 进度范围护栏 | 组题/计划不超用户声明进度 | OPT-040 |
-| OPT-053 | 入口意图层 | 规则优先 intent；LLM 仅模糊 NL | 无 |
-| OPT-060 | **TutorAgent** 苏格拉底子状态机 | LOCATE_GAP→HINT→RETRY→EXPLAIN | OPT-014 |
-| OPT-074 | practice–probe gap 指标 | **done** 2026-08-10：带提示 vs probe 差距超阈值 → flag | OPT-020 |
-| OPT-082 | Explain→Quiz→Solve 前端向导 | Streamlit 三模式入口 | 无 |
+| ID | 标题 | 状态 | 说明 | 依赖 |
+|----|------|------|------|------|
+| OPT-005 | Chapter DAG 先修关系 | open | 知识点 prerequisite 图 + 环检测 | OPT-010 |
+| OPT-016 | Agent Capability 白名单 | open | 各 Agent 能力边界；越权 fail | 无 |
+| OPT-027 | 会后异步 Profiler 钩子 | open | GRADE 后异步提取 logic_gap | OPT-025 |
+| OPT-035 | 考试窗口驱动复习优先级 | open | 考试日期 → 计划压缩重点 | 无 |
+| OPT-043 | Syllabus 进度范围护栏 | open | 组题/计划不超用户声明进度 | OPT-040 |
+| OPT-053 | 入口意图层 | open | 规则优先 intent；LLM 仅模糊 NL | 无 |
+| OPT-060 | **TutorAgent** 苏格拉底子状态机 | **done** 2026-08-10 | LOCATE_GAP→HINT→RETRY→EXPLAIN；不泄 answer_key | OPT-014 |
+| OPT-074 | practice–probe gap 指标 | **done** 2026-08-10 | 带提示 vs probe 差距超阈值 → flag | OPT-020 |
+| OPT-082 | Explain→Quiz→Solve 前端向导 | open | Streamlit 三模式入口 | 无 |
 
 ---
 
@@ -118,8 +118,8 @@
 
 | ID | 标题 | 来源 | 说明 |
 |----|------|------|------|
-| D-01 | TutorAgent 完整辅导环 | 架构 Phase 3 / OPT-060 | 多轮苏格拉底；与作业辅导产品线对齐 |
-| D-02 | 动态重规划（复杂） | 架构 Phase 3 | 超出当前 consolidate loop；挫败 replan 见 OPT-031 |
+| D-01 | TutorAgent 完整辅导环 | 架构 Phase 3 / OPT-060 | 骨架已落地（Phase 2b）；多轮 API/前端集成仍 open |
+| D-02 | 动态重规划（复杂） | 架构 Phase 3 | 挫败 replan + request_replan 已落地（Phase 2b）；复杂策略仍 open |
 | D-03 | LangGraph Director | 架构 §4 / multi-agent plan | 当前坚持 Python 状态机；Tutor 复杂后再议 |
 | D-04 | 多地区课标包 | 架构 Phase 4 / design_think 5a | 非仅北京·人教；多 region packs |
 | D-05 | 实时网页课标爬取 | multi-agent plan / README 非目标 | 网上最新公开教学资料拉取 |
@@ -144,7 +144,7 @@
 | E-01 | 地区公开教学资料「最新」资源获取 | 5a：网上最新资源；现为静态 pilot JSON |
 | E-02 | 学情能力维度细项 | 5d：逻辑/空间/心算等能力诊断仍偏知识点；能力 EMA 粗 |
 | E-03 | 国家+地方教育要求双轨报告 | 5e：报告课标 citation 有，国家/地方双轨论证弱 |
-| E-04 | 作业辅导作为独立产品能力 | §1「作业辅导」；现批改有、辅导会话（Tutor）无 |
+| E-04 | 作业辅导作为独立产品能力 | §1「作业辅导」；TutorAgent 骨架已有；完整辅导会话/API 仍 open |
 | E-05 | K12 全学段数据与年级模型 | 定位 K12；年级 UI/schema 仍偏 4–6 |
 
 ### E2. evaluate.txt 公开基准（均未系统接入）
@@ -162,7 +162,7 @@
 | E-18 | MathTutorBench 全任务（非仅 mistake_location） | partial → 见 A-05 |
 | E-19 | TutorGym 全领域（223 domains） | partial → 仅 completeness 采样 |
 | E-20 | 规划类 ROUGE/BERTScore/NLI/LLM-as-Judge | open |
-| E-21 | 辅导类 pedagogy_following 回归套件 | open（依赖 TutorAgent） |
+| E-21 | 辅导类 pedagogy_following 回归套件 | partial | TutorAgent 单元测已覆盖 answer_key 不泄露；全基准仍 open |
 
 ---
 
@@ -201,7 +201,7 @@
 |--------|---------|------|
 | **Phase1 收尾** ✅ | A-01…A-05, G-01…G-04, G-06, F-01…F-04 | **已完成** 2026-08-10（G-05 deferred Phase 2a） |
 | **Composition Phase 2a（诊断/证据）** ✅ | OPT-023…026, OPT-074, G-05 | **已完成** 2026-08-10（198 tests） |
-| **Composition Phase 2b（规划/辅导）** | OPT-014, OPT-031…034, OPT-060 | Hint + replan + Tutor |
+| **Composition Phase 2b（规划/辅导）** ✅ | OPT-014, OPT-031…034, OPT-060 | **已完成** 2026-08-10（234 tests） |
 | **Composition Phase 2c（课标/多科）** | A-03, OPT-041/042, OPT-003, D-04, E-05 | K12 扩展与 citation |
 | **Composition Phase 2d（编排质量）** | OPT-050…052, OPT-015, OPT-016 | 预算/契约/质量门 |
 | **Eval 扩展** | OPT-072/073/081, E-10…E-21 | 公开基准与 Skill |
@@ -212,6 +212,7 @@
 ## 附录：已完成（不纳入 ToDo，仅对照）
 
 - MVP 管道；Multi-Agent P0（6 Agent + Orchestrator + VL 离线降级）
+- Composition Phase 2b 规划/辅导：OPT-014、OPT-031…034、OPT-060（2026-08-10；234 tests）
 - Composition Phase 2a 诊断/证据：OPT-023…026、OPT-074、G-05（2026-08-10；198 tests）
 - Composition Phase1 收尾：A-01…A-05、G-01…G-04/G-06、F-01…F-04（2026-08-10；G-05 → Phase 2a）
 - Composition Phase1 主体：OPT-001/011/012/020/021/030/080；OPT-010/022/040/070/071
