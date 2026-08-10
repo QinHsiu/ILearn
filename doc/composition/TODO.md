@@ -203,7 +203,7 @@
 | **Composition Phase 2a（诊断/证据）** ✅ | OPT-023…026, OPT-074, G-05 | **已完成** 2026-08-10（198 tests） |
 | **Composition Phase 2b（规划/辅导）** ✅ | OPT-014, OPT-031…034, OPT-060 | **已完成** 2026-08-10（234 tests） |
 | **Composition Phase 2c（课标/多科）** ✅ | A-03, OPT-041/042, OPT-003, D-04, E-05 | **已完成** 2026-08-10（258 tests） |
-| **Composition Phase 2d（编排质量）** ✅ | OPT-050…052, OPT-015, OPT-016 | **已完成** 2026-08-10（282 tests） |
+| **Composition Phase 2d（编排质量）** ✅ | OPT-050…052, OPT-015, OPT-016 | **已完成** 2026-08-10（283 tests） |
 | **Eval 扩展** | OPT-072/073/081, E-10…E-21 | 公开基准与 Skill |
 | **文档刷新** | F-01…F-07 | 本地 composition 文档与仓库索引 |
 
@@ -211,7 +211,7 @@
 
 ## 附录：已完成（不纳入 ToDo，仅对照）
 
-- Composition Phase 2d 编排质量：OPT-050…052、OPT-015、OPT-016（2026-08-10；282 tests）
+- Composition Phase 2d 编排质量：OPT-050…052、OPT-015、OPT-016（2026-08-10；283 tests）
 - MVP 管道；Multi-Agent P0（6 Agent + Orchestrator + VL 离线降级）
 - Composition Phase 2c 课标/多科：A-03 hash_vector、OPT-041/042、OPT-003、D-04、E-05（2026-08-10；258 tests）
 - Composition Phase 2b 规划/辅导：OPT-014、OPT-031…034、OPT-060（2026-08-10；234 tests）
