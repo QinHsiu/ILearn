@@ -181,6 +181,7 @@ class Diagnoser:
         interventions = self._build_interventions(
             knowledge_mastery,
             knowledge_by_id,
+            paper=paper,
             portrait=portrait or LearnerPortrait(student_key=""),
             evidence=evidence,
         )
@@ -215,6 +216,7 @@ class Diagnoser:
         knowledge_mastery: list[KnowledgeMastery],
         knowledge_by_id: dict[str, object],
         *,
+        paper: AssessmentPaper,
         portrait: LearnerPortrait,
         evidence: list[KnowledgeEvidence] | None = None,
     ) -> list[Intervention]:
@@ -254,6 +256,13 @@ class Diagnoser:
                     if ev.knowledge_id == km.knowledge_id
                 ]
             )
+            curriculum_objective_ids: list[str] = []
+            for item in paper.items:
+                if km.knowledge_id not in item.knowledge_ids:
+                    continue
+                for obj_id in item.curriculum_objective_ids:
+                    if obj_id and obj_id not in curriculum_objective_ids:
+                        curriculum_objective_ids.append(obj_id)
             interventions.append(
                 Intervention(
                     knowledge_id=km.knowledge_id,
@@ -263,6 +272,7 @@ class Diagnoser:
                     priority=priority,
                     leech=leech,
                     evidence_ids=kid_evidence_ids,
+                    curriculum_objective_ids=curriculum_objective_ids[:2],
                 )
             )
         return interventions

@@ -228,6 +228,7 @@ class Intervention(BaseModel):
     priority: int = Field(ge=1)
     leech: bool = False
     evidence_ids: list[str] = Field(default_factory=list)
+    curriculum_objective_ids: list[str] = Field(default_factory=list)
 
 
 class DiagnosisReport(BaseModel):
