@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from ilearn.agents.protocol import AgentContext, AgentResult
@@ -30,10 +31,14 @@ def _syllabus_to_citation(entry: dict) -> CurriculumCitation:
 class CurriculumAgent:
     name = "curriculum"
 
-    def __init__(self, pilot_dir: Path) -> None:
+    def __init__(self, pilot_dir: Path, *, backend: str | None = None) -> None:
         self._pilot_dir = pilot_dir
         self._syllabus = load_syllabus(pilot_dir)
-        self._retriever = CurriculumRagRetriever(pilot_dir)
+        resolved_backend = backend or os.environ.get(
+            "ILEARN_RETRIEVER_BACKEND", "keyword"
+        )
+        self._backend = resolved_backend
+        self._retriever = CurriculumRagRetriever(pilot_dir, backend=resolved_backend)
 
     def run(self, ctx: AgentContext) -> AgentResult:
         query = ctx.metadata.get("curriculum_query") or _GRADE_DEFAULT_QUERY.get(

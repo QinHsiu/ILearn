@@ -1,7 +1,7 @@
 # ILearn 未完成 ToDo 全清单
 
 > **生成日期：** 2026-08-10  
-> **最后更新：** 2026-08-10（Phase 2b 规划/辅导验收）  
+> **最后更新：** 2026-08-10（Phase 2c 课标/多科验收）  
 > **对照基线：** `master`（Composition Phase 1 收尾完成；177 tests）  
 > **来源：** `OPTIMIZATION_BACKLOG.md`、`MULTI_AGENT_ARCHITECTURE.md`、`docs/superpowers` 计划/specs、`design_think.txt`、`evaluate.txt`、`INDEX.md`、Phase1 终审残留  
 > **说明：** 只列**未完成 / 部分完成 / 完全未做**项；已完成项不收录。状态：`partial` = 有骨架未闭环；`open` = 完全未做。
@@ -29,7 +29,7 @@
 |----|------|------|----------|----------|
 | A-01 / OPT-010 | StepAttempt / StepVerdict 协议 | **done** 2026-08-10 | PracticeAgent 写出 StepAttempt；与 rubric 对齐单测 | — |
 | A-02 / OPT-022 | 五维画像 `contextual` | **done** 2026-08-10 | grade/region 写入 contextual；单测 | — |
-| A-03 / OPT-040 | 课标 **向量** RAG | **done** 2026-08-10（keyword RAG） | keyword RAG + `curriculum_sources.json` 已落地；**向量 Qdrant 索引仍 open → Phase 2c** | Phase 2c：向量检索 + recall 单测 |
+| A-03 / OPT-040 | 课标 **向量** RAG | **done** 2026-08-10 | keyword + hash_vector RAG + `curriculum_sources.json`；Qdrant stub（`ILEARN_RETRIEVER_BACKEND=qdrant`） | — |
 | A-04 / OPT-071 | tutor_gym completeness CLI | **done** 2026-08-10 | `ilearn eval --completeness` / `--tutor-gym` | — |
 | A-05 / OPT-070 | mathtutorbench 子集不全 | **done** 2026-08-10 | `--mistake-correction`、`--scaffolding` CLI 已接入 | — |
 
@@ -42,7 +42,7 @@
 | ID | 标题 | 描述（摘要） | 依赖 |
 |----|------|--------------|------|
 | OPT-002 | LLM 补题 + 历史去重 | 模板不足时 LLM 补题；follow-up 与 diagnostic 去重 | OPT-001 |
-| OPT-003 | 分层作业配额模板（语文/多学科） | 基础/提高/拓展三层 + 题型约束；K12 多学科扩展 | 无 |
+| OPT-003 | 分层作业配额模板（语文/多学科） | **done** 2026-08-10 | `subjects/chinese_quota.json` + `build_blueprint_for_subject`；math 不变 | 无 |
 | OPT-004 | 结构化 Assessment Pydantic 增强 | choice/fill/constructed + rubric + cognitive_level | 无 |
 
 ### B2. PracticeAgent
@@ -75,8 +75,8 @@
 
 | ID | 标题 | 描述（摘要） | 依赖 |
 |----|------|--------------|------|
-| OPT-041 | CurriculumCitation 绑定题目与报告 | 每题/每干预带 curriculum_objective_ids | OPT-040 |
-| OPT-042 | Retriever 后端可替换 | local JSON / Qdrant 统一 retrieve 接口 | OPT-040 |
+| OPT-041 | CurriculumCitation 绑定题目与报告 | **done** 2026-08-10 | `bind_citations_to_item` 按 knowledge/stem 匹配；干预带 `curriculum_objective_ids` | OPT-040 |
+| OPT-042 | Retriever 后端可替换 | **done** 2026-08-10 | `CurriculumRetriever` Protocol；keyword / hash_vector / Qdrant stub；`ILEARN_RETRIEVER_BACKEND` | OPT-040 |
 
 ### B6. Orchestrator
 
@@ -121,7 +121,7 @@
 | D-01 | TutorAgent 完整辅导环 | 架构 Phase 3 / OPT-060 | 骨架已落地（Phase 2b）；多轮 API/前端集成仍 open |
 | D-02 | 动态重规划（复杂） | 架构 Phase 3 | 挫败 replan + request_replan 已落地（Phase 2b）；复杂策略仍 open |
 | D-03 | LangGraph Director | 架构 §4 / multi-agent plan | 当前坚持 Python 状态机；Tutor 复杂后再议 |
-| D-04 | 多地区课标包 | 架构 Phase 4 / design_think 5a | 非仅北京·人教；多 region packs |
+| D-04 | 多地区课标包 | **done** 2026-08-10（stub） | `regions/shanghai_renjiao/curriculum_sources.json` + region-aware retriever；完整 packs 仍 Later | 非仅北京·人教；多 region packs |
 | D-05 | 实时网页课标爬取 | multi-agent plan / README 非目标 | 网上最新公开教学资料拉取 |
 | D-06 | EvalAgent 全基准 | 架构 Phase 4 | 超出 fixtures 适配器 |
 | D-07 | EduAgentBench HF 导入 | multi-agent plan / evaluate.txt | Stage1/2 子集；公开数据集 |
@@ -145,7 +145,7 @@
 | E-02 | 学情能力维度细项 | 5d：逻辑/空间/心算等能力诊断仍偏知识点；能力 EMA 粗 |
 | E-03 | 国家+地方教育要求双轨报告 | 5e：报告课标 citation 有，国家/地方双轨论证弱 |
 | E-04 | 作业辅导作为独立产品能力 | §1「作业辅导」；TutorAgent 骨架已有；完整辅导会话/API 仍 open |
-| E-05 | K12 全学段数据与年级模型 | 定位 K12；年级 UI/schema 仍偏 4–6 |
+| E-05 | K12 全学段数据与年级模型 | **done** 2026-08-10 | `StudentProfile.grade` 1–12；试点 provider `CurriculumError` gate 4–6；Streamlit 1–12 + caption |
 
 ### E2. evaluate.txt 公开基准（均未系统接入）
 
@@ -202,7 +202,7 @@
 | **Phase1 收尾** ✅ | A-01…A-05, G-01…G-04, G-06, F-01…F-04 | **已完成** 2026-08-10（G-05 deferred Phase 2a） |
 | **Composition Phase 2a（诊断/证据）** ✅ | OPT-023…026, OPT-074, G-05 | **已完成** 2026-08-10（198 tests） |
 | **Composition Phase 2b（规划/辅导）** ✅ | OPT-014, OPT-031…034, OPT-060 | **已完成** 2026-08-10（234 tests） |
-| **Composition Phase 2c（课标/多科）** | A-03, OPT-041/042, OPT-003, D-04, E-05 | K12 扩展与 citation |
+| **Composition Phase 2c（课标/多科）** ✅ | A-03, OPT-041/042, OPT-003, D-04, E-05 | **已完成** 2026-08-10（258 tests） |
 | **Composition Phase 2d（编排质量）** | OPT-050…052, OPT-015, OPT-016 | 预算/契约/质量门 |
 | **Eval 扩展** | OPT-072/073/081, E-10…E-21 | 公开基准与 Skill |
 | **文档刷新** | F-01…F-07 | 本地 composition 文档与仓库索引 |
@@ -212,6 +212,7 @@
 ## 附录：已完成（不纳入 ToDo，仅对照）
 
 - MVP 管道；Multi-Agent P0（6 Agent + Orchestrator + VL 离线降级）
+- Composition Phase 2c 课标/多科：A-03 hash_vector、OPT-041/042、OPT-003、D-04、E-05（2026-08-10；258 tests）
 - Composition Phase 2b 规划/辅导：OPT-014、OPT-031…034、OPT-060（2026-08-10；234 tests）
 - Composition Phase 2a 诊断/证据：OPT-023…026、OPT-074、G-05（2026-08-10；198 tests）
 - Composition Phase1 收尾：A-01…A-05、G-01…G-04/G-06、F-01…F-04（2026-08-10；G-05 → Phase 2a）

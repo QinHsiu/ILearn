@@ -7,7 +7,7 @@
 > **当前试点：** 小学数学（四至六年级）· 北京·人教课标包；架构按多学科 / 全学段扩展预留。
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-234%20passed-2ea44f)](./tests)
+[![Tests](https://img.shields.io/badge/tests-258%20passed-2ea44f)](./tests)
 [![GitHub](https://img.shields.io/badge/GitHub-QinHsiu%2FILearn-181717?logo=github)](https://github.com/QinHsiu/ILearn)
 
 ```text
@@ -24,7 +24,7 @@
 
 | | |
 | --- | --- |
-| **课标在环** | 地区 / 年级课标约束 + keyword RAG citation；当前试点「北京·人教」，计划可追溯到纲要依据 |
+| **课标在环** | 地区 / 年级课标约束 + 可切换 retriever（`keyword` / `hash_vector`）；多地区 source packs（北京 + 上海 stub）；当前试点「北京·人教」，计划可追溯到纲要依据 |
 | **批改可审计** | Host-owned `ItemGrader`；OCR 与判分分离；`GradingReceipt` 绑定试卷与 grader 版本 |
 | **掌握度不糊弄** | practice / probe 双轨 + `KnowledgeEvidence` 证据日志，避免「带提示做对」当成已掌握 |
 | **多 Agent 编排** | 六大 Agent + 明确状态机，而不是一个巨型 prompt |
@@ -56,7 +56,7 @@
 | **PracticeAgent** | 文本与图片作答批改；OCR → `ItemGrader` |
 | **DiagnosisAgent** | 掌握度、证据、画像、干预建议 |
 | **PlanningAgent** | 个性化计划、课标依据、复习任务、挫败 replan、`request_replan` 版本化 |
-| **CurriculumAgent** | 课标检索与 citation |
+| **CurriculumAgent** | 课标检索与 citation（`ILEARN_RETRIEVER_BACKEND` 可切换 keyword / hash_vector） |
 | **TutorAgent** | 苏格拉底辅导状态机（hint 升级，不泄答案） |
 | **EvalAgent** | 离线基准跑分 |
 
@@ -171,6 +171,7 @@ streamlit run ilearn/web/app.py
 | `ILEARN_LLM_MODEL` | 文本模型（默认 `gpt-4o-mini`） |
 | `ILEARN_VISION_MODEL` | VL / 手写模型；未设则回退文本模型 |
 | `ILEARN_API_BASE` | Streamlit 连接的 API（默认 `http://127.0.0.1:8000`） |
+| `ILEARN_RETRIEVER_BACKEND` | 课标 retriever 后端：`keyword`（默认）或 `hash_vector`；`qdrant` 为 stub |
 
 ---
 
@@ -178,10 +179,10 @@ streamlit run ilearn/web/app.py
 
 ```powershell
 python -m pytest -q
-python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py tests/test_e2e_phase2a_diagnosis.py tests/test_e2e_phase2b.py -v
+python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py tests/test_e2e_phase2a_diagnosis.py tests/test_e2e_phase2b.py tests/test_e2e_phase2c.py -v
 ```
 
-当前仓库基线：**234** 项测试通过（离线可跑）。
+当前仓库基线：**258** 项测试通过（离线可跑）。
 
 ---
 
@@ -191,8 +192,8 @@ python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1
 
 **本版已落地（试点）**
 
-- 首发试点学科 / 学段：**小学数学（四至六年级）**；默认诊断卷 20 题
-- 试点课标：**北京·人教**（`data/pilot/`）；非北京 region 在报告中标注课标不匹配
+- 首发试点学科 / 学段：**小学数学（四至六年级）**；建档 UI 支持 K12 年级 1–12，试点 provider 对 4–6 外年级 fail closed
+- 试点课标：**北京·人教**（`data/pilot/`）；**上海·人教** citation stub（`data/pilot/regions/shanghai_renjiao/`）；非匹配 region 在报告中标注课标不匹配
 - 分步批改、错误标签、学情 Top-5、学习者画像、1–2 周计划、巩固环（≤ 2）
 - Hint Ladder、挫败感知 replan、计划版本历史、KC 类型任务、TutorAgent 骨架
 - FastAPI + Streamlit + CLI；会话 JSON 持久化；OpenAI 兼容 LLM（可选）
@@ -202,7 +203,7 @@ python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1
 - TutorAgent 完整多轮 API/前端辅导环（骨架已有，见 `orchestrator.tutor_start`）
 - 多科目并行上线、实时网页课标爬取
 - 教师备课、班级报表、真实学生 PII
-- LangGraph / 向量课标库（当前为试点 JSON + keyword RAG）
+- LangGraph / Qdrant 向量课标库（当前为试点 JSON + keyword / hash_vector RAG；Qdrant 为 stub）
 
 ---
 
@@ -212,13 +213,13 @@ python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1
 ilearn/
   agents/      # Assessment · Practice · Diagnosis · Planning · Curriculum · Tutor · Eval
   core/        # 测评 · 批改 · 证据 · 诊断 · 规划 · OCR · 复习
-  providers/   # 课标 · keyword RAG · LLM（含 VL）
+  providers/   # 课标 · keyword/hash_vector RAG · LLM（含 VL）
   storage/     # 会话 JSON
   api/         # FastAPI
   cli/         # run / agents run / eval
   web/         # Streamlit
   eval/        # 离线基准
-data/pilot/    # 试点知识点与模板
+data/pilot/    # 试点知识点与模板；regions/ 多地区 citation packs
 data/sessions/ # 运行产物
 data/eval/     # 评测 fixtures
 ```
