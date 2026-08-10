@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
-from ilearn.core.grading import StepGrader, VisionGrader
+from ilearn.core.grader import ItemGrader
+from ilearn.core.grading import VisionGrader
 from ilearn.providers.llm import LLMClient
 
 
@@ -11,7 +12,7 @@ class PracticeAgent:
     name = "practice"
 
     def __init__(self, llm: LLMClient | None = None) -> None:
-        self._text_grader = StepGrader(llm)
+        self._text_grader = ItemGrader(llm)
         self._vision_grader = VisionGrader(llm)
 
     def run(self, ctx: AgentContext) -> AgentResult:

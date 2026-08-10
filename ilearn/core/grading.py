@@ -1,4 +1,7 @@
-"""Hybrid rule/LLM step grader for ILearn."""
+"""Hybrid rule/LLM step grader engine for ILearn.
+
+Public grading entry point: ``ilearn.core.grader.ItemGrader`` (host-owned facade).
+"""
 
 from __future__ import annotations
 
