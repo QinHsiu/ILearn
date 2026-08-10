@@ -14,6 +14,7 @@ from ilearn.core.schemas import (
     KnowledgeMastery,
     LearnerPortrait,
     MasteryLevel,
+    MasteryRecord,
     StudentProfile,
     WeaknessEntry,
 )
@@ -51,6 +52,19 @@ def _mastery_level(score_rate: float) -> MasteryLevel:
     if score_rate >= 0.5:
         return "unstable"
     return "weak"
+
+
+def _ema_update(current: float, observed: float, *, alpha: float = 0.3) -> float:
+    return max(0.0, min(1.0, current * (1.0 - alpha) + observed * alpha))
+
+
+def _get_mastery_record(portrait: LearnerPortrait, knowledge_id: str) -> MasteryRecord:
+    if knowledge_id not in portrait.mastery_records:
+        legacy = portrait.knowledge_state.get(knowledge_id)
+        portrait.mastery_records[knowledge_id] = MasteryRecord(
+            practice_score=legacy if legacy is not None else 0.0,
+        )
+    return portrait.mastery_records[knowledge_id]
 
 
 def _dominant_error_tag(counts: dict[str, int]) -> str | None:
@@ -228,7 +242,18 @@ class PortraitUpdater:
         curriculum: CurriculumProvider,
         grade: int | None = None,
     ) -> LearnerPortrait:
+        now = datetime.utcnow()
         for grade_row in grades:
+            observed = 1.0 if grade_row.final_correct else 0.0
+            for kid in grade_row.knowledge_ids:
+                record = _get_mastery_record(portrait, kid)
+                record.evidence_count += 1
+                if grade_row.lane == "probe":
+                    record.probe_mastery = _ema_update(record.probe_mastery, observed)
+                    record.last_probe_at = now
+                else:
+                    record.practice_score = _ema_update(record.practice_score, observed)
+
             if grade_row.final_correct:
                 continue
             for kid in grade_row.knowledge_ids:
@@ -247,5 +272,5 @@ class PortraitUpdater:
                 portrait.knowledge_state[kid] = min(
                     portrait.knowledge_state.get(kid, 1.0), 0.4
                 )
-        portrait.updated_at = datetime.utcnow()
+        portrait.updated_at = now
         return portrait

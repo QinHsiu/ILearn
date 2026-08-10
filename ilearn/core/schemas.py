@@ -149,6 +149,15 @@ class GradingReceipt(BaseModel):
     graded_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class MasteryRecord(BaseModel):
+    """Dual-lane mastery tracking: practice vs unassisted probe."""
+
+    practice_score: float = Field(ge=0.0, le=1.0, default=0.0)
+    probe_mastery: float = Field(ge=0.0, le=1.0, default=0.0)
+    evidence_count: int = 0
+    last_probe_at: datetime | None = None
+
+
 class GradeResult(BaseModel):
     """Step-level grading output for one assessment item (spec §5.1)."""
 
@@ -160,6 +169,7 @@ class GradeResult(BaseModel):
     knowledge_ids: list[str] = Field(default_factory=list)
     hint_level_suggestion: HintLevel = "none"
     grading_degraded: bool = False
+    lane: EvidenceLane = "practice"
     receipt: GradingReceipt | None = None
 
 
@@ -224,6 +234,7 @@ class WeaknessEntry(BaseModel):
 class LearnerPortrait(BaseModel):
     student_key: str
     knowledge_state: dict[str, float] = Field(default_factory=dict)
+    mastery_records: dict[str, MasteryRecord] = Field(default_factory=dict)
     ability_ema: dict[str, float] = Field(default_factory=dict)
     weakness_log: list[WeaknessEntry] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
