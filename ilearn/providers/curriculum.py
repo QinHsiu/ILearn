@@ -18,6 +18,12 @@ from ilearn.core.schemas import Difficulty, ItemTemplate, ItemType, KnowledgeNod
 PILOT_LABEL = "北京·人教·小学数学"
 _PLACEHOLDER = re.compile(r"\{([^{}]+)\}")
 
+
+def load_syllabus(pilot_dir: str | Path) -> list[dict[str, Any]]:
+    """Load raw syllabus citation records from the pilot pack."""
+    path = Path(pilot_dir) / "syllabus.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
 _SAFE_BINOPS = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,

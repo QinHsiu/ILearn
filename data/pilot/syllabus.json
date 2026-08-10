@@ -1,0 +1,9 @@
+[
+  {"citation_id": "bj-g4-add-01", "grade": 4, "title": "三位数加减", "excerpt": "掌握三位数加减法的竖式计算与进位、退位。", "source_label": "北京·人教·小学数学"},
+  {"citation_id": "bj-g4-mult-01", "grade": 4, "title": "两位数乘两位数", "excerpt": "理解乘法算理，掌握竖式计算方法。", "source_label": "北京·人教·小学数学"},
+  {"citation_id": "bj-g5-num-01", "grade": 5, "title": "小数乘法", "excerpt": "掌握小数乘整数与小数乘小数的计算方法。", "source_label": "北京·人教·小学数学"},
+  {"citation_id": "bj-g5-frac-01", "grade": 5, "title": "分数加减", "excerpt": "同分母分数加减法；异分母需通分。", "source_label": "北京·人教·小学数学"},
+  {"citation_id": "bj-g5-geo-01", "grade": 5, "title": "多边形的面积", "excerpt": "掌握平行四边形、三角形、梯形的面积公式及应用。", "source_label": "北京·人教·小学数学"},
+  {"citation_id": "bj-g6-ratio-01", "grade": 6, "title": "比和比例", "excerpt": "理解比的意义，掌握按比例分配的实际问题。", "source_label": "北京·人教·小学数学"},
+  {"citation_id": "bj-g6-percent-01", "grade": 6, "title": "百分数", "excerpt": "理解百分数的意义，解决百分数应用题。", "source_label": "北京·人教·小学数学"}
+]
