@@ -25,6 +25,7 @@ from ilearn.core.schemas import (
     WeaknessEntry,
     WeaknessEvent,
 )
+from ilearn.core.evidence import claim_refs
 from ilearn.providers.curriculum import CurriculumProvider, PilotBeijingRenjiaoProvider
 
 _ERROR_FIX_HINTS: dict[str, str] = {
@@ -185,6 +186,9 @@ class Diagnoser:
         ability_scores = self._compute_ability_scores(
             paper, grade_by_id, knowledge_by_id
         )
+        evidence_refs = claim_refs(
+            [ev.evidence_id for ev in evidence] if evidence else []
+        )
 
         region_mismatch: str | None = None
         if not _is_beijing_region(profile.region):
@@ -199,6 +203,7 @@ class Diagnoser:
             ability_scores=ability_scores,
             curriculum_label=paper.curriculum_label,
             region_mismatch_disclaimer=region_mismatch,
+            evidence_refs=evidence_refs,
         )
 
     def _build_interventions(
@@ -238,6 +243,13 @@ class Diagnoser:
                 why = f"得分率 {km.score_rate:.0%}，需要加强练习"
             if leech:
                 why = f"{why}；连续多次未掌握（需重点突破）"
+            kid_evidence_ids = claim_refs(
+                [
+                    ev.evidence_id
+                    for ev in (evidence or [])
+                    if ev.knowledge_id == km.knowledge_id
+                ]
+            )
             interventions.append(
                 Intervention(
                     knowledge_id=km.knowledge_id,
@@ -246,6 +258,7 @@ class Diagnoser:
                     what_to_fix_first=fix_first,
                     priority=priority,
                     leech=leech,
+                    evidence_ids=kid_evidence_ids,
                 )
             )
         return interventions

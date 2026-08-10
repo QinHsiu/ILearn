@@ -221,6 +221,7 @@ class Intervention(BaseModel):
     what_to_fix_first: str
     priority: int = Field(ge=1)
     leech: bool = False
+    evidence_ids: list[str] = Field(default_factory=list)
 
 
 class DiagnosisReport(BaseModel):
@@ -231,6 +232,7 @@ class DiagnosisReport(BaseModel):
     ability_scores: dict[str, float] = Field(default_factory=dict)
     curriculum_label: str
     region_mismatch_disclaimer: str | None = None
+    evidence_refs: list[str] = Field(default_factory=list)
 
 
 class PlanDay(BaseModel):
