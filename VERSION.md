@@ -5,8 +5,8 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Composition Phase 2c（课标 / 多科）已合入 `master` |
-| **基线** | 258 tests（离线可跑） |
+| **标签** | Composition Phase 2d（编排质量）完成 |
+| **基线** | 282 tests（离线可跑） |
 | **日期** | 2026-08-10 |
 
 ---
@@ -27,6 +27,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Phase 2a：** Evidence→Mastery、WeaknessEvent、leech、evidence_id、practice–probe gap、画像从证据聚合
 - **Phase 2b：** Hint Ladder、挫败感知 replan、计划 draft/superseded、三段式干预、KC 类型任务、TutorAgent 骨架
 - **Phase 2c：** `CurriculumRetriever`（keyword / hash_vector / Qdrant stub）、按题 citation 绑定、语文配额 stub、多地区 source packs、`ILEARN_RETRIEVER_BACKEND`
+- **Phase 2d：** 轻量上下文预算、结构化决策日志、阶段质量门、PendingQuestion 答案绑定、Agent 写能力白名单
 - **工程面：** FastAPI + Streamlit + CLI；会话 JSON；OpenAI 兼容 LLM（可选）
 
 ---
@@ -40,6 +41,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Phase 2a 诊断 / 证据 | OPT-023…026、OPT-074、G-05 | 198 |
 | Phase 2b 规划 / 辅导 | OPT-014、OPT-031…034、OPT-060 | 234 |
 | Phase 2c 课标 / 多科 | A-03、OPT-041/042、OPT-003、D-04、E-05 → 合入 `master` 并 push | **258** |
+| Phase 2d 编排质量 | OPT-050…052、OPT-015、OPT-016 | **282** |
 
 ---
 
@@ -49,7 +51,6 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | 包 | 包含 | 目标 |
 | --- | --- | --- |
-| **Phase 2d（编排质量）** | OPT-050…052、OPT-015、OPT-016 | context 预算、决策契约、质量门、PendingQuestion、能力白名单 |
 | **Eval 扩展** | OPT-072/073/081、E-10…E-21 | 公开基准与 Skill registry |
 | **文档 / 仓库运维** | F-05…F-07 | hermes / xiaozhi / EduGemma 等研究与索引刷新 |
 

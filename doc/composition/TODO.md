@@ -1,7 +1,7 @@
 # ILearn 未完成 ToDo 全清单
 
 > **生成日期：** 2026-08-10  
-> **最后更新：** 2026-08-10（Phase 2c 课标/多科验收）  
+> **最后更新：** 2026-08-10（Phase 2d 编排质量验收）  
 > **对照基线：** `master`（Composition Phase 1 收尾完成；177 tests）  
 > **来源：** `OPTIMIZATION_BACKLOG.md`、`MULTI_AGENT_ARCHITECTURE.md`、`docs/superpowers` 计划/specs、`design_think.txt`、`evaluate.txt`、`INDEX.md`、Phase1 终审残留  
 > **说明：** 只列**未完成 / 部分完成 / 完全未做**项；已完成项不收录。状态：`partial` = 有骨架未闭环；`open` = 完全未做。
@@ -13,13 +13,13 @@
 | 类别 | 数量 | 说明 |
 |------|------|------|
 | A. Phase1 P0 收尾 | 0 open | ✅ A-01…A-05 done（A-03 向量 Qdrant 延至 Phase 2c） |
-| B. Backlog P1 | 12 | OPT-014/031…034 done Phase 2b |
-| C. Backlog P2 | 7 | OPT-060 done Phase 2b；OPT-074 done Phase 2a |
+| B. Backlog P1 | 6 | OPT-003 done Phase 2c；OPT-015/050/051/052 done Phase 2d |
+| C. Backlog P2 | 6 | OPT-016 done Phase 2d |
 | D. 架构 / Spec 延期能力 | 12 | 计划明示 Later |
 | E. design_think / evaluate 缺口 | 14 | 产品硬需求与评测景观 |
 | F. 文档 / 仓库运维 | 3 open | F-01…F-04 done；F-05…F-07 仍 open |
 | G. 工程债 / 终审遗留 | 0 open | G-01…G-06 done（G-05 Phase 2a 2026-08-10） |
-| **合计 open** | **48** | 去重后仍按条目全记；跨类引用用「见 xxx」 |
+| **合计 open** | **41** | 去重后仍按条目全记；跨类引用用「见 xxx」 |
 
 ---
 
@@ -51,7 +51,7 @@
 |----|------|------|------|------|
 | OPT-013 | 错因四分类扩展 error_tags | open | conceptual/procedural/strategic/representational 映射或扩展 | 无 |
 | OPT-014 | 动态三级 Hint Ladder | **done** 2026-08-10 | 按错因生成 hint；连续失败升级；不泄答案 | OPT-013（映射未扩展，现有五 tag 已接入） |
-| OPT-015 | PendingQuestion 服务端答案绑定 | open | question_id 绑定 expected_answer，防跨轮串题 | 无 |
+| OPT-015 | PendingQuestion 服务端答案绑定 | **done** 2026-08-10 | question_id 绑定 expected_answer；提交按当前试卷 allowlist 校验 | 无 |
 
 ### B3. DiagnosisAgent
 
@@ -82,9 +82,9 @@
 
 | ID | 标题 | 描述（摘要） | 依赖 |
 |----|------|--------------|------|
-| OPT-050 | ContextOrchestrator 上下文预算 | profile + 滚动摘要 + token 预算 | OPT-022 |
-| OPT-051 | 结构化 Agent 决策契约 | decision 含 reason + evidence_ids；可观测轨迹 | 无 |
-| OPT-052 | Phase 级质量门 + 重试 | schema 失败 → 重试 1 次 → degrade | 无 |
+| OPT-050 | ContextOrchestrator 上下文预算 | **done** 2026-08-10 — 轻量字符/字段预算，保留近期 evidence 并生成裁剪摘要 | OPT-022 |
+| OPT-051 | 结构化 Agent 决策契约 | **done** 2026-08-10 — decision 含 reason / evidence_ids / ok / degraded；持久化轨迹 | 无 |
+| OPT-052 | Phase 级质量门 + 重试 | **done** 2026-08-10 — ASSESS/DIAGNOSE/PLAN 校验，重试 1 次后确定性降级 | 无 |
 
 ### B7. Eval / Skills / 横切
 
@@ -101,7 +101,7 @@
 | ID | 标题 | 状态 | 说明 | 依赖 |
 |----|------|------|------|------|
 | OPT-005 | Chapter DAG 先修关系 | open | 知识点 prerequisite 图 + 环检测 | OPT-010 |
-| OPT-016 | Agent Capability 白名单 | open | 各 Agent 能力边界；越权 fail | 无 |
+| OPT-016 | Agent Capability 白名单 | **done** 2026-08-10 | 各 Agent 写能力白名单；越权 fail closed | 无 |
 | OPT-027 | 会后异步 Profiler 钩子 | open | GRADE 后异步提取 logic_gap | OPT-025 |
 | OPT-035 | 考试窗口驱动复习优先级 | open | 考试日期 → 计划压缩重点 | 无 |
 | OPT-043 | Syllabus 进度范围护栏 | open | 组题/计划不超用户声明进度 | OPT-040 |
@@ -203,7 +203,7 @@
 | **Composition Phase 2a（诊断/证据）** ✅ | OPT-023…026, OPT-074, G-05 | **已完成** 2026-08-10（198 tests） |
 | **Composition Phase 2b（规划/辅导）** ✅ | OPT-014, OPT-031…034, OPT-060 | **已完成** 2026-08-10（234 tests） |
 | **Composition Phase 2c（课标/多科）** ✅ | A-03, OPT-041/042, OPT-003, D-04, E-05 | **已完成** 2026-08-10（258 tests） |
-| **Composition Phase 2d（编排质量）** | OPT-050…052, OPT-015, OPT-016 | 预算/契约/质量门 |
+| **Composition Phase 2d（编排质量）** ✅ | OPT-050…052, OPT-015, OPT-016 | **已完成** 2026-08-10（282 tests） |
 | **Eval 扩展** | OPT-072/073/081, E-10…E-21 | 公开基准与 Skill |
 | **文档刷新** | F-01…F-07 | 本地 composition 文档与仓库索引 |
 
@@ -211,6 +211,7 @@
 
 ## 附录：已完成（不纳入 ToDo，仅对照）
 
+- Composition Phase 2d 编排质量：OPT-050…052、OPT-015、OPT-016（2026-08-10；282 tests）
 - MVP 管道；Multi-Agent P0（6 Agent + Orchestrator + VL 离线降级）
 - Composition Phase 2c 课标/多科：A-03 hash_vector、OPT-041/042、OPT-003、D-04、E-05（2026-08-10；258 tests）
 - Composition Phase 2b 规划/辅导：OPT-014、OPT-031…034、OPT-060（2026-08-10；234 tests）
