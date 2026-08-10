@@ -26,6 +26,7 @@ StepStatus = Literal["correct", "incorrect", "partial"]
 HintLevel = Literal["none", "low", "medium", "high"]
 EvidenceLane = Literal["practice", "probe"]
 PlanStatus = Literal["draft", "approved", "superseded"]
+TutorPhase = Literal["locate_gap", "hint_1", "hint_2", "retry", "explain", "done"]
 
 
 class SessionPhase(str, Enum):
@@ -269,6 +270,14 @@ class PlanVersion(BaseModel):
     status: PlanStatus = "draft"
     plan: LearningPlanReport
     created_at: datetime = Field(default_factory=utc_now)
+
+
+class TutorTurn(BaseModel):
+    """Single turn in the Socratic tutor dialogue."""
+
+    phase: TutorPhase
+    message: str
+    error_tag: ErrorTag | None = None
 
 
 class WeaknessEntry(BaseModel):
