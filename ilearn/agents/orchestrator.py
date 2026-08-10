@@ -10,6 +10,7 @@ from ilearn.agents.diagnosis import DiagnosisAgent
 from ilearn.agents.planning import PlanningAgent
 from ilearn.agents.practice import PracticeAgent, evidence_from_grades
 from ilearn.agents.tutor import TutorAgent
+from ilearn.core.context_budget import trim_context
 from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
 from ilearn.core.report import render_full_report
@@ -58,20 +59,22 @@ class MultiAgentOrchestrator:
         phase: SessionPhase | None = None,
         metadata: dict | None = None,
     ) -> AgentContext:
-        return AgentContext(
-            session_id=session.session_id,
-            phase=phase or session.phase,
-            profile=session.profile,
-            paper=session.paper,
-            answers=list(session.answers),
-            image_answers=list(session.image_answers),
-            grades=list(session.grades),
-            diagnosis=session.diagnosis,
-            plan=session.plan,
-            portrait=session.portrait,
-            loop_count=session.loop_count,
-            evidence_log=list(session.evidence_log),
-            metadata=metadata or {},
+        return trim_context(
+            AgentContext(
+                session_id=session.session_id,
+                phase=phase or session.phase,
+                profile=session.profile,
+                paper=session.paper,
+                answers=list(session.answers),
+                image_answers=list(session.image_answers),
+                grades=list(session.grades),
+                diagnosis=session.diagnosis,
+                plan=session.plan,
+                portrait=session.portrait,
+                loop_count=session.loop_count,
+                evidence_log=list(session.evidence_log),
+                metadata=metadata or {},
+            )
         )
 
     def create_session(self, profile: StudentProfile) -> str:
