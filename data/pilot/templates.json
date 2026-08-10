@@ -442,9 +442,12 @@
     "stem_template": "□ × {b} = {p}，□ = ___",
     "slots": {
       "b": "int:12-24",
-      "p": "int:144-576"
+      "k": "int:12-24"
     },
-    "answer_expr": "p/b",
+    "derived_slots": {
+      "p": "k*b"
+    },
+    "answer_expr": "k",
     "rubric_steps": [
       "逆运算"
     ]
@@ -465,7 +468,7 @@
       "b": "int:1-8",
       "d": "choice:2,4,5,8"
     },
-    "answer_expr": "(a+b)/d",
+    "answer_expr": "frac(a+b, d)",
     "rubric_steps": [
       "同分母相加",
       "化简"
@@ -519,7 +522,7 @@
       "b": "int:2-6",
       "d": "choice:2,4,5,8"
     },
-    "answer_expr": "a*b/d",
+    "answer_expr": "frac(a*b, d)",
     "rubric_steps": [
       "分数乘整数",
       "约分"
@@ -568,13 +571,13 @@
     "knowledge_ids": [
       "frac_add_same"
     ],
-    "stem_template": "{a}/{d} + {b}/{d} = ___（最简分数或小数）",
+    "stem_template": "{a}/{d} + {b}/{d} = ___（最简分数）",
     "slots": {
       "a": "int:1-6",
       "b": "int:1-6",
       "d": "choice:3,4,6,8"
     },
-    "answer_expr": "(a+b)/d",
+    "answer_expr": "frac(a+b, d)",
     "rubric_steps": [
       "分子相加",
       "约分"
@@ -615,7 +618,7 @@
       "b": "int:2-5",
       "d": "choice:2,4,5,8"
     },
-    "answer_expr": "a*b/d",
+    "answer_expr": "frac(a*b, d)",
     "rubric_steps": [
       "整数乘分数"
     ]
@@ -655,7 +658,7 @@
       "b": "int:1-5",
       "d": "choice:4,6,8,10"
     },
-    "answer_expr": "(a+b)/d",
+    "answer_expr": "frac(a+b, d)",
     "rubric_steps": [
       "同分母",
       "相加",
@@ -699,7 +702,7 @@
       "a": "int:1-5",
       "d": "choice:4,5,6,8"
     },
-    "answer_expr": "(d-a)/d",
+    "answer_expr": "frac(d-a, d)",
     "rubric_steps": [
       "单位1",
       "减法"
@@ -842,7 +845,7 @@
       "b": "int:2-4",
       "d": "choice:4,5,6,8"
     },
-    "answer_expr": "a*b/d",
+    "answer_expr": "frac(a*b, d)",
     "rubric_steps": [
       "求白菜占比",
       "乘倍数",
@@ -888,7 +891,7 @@
       "c": "int:1-4",
       "d": "choice:6,8,10,12"
     },
-    "answer_expr": "(a+b+c)/d",
+    "answer_expr": "frac(a+b+c, d)",
     "rubric_steps": [
       "同分母相加",
       "化简"
@@ -991,7 +994,7 @@
       "b": "int:2-5",
       "d": "choice:2,4,5,8"
     },
-    "answer_expr": "a/(d*b)",
+    "answer_expr": "frac(a, d*b)",
     "rubric_steps": [
       "除以整数",
       "化简"
@@ -1083,7 +1086,7 @@
       "a": "int:2-8",
       "d": "choice:4,6,8,10"
     },
-    "answer_expr": "a/(2*d)",
+    "answer_expr": "frac(a, 2*d)",
     "rubric_steps": [
       "除以2"
     ]
@@ -1195,7 +1198,7 @@
       "e": "int:1-4",
       "f": "int:2-6"
     },
-    "answer_expr": "a*f/(d*e)",
+    "answer_expr": "frac(a*f, d*e)",
     "rubric_steps": [
       "除法变乘法",
       "约分"
@@ -1289,7 +1292,7 @@
       "d": "int:2-6",
       "n": "int:4-24"
     },
-    "answer_expr": "n*d/a",
+    "answer_expr": "frac(n*d, a)",
     "rubric_steps": [
       "单位1",
       "逆运算"

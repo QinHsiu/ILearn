@@ -7,6 +7,7 @@ import json
 import math
 import operator
 import random
+import re
 from abc import ABC, abstractmethod
 from fractions import Fraction
 from pathlib import Path
@@ -15,6 +16,7 @@ from typing import Any
 from ilearn.core.schemas import Difficulty, ItemTemplate, ItemType, KnowledgeNode
 
 PILOT_LABEL = "北京·人教·小学数学"
+_PLACEHOLDER = re.compile(r"\{([^{}]+)\}")
 
 _SAFE_BINOPS = {
     ast.Add: operator.add,
@@ -29,9 +31,16 @@ _SAFE_UNARYOPS = {
     ast.UAdd: operator.pos,
     ast.USub: operator.neg,
 }
+
+
 def _lcm(a: Any, b: Any) -> int:
     x, y = int(a), int(b)
     return x * y // math.gcd(x, y)
+
+
+def _frac(n: Any, d: Any) -> Fraction:
+    """Build a simplified fraction from numerator and denominator."""
+    return Fraction(int(n), int(d))
 
 
 _SAFE_FUNCS = {
@@ -41,6 +50,7 @@ _SAFE_FUNCS = {
     "max": max,
     "gcd": math.gcd,
     "lcm": _lcm,
+    "frac": _frac,
 }
 
 
@@ -53,6 +63,29 @@ def _to_number(value: Any) -> int | float:
     if text.isdigit() or (text.startswith("-") and text[1:].isdigit()):
         return int(text)
     return float(text)
+
+
+def _format_fraction(value: Fraction) -> str:
+    simplified = Fraction(value.numerator, value.denominator)
+    if simplified.denominator == 1:
+        return str(simplified.numerator)
+    return f"{simplified.numerator}/{simplified.denominator}"
+
+
+def _format_answer(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, Fraction):
+        return _format_fraction(value)
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        if value.is_integer():
+            return str(int(value))
+        return str(round(value, 2))
+    return str(value)
 
 
 def parse_slot_spec(spec: str, rng: random.Random) -> int | str:
@@ -73,9 +106,24 @@ def fill_slots(slot_specs: dict[str, str], rng: random.Random) -> dict[str, Any]
     return {name: parse_slot_spec(spec, rng) for name, spec in slot_specs.items()}
 
 
-def render_template(template: str, values: dict[str, Any]) -> str:
-    """Format a template string with resolved slot values."""
-    return template.format(**values)
+def fill_template_slots(record: dict[str, Any], rng: random.Random) -> dict[str, Any]:
+    """Fill slot specs and any ``derived_slots`` expressions for one template record."""
+    values = fill_slots(record.get("slots") or {}, rng)
+    for name, expr in (record.get("derived_slots") or {}).items():
+        values[name] = _to_number(eval_answer_expr(expr, values))
+    return values
+
+
+def _build_render_env(values: dict[str, Any], answer: str | None = None) -> dict[str, Any]:
+    env: dict[str, Any] = {}
+    for key, val in values.items():
+        try:
+            env[key] = _to_number(val)
+        except ValueError:
+            env[key] = val
+    if answer is not None:
+        env["ans"] = answer
+    return env
 
 
 def _eval_ast(node: ast.AST, env: dict[str, Any]) -> Any:
@@ -85,46 +133,95 @@ def _eval_ast(node: ast.AST, env: dict[str, Any]) -> Any:
         return node.value
     if isinstance(node, ast.Name):
         if node.id not in env:
-            raise ValueError(f"unknown variable in answer_expr: {node.id}")
+            raise ValueError(f"unknown variable in expression: {node.id}")
         return env[node.id]
     if isinstance(node, ast.BinOp):
         op = _SAFE_BINOPS.get(type(node.op))
         if op is None:
-            raise ValueError("unsupported binary operator in answer_expr")
+            raise ValueError("unsupported binary operator in expression")
         return op(_eval_ast(node.left, env), _eval_ast(node.right, env))
     if isinstance(node, ast.UnaryOp):
         op = _SAFE_UNARYOPS.get(type(node.op))
         if op is None:
-            raise ValueError("unsupported unary operator in answer_expr")
+            raise ValueError("unsupported unary operator in expression")
         return op(_eval_ast(node.operand, env))
     if isinstance(node, ast.Call):
         if not isinstance(node.func, ast.Name):
-            raise ValueError("unsupported function call in answer_expr")
+            raise ValueError("unsupported function call in expression")
         func = _SAFE_FUNCS.get(node.func.id)
         if func is None:
-            raise ValueError(f"unsupported function in answer_expr: {node.func.id}")
+            raise ValueError(f"unsupported function in expression: {node.func.id}")
         args = [_eval_ast(arg, env) for arg in node.args]
         return func(*args)
     raise ValueError(f"unsupported expression node: {type(node).__name__}")
 
 
+def _eval_expression(expr: str, env: dict[str, Any]) -> Any:
+    tree = ast.parse(expr.strip(), mode="eval")
+    return _eval_ast(tree, env)
+
+
 def eval_answer_expr(expr: str, values: dict[str, Any]) -> str:
     """Evaluate a restricted arithmetic expression against slot values."""
-    env: dict[str, Any] = {}
-    for key, val in values.items():
-        try:
-            env[key] = _to_number(val)
-        except ValueError:
-            env[key] = val
-    tree = ast.parse(expr, mode="eval")
-    result = _eval_ast(tree, env)
-    if isinstance(result, float):
-        if result.is_integer():
-            return str(int(result))
-        return str(round(result, 2))
-    if isinstance(result, Fraction):
-        return str(result)
-    return str(result)
+    expr = expr.strip()
+    if not expr:
+        raise ValueError("empty answer_expr")
+    if (expr.startswith('"') and expr.endswith('"')) or (
+        expr.startswith("'") and expr.endswith("'")
+    ):
+        return expr[1:-1]
+    env = _build_render_env(values)
+    try:
+        tree = ast.parse(expr, mode="eval")
+    except SyntaxError:
+        return expr
+    if isinstance(tree.body, ast.Name) and tree.body.id not in env:
+        return expr
+    try:
+        result = _eval_ast(tree, env)
+    except ValueError:
+        return expr
+    return _format_answer(result)
+
+
+def render_template_text(
+    template: str,
+    values: dict[str, Any],
+    *,
+    answer: str | None = None,
+) -> str:
+    """Render a template, expanding slot names and expression placeholders safely."""
+    env = _build_render_env(values, answer=answer)
+
+    def _replace(match: re.Match[str]) -> str:
+        token = match.group(1).strip()
+        if token == "ans":
+            if answer is None:
+                raise ValueError("{ans} requires answer= when rendering")
+            return answer
+        if token.isidentifier() and token in values:
+            return str(values[token])
+        return _format_answer(_eval_expression(token, env))
+
+    return _PLACEHOLDER.sub(_replace, template)
+
+
+def render_template(template: str, values: dict[str, Any]) -> str:
+    """Format a template string with resolved slot values only (no expressions)."""
+    return template.format(**values)
+
+
+def render_choices(
+    choices_template: list[str],
+    values: dict[str, Any],
+    *,
+    answer: str | None = None,
+) -> list[str]:
+    """Render choice strings, including ``{ans}`` and expression distractors."""
+    return [
+        render_template_text(choice, values, answer=answer)
+        for choice in choices_template
+    ]
 
 
 class CurriculumProvider(ABC):
