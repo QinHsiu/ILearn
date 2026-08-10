@@ -197,6 +197,7 @@ class SessionState(BaseModel):
     session_id: str
     profile: StudentProfile
     phase: SessionPhase = SessionPhase.ONBOARD
+    curriculum_citations: list[CurriculumCitation] = Field(default_factory=list)
     paper: AssessmentPaper | None = None
     answers: list[StudentAnswer] = Field(default_factory=list)
     image_answers: list[ImageAnswer] = Field(default_factory=list)
