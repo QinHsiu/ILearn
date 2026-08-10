@@ -8,6 +8,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from ilearn.core.datetime_utils import utc_now
+
 ERROR_TAGS = ("concept_gap", "calc_error", "misread", "method_wrong", "incomplete")
 
 ErrorTag = Literal["concept_gap", "calc_error", "misread", "method_wrong", "incomplete"]
@@ -97,7 +99,7 @@ class AssessmentPaper(BaseModel):
     items: list[AssessmentItem]
     grade: Literal[4, 5, 6]
     curriculum_label: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
     blueprint: PaperBlueprint | None = None
     paper_version: str = "1.0.0"
 
@@ -155,7 +157,7 @@ class KnowledgeEvidence(BaseModel):
     hint_level: HintLevel = "none"
     confidence: float = Field(ge=0.0, le=1.0, default=1.0)
     step_index: int | None = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
 
 class GradingReceipt(BaseModel):
@@ -164,7 +166,7 @@ class GradingReceipt(BaseModel):
     paper_created_at: datetime
     grader_version: str
     model_id: str | None = None
-    graded_at: datetime = Field(default_factory=datetime.utcnow)
+    graded_at: datetime = Field(default_factory=utc_now)
 
 
 class MasteryRecord(BaseModel):
@@ -246,7 +248,7 @@ class WeaknessEntry(BaseModel):
     topic: str
     logic_gap: str
     session_id: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=utc_now)
 
 
 class PortraitDimensions(BaseModel):
@@ -267,7 +269,7 @@ class LearnerPortrait(BaseModel):
     ability_ema: dict[str, float] = Field(default_factory=dict)
     weakness_log: list[WeaknessEntry] = Field(default_factory=list)
     dimensions: PortraitDimensions = Field(default_factory=PortraitDimensions)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=utc_now)
 
 
 class CurriculumCitation(BaseModel):

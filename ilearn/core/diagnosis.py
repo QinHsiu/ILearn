@@ -6,6 +6,8 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
+from ilearn.core.datetime_utils import utc_now
+
 from ilearn.core.review import ReviewState, sm2_update
 from ilearn.core.schemas import (
     AssessmentPaper,
@@ -254,7 +256,7 @@ class PortraitUpdater:
         curriculum: CurriculumProvider,
         grade: int | None = None,
     ) -> LearnerPortrait:
-        now = datetime.utcnow()
+        now = utc_now()
         for grade_row in grades:
             observed = 1.0 if grade_row.final_correct else 0.0
             quality = _sm2_quality(grade_row)
