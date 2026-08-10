@@ -7,7 +7,6 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-165%20passed-2ea44f)](./tests)
-[![License](https://img.shields.io/badge/license-see%20repo-lightgrey)](./LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-QinHsiu%2FILearn-181717?logo=github)](https://github.com/QinHsiu/ILearn)
 
 ```text
