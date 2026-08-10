@@ -41,6 +41,9 @@ class PracticeAgent:
     def run(self, ctx: AgentContext) -> AgentResult:
         if ctx.paper is None:
             raise ValueError("PracticeAgent requires paper in context")
+        # First-pass grading of the diagnostic paper (loop_count == 0) is unassisted
+        # evidence ("probe"); grading of follow-up practice_loop papers is "practice".
+        lane = "probe" if ctx.loop_count == 0 else "practice"
         answer_map = {entry.item_id: entry.answer_text for entry in ctx.answers}
         item_by_id = {item.id: item for item in ctx.paper.items}
         paper_created_at = ctx.paper.created_at
@@ -49,6 +52,7 @@ class PracticeAgent:
                 item_by_id[item_id],
                 text,
                 paper_created_at=paper_created_at,
+                lane=lane,
             )
             for item_id, text in answer_map.items()
             if item_id in item_by_id
@@ -67,11 +71,12 @@ class PracticeAgent:
                 item,
                 answer_text,
                 paper_created_at=paper_created_at,
+                lane=lane,
             )
             if ocr_result.degraded or ocr_result.confidence < 0.5:
                 grade.grading_degraded = True
-            elif not ocr_result.degraded:
-                grade.grading_degraded = False
+            # Do not clear grading_degraded based on OCR success alone: the text
+            # grading step below may have degraded independently of OCR quality.
             grades_by_id[image_answer.item_id] = grade
         grades = list(grades_by_id.values())
         return AgentResult(

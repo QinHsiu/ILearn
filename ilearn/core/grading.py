@@ -197,8 +197,8 @@ class VisionGrader:
         result.item_id = item.id
         if ocr_result.degraded or ocr_result.confidence < 0.5:
             result.grading_degraded = True
-        elif not ocr_result.degraded:
-            result.grading_degraded = False
+        # Do not clear grading_degraded based on OCR success alone: text grading
+        # (e.g. offline fallback or LLM failure) can degrade independently of OCR.
         return result
 
 

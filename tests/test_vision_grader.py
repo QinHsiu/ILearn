@@ -63,7 +63,9 @@ def test_vision_grader_parses_available_vision_result():
 
     assert result.final_correct is True
     assert result.steps == ["12+8=20"]
-    assert result.grading_degraded is False
+    # OCR succeeded, but text grading itself fell back to the offline path
+    # (the fake LLM has no chat completions), so grading_degraded stays True.
+    assert result.grading_degraded is True
 
 
 @patch("ilearn.providers.llm.OpenAI")

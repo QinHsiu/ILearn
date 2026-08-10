@@ -37,6 +37,10 @@ def test_multi_agent_full_loop_offline(tmp_path):
     assert completed.portrait is not None
     assert completed.phase == SessionPhase.PLAN
     assert "课标依据" in completed.plan.markdown
+    # C2: first-pass diagnostic grading (loop_count == 0) is unassisted evidence.
+    assert all(g.lane == "probe" for g in completed.grades)
+    assert completed.evidence_log
+    assert all(e.lane == "probe" for e in completed.evidence_log)
 
 
 def test_submit_fills_missing_answers_before_practice_agent_grades(tmp_path):

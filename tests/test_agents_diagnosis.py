@@ -106,3 +106,8 @@ def test_diagnosis_agent_returns_top_interventions():
     assert diagnosis.interventions
     assert portrait.weakness_log[0].knowledge_id == "frac_add_same"
     assert portrait.student_key == "北京_g5"
+    # C3: SM-2 review state must be scheduled for every graded knowledge id.
+    assert portrait.review_states
+    assert "frac_add_same" in portrait.review_states
+    assert "dec_mult" in portrait.review_states
+    assert portrait.review_states["frac_add_same"].due_date is not None

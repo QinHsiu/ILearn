@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
+from ilearn.core.review import ReviewState, sm2_update
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
@@ -76,6 +77,16 @@ def _dominant_error_tag(counts: dict[str, int]) -> str | None:
 
 def _error_penalty(error_tags: list[str]) -> float:
     return min(30.0, len(error_tags) * 5.0)
+
+
+def _sm2_quality(grade_row: GradeResult) -> int:
+    """Map a graded item's correctness to an SM-2 quality score (0-5)."""
+    if grade_row.final_correct:
+        return 4
+    statuses = {step.status for step in grade_row.step_results}
+    if "partial" in statuses or ("correct" in statuses and "incorrect" in statuses):
+        return 2
+    return 1
 
 
 class Diagnoser:
@@ -246,6 +257,7 @@ class PortraitUpdater:
         now = datetime.utcnow()
         for grade_row in grades:
             observed = 1.0 if grade_row.final_correct else 0.0
+            quality = _sm2_quality(grade_row)
             for kid in grade_row.knowledge_ids:
                 record = _get_mastery_record(portrait, kid)
                 record.evidence_count += 1
@@ -254,6 +266,9 @@ class PortraitUpdater:
                     record.last_probe_at = now
                 else:
                     record.practice_score = _ema_update(record.practice_score, observed)
+
+                review_state = portrait.review_states.get(kid, ReviewState())
+                portrait.review_states[kid] = sm2_update(review_state, quality)
 
             if grade_row.final_correct:
                 continue
