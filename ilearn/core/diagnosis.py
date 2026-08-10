@@ -10,6 +10,7 @@ from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
+    HintLevel,
     Intervention,
     KnowledgeMastery,
     LearnerPortrait,
@@ -273,4 +274,66 @@ class PortraitUpdater:
                     portrait.knowledge_state.get(kid, 1.0), 0.4
                 )
         portrait.updated_at = now
+        return portrait
+
+
+_HINT_BEHAVIORAL_DELTA: dict[HintLevel, float] = {
+    "none": 0.0,
+    "low": 0.08,
+    "medium": 0.15,
+    "high": 0.25,
+}
+
+
+def _clamp_score(value: float) -> float:
+    return max(0.0, min(1.0, value))
+
+
+class PortraitDimensionUpdater:
+    """Heuristic five-dimension portrait updates from graded attempts (no LLM)."""
+
+    @staticmethod
+    def apply(portrait: LearnerPortrait, grades: list[GradeResult]) -> LearnerPortrait:
+        consecutive_wrong = 0
+        for grade_row in grades:
+            hint_delta = _HINT_BEHAVIORAL_DELTA.get(grade_row.hint_level_suggestion, 0.0)
+            if hint_delta > 0.0:
+                current = portrait.dimensions.behavioral.get("hint_dependency", 0.0)
+                portrait.dimensions.behavioral["hint_dependency"] = _clamp_score(
+                    current + hint_delta
+                )
+
+            if grade_row.final_correct:
+                consecutive_wrong = 0
+                portrait.dimensions.cognitive["knowledge_application"] = _clamp_score(
+                    portrait.dimensions.cognitive.get("knowledge_application", 0.5)
+                    + 0.05
+                )
+            else:
+                consecutive_wrong += 1
+                portrait.dimensions.cognitive["knowledge_application"] = _clamp_score(
+                    portrait.dimensions.cognitive.get("knowledge_application", 0.5)
+                    - 0.05
+                )
+                if consecutive_wrong >= 2:
+                    current = portrait.dimensions.emotional.get("frustration", 0.0)
+                    portrait.dimensions.emotional["frustration"] = _clamp_score(
+                        current + 0.1 * consecutive_wrong
+                    )
+
+            if grade_row.lane == "probe" and not grade_row.final_correct:
+                portrait.dimensions.metacognitive["probe_self_check"] = _clamp_score(
+                    portrait.dimensions.metacognitive.get("probe_self_check", 0.0) + 0.2
+                )
+
+            for kid in grade_row.knowledge_ids:
+                record = portrait.mastery_records.get(kid)
+                if record is None:
+                    continue
+                gap = record.practice_score - record.probe_mastery
+                if gap > 0.2:
+                    portrait.dimensions.metacognitive["practice_probe_gap"] = _clamp_score(
+                        gap
+                    )
+
         return portrait

@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
-from ilearn.core.diagnosis import Diagnoser, PortraitUpdater
+from ilearn.core.diagnosis import Diagnoser, PortraitDimensionUpdater, PortraitUpdater
 from ilearn.core.schemas import LearnerPortrait, StudentProfile
 from ilearn.providers.curriculum import CurriculumProvider
 
-__all__ = ["DiagnosisAgent", "PortraitUpdater"]
+__all__ = ["DiagnosisAgent", "PortraitDimensionUpdater", "PortraitUpdater"]
 
 
 def _student_key(profile: StudentProfile) -> str:
@@ -33,6 +33,7 @@ class DiagnosisAgent:
             self._curriculum,
             grade=ctx.profile.grade,
         )
+        portrait = PortraitDimensionUpdater.apply(portrait, ctx.grades)
         return AgentResult(
             phase=SessionPhase.PLAN,
             payload={"diagnosis": diagnosis, "portrait": portrait},

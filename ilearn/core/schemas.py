@@ -231,12 +231,23 @@ class WeaknessEntry(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class PortraitDimensions(BaseModel):
+    """Five-dimension learner portrait extension (OPT-022)."""
+
+    cognitive: dict[str, float] = Field(default_factory=dict)
+    behavioral: dict[str, float] = Field(default_factory=dict)
+    emotional: dict[str, float] = Field(default_factory=dict)
+    metacognitive: dict[str, float] = Field(default_factory=dict)
+    contextual: dict[str, float] = Field(default_factory=dict)
+
+
 class LearnerPortrait(BaseModel):
     student_key: str
     knowledge_state: dict[str, float] = Field(default_factory=dict)
     mastery_records: dict[str, MasteryRecord] = Field(default_factory=dict)
     ability_ema: dict[str, float] = Field(default_factory=dict)
     weakness_log: list[WeaknessEntry] = Field(default_factory=list)
+    dimensions: PortraitDimensions = Field(default_factory=PortraitDimensions)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
