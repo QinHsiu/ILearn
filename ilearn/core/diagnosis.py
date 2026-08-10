@@ -308,7 +308,17 @@ class PortraitDimensionUpdater:
     """Heuristic five-dimension portrait updates from graded attempts (no LLM)."""
 
     @staticmethod
-    def apply(portrait: LearnerPortrait, grades: list[GradeResult]) -> LearnerPortrait:
+    def apply(
+        portrait: LearnerPortrait,
+        grades: list[GradeResult],
+        profile: StudentProfile | None = None,
+    ) -> LearnerPortrait:
+        if profile is not None:
+            portrait.dimensions.contextual["grade_band"] = profile.grade / 10.0
+            portrait.dimensions.contextual["region_weight"] = (
+                1.0 if _is_beijing_region(profile.region) else 0.5
+            )
+
         consecutive_wrong = 0
         for grade_row in grades:
             hint_delta = _HINT_BEHAVIORAL_DELTA.get(grade_row.hint_level_suggestion, 0.0)

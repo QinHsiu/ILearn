@@ -33,7 +33,7 @@ class DiagnosisAgent:
             self._curriculum,
             grade=ctx.profile.grade,
         )
-        portrait = PortraitDimensionUpdater.apply(portrait, ctx.grades)
+        portrait = PortraitDimensionUpdater.apply(portrait, ctx.grades, profile=ctx.profile)
         return AgentResult(
             phase=SessionPhase.PLAN,
             payload={"diagnosis": diagnosis, "portrait": portrait},
