@@ -167,6 +167,8 @@ class MultiAgentOrchestrator:
             )
         )
         session.plan = result.payload["plan"]
+        for entry in result.payload.get("plan_history_append", []):
+            session.plan_history.append(entry)
         session.phase = result.phase
         self._store.save(session)
         return session.plan

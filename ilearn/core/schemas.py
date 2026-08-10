@@ -25,6 +25,7 @@ MasteryLevel = Literal["mastered", "unstable", "weak"]
 StepStatus = Literal["correct", "incorrect", "partial"]
 HintLevel = Literal["none", "low", "medium", "high"]
 EvidenceLane = Literal["practice", "probe"]
+PlanStatus = Literal["draft", "approved", "superseded"]
 
 
 class SessionPhase(str, Enum):
@@ -253,6 +254,17 @@ class LearningPlanReport(BaseModel):
     days: list[PlanDay] = Field(default_factory=list)
     markdown: str
     disclaimer: str = "本计划为智能助手建议，不能替代教师专业评价。"
+    version: int = 1
+    status: PlanStatus = "draft"
+
+
+class PlanVersion(BaseModel):
+    """Historical snapshot of a learning plan with lifecycle status."""
+
+    version: int = 1
+    status: PlanStatus = "draft"
+    plan: LearningPlanReport
+    created_at: datetime = Field(default_factory=utc_now)
 
 
 class WeaknessEntry(BaseModel):
@@ -316,6 +328,7 @@ class SessionState(BaseModel):
     grades: list[GradeResult] = Field(default_factory=list)
     diagnosis: DiagnosisReport | None = None
     plan: LearningPlanReport | None = None
+    plan_history: list[PlanVersion] = Field(default_factory=list)
     portrait: LearnerPortrait | None = None
     loop_count: int = 0
     evidence_log: list[KnowledgeEvidence] = Field(default_factory=list)

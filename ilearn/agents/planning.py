@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.planning import Planner
-from ilearn.core.schemas import DiagnosisReport
+from ilearn.core.schemas import DiagnosisReport, LearningPlanReport, PlanVersion
 from ilearn.providers.curriculum import CurriculumProvider
 
 __all__ = ["PlanningAgent", "should_enter_practice_loop"]
@@ -28,6 +28,21 @@ class PlanningAgent:
         if ctx.diagnosis is None:
             raise ValueError("PlanningAgent requires diagnosis in context")
         plan = self._planner.plan(ctx.profile, ctx.diagnosis, portrait=ctx.portrait)
+        plan_history_append: list[PlanVersion] = []
+        if ctx.plan is not None:
+            superseded_plan = ctx.plan.model_copy(update={"status": "superseded"})
+            plan_history_append.append(
+                PlanVersion(
+                    version=ctx.plan.version,
+                    status="superseded",
+                    plan=superseded_plan,
+                )
+            )
+            plan = plan.model_copy(
+                update={"version": ctx.plan.version + 1, "status": "draft"}
+            )
+        else:
+            plan = plan.model_copy(update={"version": 1, "status": "draft"})
         citations = ctx.metadata.get("citations", [])
         if citations:
             plan.markdown += "\n\n## 课标依据\n" + "\n".join(
@@ -37,5 +52,9 @@ class PlanningAgent:
         next_phase = SessionPhase.PRACTICE_LOOP if should_loop else SessionPhase.PLAN
         return AgentResult(
             phase=next_phase,
-            payload={"plan": plan, "should_loop": should_loop},
+            payload={
+                "plan": plan,
+                "should_loop": should_loop,
+                "plan_history_append": plan_history_append,
+            },
         )
