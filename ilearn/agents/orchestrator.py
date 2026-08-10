@@ -14,11 +14,21 @@ from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
 from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
+from ilearn.core.quality_gate import (
+    degraded_assessment_result,
+    degraded_diagnosis_result,
+    degraded_plan_result,
+    run_with_quality_gate,
+    valid_assessment_result,
+    valid_diagnosis_result,
+    valid_plan_result,
+)
 from ilearn.core.report import render_full_report
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
+    LearnerPortrait,
     LearningPlanReport,
     SessionPhase,
     SessionState,
@@ -93,9 +103,14 @@ class MultiAgentOrchestrator:
         )
         session.curriculum_citations = citation_result.payload["citations"]
 
-        result = self._assessment.run(
-            self._ctx(session, phase=SessionPhase.ASSESS)
+        result, degraded = run_with_quality_gate(
+            lambda: self._assessment.run(
+                self._ctx(session, phase=SessionPhase.ASSESS)
+            ),
+            valid_assessment_result,
         )
+        if degraded:
+            result = degraded_assessment_result(session.profile)
         assert_writes_allowed(
             self._assessment.name,
             set(result.payload) & {"paper"},
@@ -164,9 +179,19 @@ class MultiAgentOrchestrator:
         self._require_paper(session)
         if not session.grades:
             raise ValueError("session must be graded before diagnosis")
-        result = self._diagnosis.run(
-            self._ctx(session, phase=SessionPhase.DIAGNOSE)
+        result, degraded = run_with_quality_gate(
+            lambda: self._diagnosis.run(
+                self._ctx(session, phase=SessionPhase.DIAGNOSE)
+            ),
+            valid_diagnosis_result,
         )
+        if degraded:
+            portrait = result.payload.get("portrait")
+            result = degraded_diagnosis_result(
+                session.profile,
+                self._require_paper(session).curriculum_label,
+                portrait if isinstance(portrait, LearnerPortrait) else session.portrait,
+            )
         assert_writes_allowed(
             self._diagnosis.name,
             set(result.payload) & {"diagnosis", "portrait"},
@@ -182,13 +207,18 @@ class MultiAgentOrchestrator:
         session = self._store.load(session_id)
         if session.diagnosis is None:
             raise ValueError("session must be diagnosed before planning")
-        result = self._planning.run(
-            self._ctx(
-                session,
-                phase=SessionPhase.PLAN,
-                metadata={"citations": list(session.curriculum_citations)},
-            )
+        result, degraded = run_with_quality_gate(
+            lambda: self._planning.run(
+                self._ctx(
+                    session,
+                    phase=SessionPhase.PLAN,
+                    metadata={"citations": list(session.curriculum_citations)},
+                )
+            ),
+            valid_plan_result,
         )
+        if degraded:
+            result = degraded_plan_result()
         assert_writes_allowed(
             self._planning.name,
             set(result.payload) & {"plan", "plan_history_append"},
