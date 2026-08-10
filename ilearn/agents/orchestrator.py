@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from ilearn.agents.assessment import AssessmentAgent
+from ilearn.agents.capabilities import assert_writes_allowed
 from ilearn.agents.curriculum import CurriculumAgent
 from ilearn.agents.diagnosis import DiagnosisAgent
 from ilearn.agents.planning import PlanningAgent
@@ -86,10 +87,18 @@ class MultiAgentOrchestrator:
     def generate_assessment(self, session_id: str) -> AssessmentPaper:
         session = self._store.load(session_id)
         citation_result = self._curriculum_agent.run(self._ctx(session))
+        assert_writes_allowed(
+            self._curriculum_agent.name,
+            set(citation_result.payload) & {"citations"},
+        )
         session.curriculum_citations = citation_result.payload["citations"]
 
         result = self._assessment.run(
             self._ctx(session, phase=SessionPhase.ASSESS)
+        )
+        assert_writes_allowed(
+            self._assessment.name,
+            set(result.payload) & {"paper"},
         )
         session.paper = result.payload["paper"]
         session.answers = []
@@ -135,6 +144,10 @@ class MultiAgentOrchestrator:
         result = self._practice.run(
             self._ctx(session, phase=SessionPhase.GRADE)
         )
+        assert_writes_allowed(
+            self._practice.name,
+            set(result.payload) & {"grades", "evidence"},
+        )
         session.grades = result.payload["grades"]
         for event in result.payload.get("evidence") or evidence_from_grades(
             session.session_id, session.grades
@@ -154,6 +167,10 @@ class MultiAgentOrchestrator:
         result = self._diagnosis.run(
             self._ctx(session, phase=SessionPhase.DIAGNOSE)
         )
+        assert_writes_allowed(
+            self._diagnosis.name,
+            set(result.payload) & {"diagnosis", "portrait"},
+        )
         session.diagnosis = result.payload["diagnosis"]
         session.portrait = result.payload["portrait"]
         session.plan = None
@@ -171,6 +188,10 @@ class MultiAgentOrchestrator:
                 phase=SessionPhase.PLAN,
                 metadata={"citations": list(session.curriculum_citations)},
             )
+        )
+        assert_writes_allowed(
+            self._planning.name,
+            set(result.payload) & {"plan", "plan_history_append"},
         )
         session.plan = result.payload["plan"]
         for entry in result.payload.get("plan_history_append", []):
@@ -190,6 +211,10 @@ class MultiAgentOrchestrator:
                 phase=SessionPhase.PLAN,
                 metadata={"citations": list(session.curriculum_citations)},
             )
+        )
+        assert_writes_allowed(
+            self._planning.name,
+            set(result.payload) & {"plan", "plan_history_append"},
         )
         session.plan = result.payload["plan"]
         for entry in result.payload.get("plan_history_append", []):
@@ -239,6 +264,10 @@ class MultiAgentOrchestrator:
                     "weak_knowledge_ids": weak_ids,
                 },
             )
+        )
+        assert_writes_allowed(
+            self._assessment.name,
+            set(result.payload) & {"paper"},
         )
         session.paper = result.payload["paper"]
         session.answers = []
