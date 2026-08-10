@@ -186,24 +186,9 @@ python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1
 
 ---
 
-## 定位、本版范围与非目标
+## 版本说明
 
-**产品定位：** K12 全学段学情诊断与个性化学习规划（多科目可扩展）。
-
-**本版已落地（试点）**
-
-- 首发试点学科 / 学段：**小学数学（四至六年级）**；建档 UI 支持 K12 年级 1–12，试点 provider 对 4–6 外年级 fail closed
-- 试点课标：**北京·人教**（`data/pilot/`）；**上海·人教** citation stub（`data/pilot/regions/shanghai_renjiao/`）；非匹配 region 在报告中标注课标不匹配
-- 分步批改、错误标签、学情 Top-5、学习者画像、1–2 周计划、巩固环（≤ 2）
-- Hint Ladder、挫败感知 replan、计划版本历史、KC 类型任务、TutorAgent 骨架
-- FastAPI + Streamlit + CLI；会话 JSON 持久化；OpenAI 兼容 LLM（可选）
-
-**本版不做**
-
-- TutorAgent 完整多轮 API/前端辅导环（骨架已有，见 `orchestrator.tutor_start`）
-- 多科目并行上线、实时网页课标爬取
-- 教师备课、班级报表、真实学生 PII
-- LangGraph / Qdrant 向量课标库（当前为试点 JSON + keyword / hash_vector RAG；Qdrant 为 stub）
+定位、本版范围、更新记录与近期 Todo 见 **[VERSION.md](VERSION.md)**。
 
 ---
 
