@@ -1,0 +1,35 @@
+[
+  {
+    "source_id": "sh-g5-math-2024",
+    "region": "上海",
+    "grade": 5,
+    "subject": "math",
+    "title": "沪教版五年级数学",
+    "excerpt": "五年级上册：分数的意义与加减法，理解同分母与异分母分数运算。",
+    "keywords": ["分数", "分数加减", "同分母", "异分母"],
+    "content_hash": "sha256:shg5math001abc",
+    "source_label": "上海·人教·小学数学"
+  },
+  {
+    "source_id": "sh-g5-frac-detail",
+    "region": "上海",
+    "grade": 5,
+    "subject": "math",
+    "title": "上海五年级分数课标要点",
+    "excerpt": "同分母分数加减：分母不变，分子相加减。异分母分数需先通分再计算。",
+    "keywords": ["分数", "分数加减", "通分", "同分母"],
+    "content_hash": "sha256:shg5frac002def",
+    "source_label": "上海·人教·小学数学"
+  },
+  {
+    "source_id": "sh-g5-decimal",
+    "region": "上海",
+    "grade": 5,
+    "subject": "math",
+    "title": "上海五年级小数与分数",
+    "excerpt": "小数与分数的互化，小数加减法竖式计算。",
+    "keywords": ["小数", "分数", "互化", "竖式"],
+    "content_hash": "sha256:shg5dec003ghi",
+    "source_label": "上海·人教·小学数学"
+  }
+]

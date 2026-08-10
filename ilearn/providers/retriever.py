@@ -31,11 +31,30 @@ def _is_beijing(region: str) -> bool:
     return normalized in ("北京", "beijing")
 
 
+def _is_shanghai(region: str) -> bool:
+    normalized = region.strip().casefold()
+    return normalized in ("上海", "shanghai")
+
+
+def _entry_matches_profile(profile_region: str, entry_region: str) -> bool:
+    if _is_beijing(profile_region):
+        return _is_beijing(entry_region)
+    if _is_shanghai(profile_region):
+        return _is_shanghai(entry_region)
+    return True
+
+
 def load_curriculum_sources(pilot_dir: str | Path) -> list[dict]:
-    path = Path(pilot_dir) / "curriculum_sources.json"
-    if not path.is_file():
-        return []
-    return json.loads(path.read_text(encoding="utf-8"))
+    pilot_path = Path(pilot_dir)
+    sources: list[dict] = []
+    root_path = pilot_path / "curriculum_sources.json"
+    if root_path.is_file():
+        sources.extend(json.loads(root_path.read_text(encoding="utf-8")))
+    regions_dir = pilot_path / "regions"
+    if regions_dir.is_dir():
+        for region_pack in sorted(regions_dir.glob("*/curriculum_sources.json")):
+            sources.extend(json.loads(region_pack.read_text(encoding="utf-8")))
+    return sources
 
 
 def source_to_citation(entry: dict) -> CurriculumCitation:
@@ -45,7 +64,10 @@ def source_to_citation(entry: dict) -> CurriculumCitation:
         source_id=source_id,
         title=entry.get("title", ""),
         excerpt=entry.get("excerpt", ""),
-        source_label=entry.get("source_label", "北京·人教·小学数学"),
+        source_label=entry.get(
+            "source_label",
+            f"{entry.get('region', '北京')}·人教·小学数学",
+        ),
     )
 
 
@@ -79,7 +101,7 @@ class KeywordCurriculumRetriever:
             if entry.get("grade") != profile.grade:
                 continue
             region = entry.get("region", "")
-            if _is_beijing(profile.region) and not _is_beijing(region):
+            if not _entry_matches_profile(profile.region, region):
                 continue
 
             doc_text = " ".join(
@@ -96,7 +118,7 @@ class KeywordCurriculumRetriever:
         candidates.sort(key=lambda pair: (-pair[0], pair[1].get("source_id", "")))
         selected = candidates[:top_k]
 
-        if not _is_beijing(profile.region):
+        if not _is_beijing(profile.region) and not _is_shanghai(profile.region):
             selected = selected[:2]
 
         return [source_to_citation(entry) for _, entry in selected]
@@ -137,7 +159,7 @@ def _filter_entries(profile: StudentProfile, sources: list[dict]) -> list[dict]:
         if entry.get("grade") != profile.grade:
             continue
         region = entry.get("region", "")
-        if _is_beijing(profile.region) and not _is_beijing(region):
+        if not _entry_matches_profile(profile.region, region):
             continue
         filtered.append(entry)
     return filtered
@@ -173,7 +195,7 @@ class HashVectorCurriculumRetriever:
         candidates.sort(key=lambda pair: (-pair[0], pair[1].get("source_id", "")))
         selected = candidates[:top_k]
 
-        if not _is_beijing(profile.region):
+        if not _is_beijing(profile.region) and not _is_shanghai(profile.region):
             selected = selected[:2]
 
         return [source_to_citation(entry) for _, entry in selected]

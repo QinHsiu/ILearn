@@ -29,10 +29,10 @@ def test_retriever_filters_by_grade():
     assert all("四" in c.title or "加减" in c.excerpt for c in cites)
 
 
-def test_retriever_limits_non_beijing_to_two():
+def test_retriever_limits_unknown_region_to_two():
     retriever = CurriculumRagRetriever(pilot_dir=PILOT)
     cites = retriever.retrieve(
-        StudentProfile(region="上海", grade=5, age=11),
+        StudentProfile(region="广州", grade=5, age=11),
         query="分数",
         top_k=5,
     )
