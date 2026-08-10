@@ -37,6 +37,33 @@ ONBOARD → ASSESS → PRACTICE → GRADE → DIAGNOSE → PLAN → PRACTICE_LOO
 
 开源借鉴对照见 [`doc/composition/AGENT_MAPPING.md`](doc/composition/AGENT_MAPPING.md)。
 
+## Composition Phase 1（P0 优化）
+
+在 P0 多 Agent 基线之上，Phase 1 关闭 12 项 P0 差距（见 `doc/composition/OPTIMIZATION_BACKLOG.md`）：
+
+| 能力 | 模块 |
+| --- | --- |
+| StepAttempt / KnowledgeEvidence | `ilearn/core/schemas.py`, `ilearn/core/evidence.py` |
+| Host-owned ItemGrader | `ilearn/core/grader.py` |
+| GradingReceipt 溯源 | `GradeResult.receipt` |
+| OCR 与分步批改分离 | `ilearn/core/ocr.py` |
+| practice_score / probe_mastery | `MasteryRecord`, `DiagnosisAgent` |
+| 五维画像扩展 | `PortraitDimensions` |
+| 课标 keyword RAG | `ilearn/providers/curriculum_rag.py` |
+| PaperBlueprint 两阶段组卷 | `ilearn/core/assessment.py` |
+| SM-2 间隔复习 | `ilearn/core/review.py`, `PlanningAgent` |
+| mistake_location 基准 | `ilearn/eval/mathtutorbench_tasks.py` |
+| tutor_gym 步骤完整度 | `ilearn/eval/tutor_gym_profile.py` |
+
+**评估命令：**
+
+```powershell
+python -m ilearn.cli.main eval --mathtutorbench
+python -m pytest tests/test_e2e_composition_phase1.py -v
+```
+
+**E2E 覆盖：** 证据链、GradingReceipt、PaperBlueprint（20 槽）、课标 citation、学习者画像。
+
 ## 安装
 
 Python 3.11+。在仓库根目录执行：
@@ -122,6 +149,12 @@ python -m ilearn.cli.main eval --agents
 
 `--agents` 经 EvalAgent → PracticeAgent 跑 benchmark 并打印 `agents_invoked`。
 
+MathTutorBench 风格 mistake_location 基准：
+
+```powershell
+python -m ilearn.cli.main eval --mathtutorbench
+```
+
 ## API 路由
 
 | 方法 | 路径 | 说明 |
@@ -192,10 +225,10 @@ ilearn/
   api/         # FastAPI
   cli/         # run / agents run / eval
   web/         # Streamlit
-  eval/        # 分步批改 fixtures 评估
+  eval/        # 分步批改 / mathtutorbench / tutor_gym 评估
 data/pilot/    # 试点知识点与题目模板
 data/sessions/ # 运行产物
-data/eval/     # step_grading / vision_grading fixtures
+data/eval/     # step_grading / mistake_location / completeness fixtures
 scripts/       # 试点题库生成脚本（可选）
 doc/composition/  # 开源多 Agent 分析与架构文档
 ```

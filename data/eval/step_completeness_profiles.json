@@ -1,0 +1,32 @@
+[
+  {
+    "item_id": "tg_01",
+    "legal_step_indices": [0, 1, 2],
+    "student_step_indices": [0, 1],
+    "step_scores": [1.0, 1.0]
+  },
+  {
+    "item_id": "tg_02",
+    "legal_step_indices": [0, 1, 2],
+    "student_step_indices": [0, 1, 2],
+    "step_scores": [1.0, 1.0, 1.0]
+  },
+  {
+    "item_id": "tg_03",
+    "legal_step_indices": [0, 1, 2],
+    "student_step_indices": [0, 1, 2],
+    "step_scores": [1.0, 0.0, 0.5]
+  },
+  {
+    "item_id": "tg_04",
+    "legal_step_indices": [0, 1, 2, 3],
+    "student_step_indices": [0, 2],
+    "step_scores": [1.0, 0.0]
+  },
+  {
+    "item_id": "tg_05",
+    "legal_step_indices": [0, 1],
+    "student_step_indices": [0],
+    "step_scores": [1.0]
+  }
+]
