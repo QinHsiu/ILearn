@@ -9,6 +9,7 @@ from ilearn.agents.curriculum import CurriculumAgent
 from ilearn.agents.diagnosis import DiagnosisAgent
 from ilearn.agents.planning import PlanningAgent
 from ilearn.agents.practice import PracticeAgent, evidence_from_grades
+from ilearn.agents.tutor import TutorAgent
 from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
 from ilearn.core.report import render_full_report
@@ -21,6 +22,7 @@ from ilearn.core.schemas import (
     SessionState,
     StudentAnswer,
     StudentProfile,
+    TutorTurn,
 )
 from ilearn.providers.curriculum import CurriculumProvider
 from ilearn.providers.llm import LLMClient
@@ -47,6 +49,7 @@ class MultiAgentOrchestrator:
         self._practice = PracticeAgent(llm)
         self._diagnosis = DiagnosisAgent(curriculum)
         self._planning = PlanningAgent(curriculum)
+        self._tutor = TutorAgent()
 
     @staticmethod
     def _ctx(
@@ -172,6 +175,36 @@ class MultiAgentOrchestrator:
         session.phase = result.phase
         self._store.save(session)
         return session.plan
+
+    def request_replan(self, session_id: str) -> LearningPlanReport:
+        """Re-run planning with current portrait/diagnosis; supersede prior plan."""
+        session = self._store.load(session_id)
+        if session.diagnosis is None:
+            raise ValueError("session must be diagnosed before replanning")
+        result = self._planning.run(
+            self._ctx(
+                session,
+                phase=SessionPhase.PLAN,
+                metadata={"citations": list(session.curriculum_citations)},
+            )
+        )
+        session.plan = result.payload["plan"]
+        for entry in result.payload.get("plan_history_append", []):
+            session.plan_history.append(entry)
+        session.phase = result.phase
+        self._store.save(session)
+        return session.plan
+
+    def tutor_start(self, session_id: str, item_id: str) -> TutorTurn:
+        """Begin Socratic tutoring for a graded item."""
+        session = self._store.load(session_id)
+        paper = self._require_paper(session)
+        item = next((i for i in paper.items if i.id == item_id), None)
+        if item is None:
+            raise ValueError(f"unknown item id: {item_id}")
+        grade = next((g for g in session.grades if g.item_id == item_id), None)
+        error_tag = grade.error_tags[0] if grade and grade.error_tags else None
+        return self._tutor.start(item, error_tag)
 
     def run_after_submit(self, session_id: str) -> SessionState:
         self.grade(session_id)
