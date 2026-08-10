@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
@@ -87,6 +87,10 @@ def create_app(
     @app.exception_handler(ValueError)
     async def handle_bad_request(_request, exc: ValueError) -> JSONResponse:
         return JSONResponse(status_code=400, content={"detail": str(exc)})
+
+    @app.get("/", include_in_schema=False)
+    def root() -> RedirectResponse:
+        return RedirectResponse(url="/docs")
 
     @app.post("/sessions", response_model=CreateSessionResponse)
     def create_session(profile: StudentProfile) -> CreateSessionResponse:
