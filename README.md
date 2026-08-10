@@ -124,6 +124,9 @@ python -m ilearn.cli.main run --region 北京 --grade 5 --age 11 --answers-file 
 python -m ilearn.cli.main eval
 python -m ilearn.cli.main eval --agents
 python -m ilearn.cli.main eval --mathtutorbench
+python -m ilearn.cli.main eval --completeness      # TutorGym 步骤完整度
+python -m ilearn.cli.main eval --mistake-correction  # MathTutorBench 错因纠正
+python -m ilearn.cli.main eval --scaffolding         # MathTutorBench 脚手架 hint 级别
 ```
 
 也可安装后使用：`ilearn agents run …` / `ilearn eval …`。

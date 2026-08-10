@@ -1,6 +1,5 @@
 from ilearn.core.evidence import append_evidence, events_for_knowledge
 from ilearn.core.schemas import (
-    EvidenceLane,
     KnowledgeEvidence,
     SessionPhase,
     SessionState,
@@ -18,6 +17,11 @@ def test_step_attempt_aligns_rubric_index():
         student_expression="12+8",
         lane="practice",
     )
+
+
+def test_step_verdict_defaults():
+    v = StepVerdict(step_index=0, status="correct")
+    assert v.comment == ""
 
 
 def test_knowledge_evidence_requires_session():
