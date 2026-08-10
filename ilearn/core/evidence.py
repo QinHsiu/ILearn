@@ -3,7 +3,20 @@
 from ilearn.core.schemas import KnowledgeEvidence, SessionState
 
 
+def _evidence_key(event: KnowledgeEvidence) -> tuple:
+    return (
+        event.session_id,
+        event.item_id,
+        event.knowledge_id,
+        event.lane,
+        event.step_index,
+    )
+
+
 def append_evidence(session: SessionState, event: KnowledgeEvidence) -> None:
+    key = _evidence_key(event)
+    if any(_evidence_key(e) == key for e in session.evidence_log):
+        return
     session.evidence_log.append(event)
 
 
