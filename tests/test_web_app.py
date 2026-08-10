@@ -63,7 +63,12 @@ def test_api_client_surfaces_server_error_detail():
 
 
 def test_report_helpers_prepare_readable_summary():
-    from ilearn.web.app import ability_label, grade_summary, mastery_rows
+    from ilearn.web.app import (
+        ability_label,
+        ability_progress,
+        grade_summary,
+        mastery_rows,
+    )
 
     grades = [
         {"final_correct": True},
@@ -88,3 +93,6 @@ def test_report_helpers_prepare_readable_summary():
         }
     ]
     assert ability_label("mental_math") == "心算能力"
+    assert ability_progress(75) == 0.75
+    assert ability_progress(-10) == 0.0
+    assert ability_progress(120) == 1.0

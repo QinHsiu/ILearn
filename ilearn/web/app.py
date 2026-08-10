@@ -129,6 +129,11 @@ def ability_label(name: str) -> str:
     return _ABILITY_LABELS.get(name, name.replace("_", " ").title())
 
 
+def ability_progress(score: float) -> float:
+    """Convert a 0–100 ability score to Streamlit's 0.0–1.0 scale."""
+    return max(0.0, min(100.0, float(score))) / 100.0
+
+
 def _load_css() -> str:
     return (Path(__file__).with_name("styles.css")).read_text(encoding="utf-8")
 
@@ -312,11 +317,6 @@ def _render_assessment(st: Any, api: ILearnAPI) -> None:
             st.rerun()
 
 
-def _diagnosis(st: Any) -> dict[str, Any]:
-    report = st.session_state.session_report or {}
-    return (report.get("session") or {}).get("diagnosis") or {}
-
-
 def _render_diagnosis(st: Any) -> None:
     session = (st.session_state.session_report or {}).get("session") or {}
     grades = session.get("grades") or []
@@ -344,7 +344,7 @@ def _render_diagnosis(st: Any) -> None:
     for name, score in ability_scores.items():
         numeric = max(0.0, min(100.0, float(score)))
         st.markdown(f"**{ability_label(name)}**　{numeric:.0f}")
-        st.progress(int(numeric))
+        st.progress(ability_progress(numeric))
     st.caption("能力分数由本次题目表现启发式估算，不属于心理测量结果。")
 
     interventions = diagnosis.get("interventions") or []
