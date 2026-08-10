@@ -91,3 +91,32 @@ def test_submit_accepts_answer_ids_in_pending_questions(tmp_path):
 
     assert saved.phase == SessionPhase.GRADE
     assert saved == store.load(session_id)
+
+
+def test_practice_loop_rebinds_submit_to_followup_paper(tmp_path):
+    orchestrator, _ = _orchestrator(tmp_path)
+    session_id = orchestrator.create_session(
+        StudentProfile(region="北京", grade=5, age=11)
+    )
+    diagnostic_paper = orchestrator.generate_assessment(session_id)
+    orchestrator.submit(session_id, {})
+    orchestrator.grade(session_id)
+    orchestrator.diagnose(session_id)
+
+    followup_paper = orchestrator.start_practice_loop(session_id)
+    followup_answers = {
+        item.id: item.answer_key or "" for item in followup_paper.items
+    }
+    diagnostic_only_ids = {
+        item.id for item in diagnostic_paper.items
+    } - set(followup_answers)
+
+    saved = orchestrator.submit(session_id, followup_answers)
+
+    assert saved.phase == SessionPhase.GRADE
+    assert diagnostic_only_ids
+    old_item_id = min(diagnostic_only_ids)
+    with pytest.raises(
+        ValueError, match=f"answers contain unknown item ids: {old_item_id}"
+    ):
+        orchestrator.submit(session_id, {old_item_id: "stale answer"})

@@ -120,6 +120,20 @@ class MultiAgentOrchestrator:
     def current_phase(self, session_id: str) -> SessionPhase:
         return self._store.load(session_id).phase
 
+    @staticmethod
+    def _bind_pending_questions(
+        session: SessionState,
+        paper: AssessmentPaper,
+    ) -> None:
+        session.pending_questions = [
+            PendingQuestion(
+                question_id=item.id,
+                expected_answer=item.answer_key or "",
+                paper_id=session.session_id,
+            )
+            for item in paper.items
+        ]
+
     def generate_assessment(self, session_id: str) -> AssessmentPaper:
         session = self._store.load(session_id)
         citation_result = self._curriculum_agent.run(self._ctx(session))
@@ -142,14 +156,7 @@ class MultiAgentOrchestrator:
             set(result.payload) & {"paper"},
         )
         session.paper = result.payload["paper"]
-        session.pending_questions = [
-            PendingQuestion(
-                question_id=item.id,
-                expected_answer=item.answer_key or "",
-                paper_id=session.session_id,
-            )
-            for item in session.paper.items
-        ]
+        self._bind_pending_questions(session, session.paper)
         session.answers = []
         session.image_answers = []
         session.grades = []
@@ -379,6 +386,7 @@ class MultiAgentOrchestrator:
             set(result.payload) & {"paper"},
         )
         session.paper = result.payload["paper"]
+        self._bind_pending_questions(session, session.paper)
         session.answers = []
         session.image_answers = []
         session.grades = []
