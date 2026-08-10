@@ -5,8 +5,48 @@ from __future__ import annotations
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.grader import ItemGrader
 from ilearn.core.ocr import OcrExtractor
-from ilearn.core.schemas import GradeResult, KnowledgeEvidence
+from ilearn.core.schemas import (
+    AssessmentItem,
+    EvidenceLane,
+    GradeResult,
+    KnowledgeEvidence,
+    StepAttempt,
+)
 from ilearn.providers.llm import LLMClient
+
+
+def _attempts_for_grade(
+    item: AssessmentItem, grade: GradeResult, lane: EvidenceLane
+) -> list[StepAttempt]:
+    attempts: list[StepAttempt] = []
+    rubric = item.rubric_steps or []
+    if grade.step_results:
+        for sr in grade.step_results:
+            attempts.append(
+                StepAttempt(
+                    item_id=item.id,
+                    step_index=sr.step_index,
+                    step_text=rubric[sr.step_index]
+                    if sr.step_index < len(rubric)
+                    else sr.step_text,
+                    student_expression=sr.step_text,
+                    lane=lane,
+                    hint_level=grade.hint_level_suggestion,
+                )
+            )
+    elif rubric:
+        for idx, label in enumerate(rubric):
+            attempts.append(
+                StepAttempt(
+                    item_id=item.id,
+                    step_index=idx,
+                    step_text=label,
+                    student_expression=grade.steps[idx] if idx < len(grade.steps) else "",
+                    lane=lane,
+                    hint_level=grade.hint_level_suggestion,
+                )
+            )
+    return attempts
 
 
 def evidence_from_grades(
@@ -79,10 +119,17 @@ class PracticeAgent:
             # grading step below may have degraded independently of OCR quality.
             grades_by_id[image_answer.item_id] = grade
         grades = list(grades_by_id.values())
+        all_attempts: list[StepAttempt] = []
+        for item_id, grade in grades_by_id.items():
+            item = item_by_id.get(item_id)
+            if item is None:
+                continue
+            all_attempts.extend(_attempts_for_grade(item, grade, lane))
         return AgentResult(
             phase=SessionPhase.DIAGNOSE,
             payload={
                 "grades": grades,
+                "step_attempts": all_attempts,
                 "evidence": evidence_from_grades(ctx.session_id, grades),
             },
         )
