@@ -1,0 +1,5 @@
+{
+  "subject": "chinese",
+  "layers": {"basic": 10, "raising": 8, "extension": 2},
+  "types": {"choice": 8, "fill": 8, "constructed": 4}
+}

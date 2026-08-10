@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import random
 from fractions import Fraction
+from pathlib import Path
 
 from ilearn.core.schemas import (
     AssessmentItem,
@@ -15,6 +16,12 @@ from ilearn.core.schemas import (
     PaperBlueprint,
     StudentProfile,
 )
+from ilearn.core.subject_quotas import (
+    MIX_BLUEPRINT,
+    _slots_from_quota,
+    build_blueprint_for_subject,
+    load_quota,
+)
 from ilearn.providers.curriculum import (
     CurriculumProvider,
     eval_answer_expr,
@@ -23,36 +30,18 @@ from ilearn.providers.curriculum import (
     render_template_text,
 )
 
-# Joint (difficulty, type) blueprint: 10 easy / 8 medium / 2 hard and 8 choice / 8 fill / 4 constructed.
-MIX_BLUEPRINT: list[tuple[Difficulty, ItemType]] = [
-    ("easy", "choice"),
-    ("easy", "fill"),
-    ("easy", "choice"),
-    ("easy", "fill"),
-    ("easy", "constructed"),
-    ("easy", "choice"),
-    ("easy", "fill"),
-    ("easy", "choice"),
-    ("easy", "fill"),
-    ("easy", "constructed"),
-    ("medium", "choice"),
-    ("medium", "fill"),
-    ("medium", "choice"),
-    ("medium", "fill"),
-    ("medium", "constructed"),
-    ("medium", "choice"),
-    ("medium", "fill"),
-    ("medium", "constructed"),
-    ("hard", "choice"),
-    ("hard", "fill"),
-]
-
 
 def build_blueprint(
     profile: StudentProfile,
     weak_ids: list[str] | None = None,
+    *,
+    pilot_dir: Path | str | None = None,
 ) -> PaperBlueprint:
     """Build a 20-slot blueprint; optionally target weak knowledge nodes."""
+    if profile.subject != "math":
+        if pilot_dir is None:
+            pilot_dir = Path(__file__).resolve().parents[2] / "data" / "pilot"
+        return build_blueprint_for_subject(profile, pilot_dir, weak_ids)
     weak_queue = list(weak_ids) if weak_ids else []
     slots: list[BlueprintSlot] = []
     for difficulty, item_type in MIX_BLUEPRINT:
@@ -162,16 +151,18 @@ class AssessmentBuilder:
         self._rng = rng or random.Random()
 
     def build(self, profile: StudentProfile, n: int = 20) -> AssessmentPaper:
-        if n != len(MIX_BLUEPRINT):
+        mix = load_quota(profile.subject, Path(__file__).resolve().parents[2] / "data" / "pilot")
+        blueprint_slots = _slots_from_quota(mix)
+        if n != len(blueprint_slots):
             raise AssessmentBuildError(
-                f"unsupported paper size n={n}; only n={len(MIX_BLUEPRINT)} is supported"
+                f"unsupported paper size n={n}; only n={len(blueprint_slots)} is supported"
             )
 
         grade = profile.grade
         used_template_ids: set[str] = set()
         items: list[AssessmentItem] = []
 
-        for index, (difficulty, item_type) in enumerate(MIX_BLUEPRINT):
+        for index, (difficulty, item_type) in enumerate(blueprint_slots):
             candidates = [
                 template
                 for template in self._provider.list_templates(

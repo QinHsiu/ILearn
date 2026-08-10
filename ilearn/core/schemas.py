@@ -19,6 +19,7 @@ ERROR_TAGS = ("concept_gap", "calc_error", "misread", "method_wrong", "incomplet
 
 ErrorTag = Literal["concept_gap", "calc_error", "misread", "method_wrong", "incomplete"]
 GradeLevel = Literal[4, 5, 6]
+Subject = Literal["math", "chinese"]
 ItemType = Literal["choice", "fill", "constructed"]
 Difficulty = Literal["easy", "medium", "hard"]
 MasteryLevel = Literal["mastered", "unstable", "weak"]
@@ -45,6 +46,7 @@ class StudentProfile(BaseModel):
     region: str
     grade: Literal[4, 5, 6]
     age: int = Field(ge=6, le=18)
+    subject: Subject = "math"
 
 
 KcType = Literal["fact", "skill", "principle"]
