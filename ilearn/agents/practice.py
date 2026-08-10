@@ -113,6 +113,9 @@ class PracticeAgent:
                 paper_created_at=paper_created_at,
                 lane=lane,
             )
+            if grade.receipt is not None:
+                grade.receipt.ocr_confidence = ocr_result.confidence
+                grade.receipt.ocr_degraded = ocr_result.degraded
             if ocr_result.degraded or ocr_result.confidence < 0.5:
                 grade.grading_degraded = True
             # Do not clear grading_degraded based on OCR success alone: the text

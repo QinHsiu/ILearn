@@ -167,6 +167,8 @@ class GradingReceipt(BaseModel):
     grader_version: str
     model_id: str | None = None
     graded_at: datetime = Field(default_factory=utc_now)
+    ocr_confidence: float | None = None
+    ocr_degraded: bool | None = None
 
 
 class MasteryRecord(BaseModel):
