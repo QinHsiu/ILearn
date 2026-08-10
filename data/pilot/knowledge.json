@@ -1,0 +1,106 @@
+[
+  {
+    "id": "mult_3digit",
+    "grade": 4,
+    "name": "三位数乘两位数",
+    "ability_tags": [
+      "mental_math"
+    ]
+  },
+  {
+    "id": "rect_area",
+    "grade": 4,
+    "name": "长方形面积",
+    "ability_tags": [
+      "spatial"
+    ]
+  },
+  {
+    "id": "angle_measure",
+    "grade": 4,
+    "name": "角的度量",
+    "ability_tags": [
+      "spatial"
+    ]
+  },
+  {
+    "id": "parallel_perp",
+    "grade": 4,
+    "name": "平行与垂直",
+    "ability_tags": [
+      "logic"
+    ]
+  },
+  {
+    "id": "dec_mult",
+    "grade": 5,
+    "name": "小数乘法",
+    "ability_tags": [
+      "mental_math"
+    ]
+  },
+  {
+    "id": "frac_add_same",
+    "grade": 5,
+    "name": "同分母分数加法",
+    "ability_tags": [
+      "logic"
+    ]
+  },
+  {
+    "id": "frac_mult",
+    "grade": 5,
+    "name": "分数乘法",
+    "ability_tags": [
+      "logic"
+    ]
+  },
+  {
+    "id": "simple_eq",
+    "grade": 5,
+    "name": "简易方程",
+    "ability_tags": [
+      "logic"
+    ]
+  },
+  {
+    "id": "frac_div",
+    "grade": 6,
+    "name": "分数除法",
+    "ability_tags": [
+      "logic"
+    ]
+  },
+  {
+    "id": "ratio",
+    "grade": 6,
+    "name": "比和比例",
+    "ability_tags": [
+      "logic"
+    ]
+  },
+  {
+    "id": "circle_area",
+    "grade": 6,
+    "name": "圆的面积",
+    "ability_tags": [
+      "spatial"
+    ]
+  },
+  {
+    "id": "percent",
+    "grade": 6,
+    "name": "百分数应用",
+    "ability_tags": [
+      "mental_math"
+    ]
+  },
+  {
+    "id": "factors",
+    "grade": 6,
+    "name": "因数与倍数",
+    "ability_tags": [
+      "logic"
+    ]
+  }
+]
