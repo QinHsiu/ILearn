@@ -1,0 +1,448 @@
+"""Streamlit teaching interface for the ILearn MVP.
+
+The web layer deliberately talks to FastAPI over HTTP and contains no grading,
+diagnosis, or planning business logic.
+"""
+
+from __future__ import annotations
+
+import html
+import os
+from pathlib import Path
+from typing import Any
+
+import httpx
+
+DEFAULT_API_BASE = "http://127.0.0.1:8000"
+STEP_NAMES = ("建档", "测评作答", "批改与学情", "学习计划")
+
+_LEVEL_LABELS = {
+    "mastered": "已掌握",
+    "unstable": "需巩固",
+    "weak": "待提升",
+}
+_ERROR_LABELS = {
+    "concept_gap": "概念缺口",
+    "calc_error": "计算错误",
+    "misread": "审题偏差",
+    "method_wrong": "方法不当",
+    "incomplete": "过程不完整",
+}
+_ABILITY_LABELS = {
+    "logic": "逻辑推理",
+    "spatial": "空间观念",
+    "mental_math": "心算能力",
+    "calculation": "运算能力",
+    "application": "应用能力",
+    "reasoning": "数学推理",
+}
+
+
+class ILearnAPI:
+    """Small synchronous HTTP adapter for the Streamlit UI."""
+
+    def __init__(
+        self,
+        base_url: str,
+        *,
+        client: httpx.Client | None = None,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.client = client or httpx.Client(timeout=httpx.Timeout(90.0, connect=5.0))
+
+    def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
+        try:
+            response = self.client.request(
+                method, f"{self.base_url}{path}", **kwargs
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            try:
+                detail = exc.response.json().get("detail")
+            except (ValueError, AttributeError):
+                detail = None
+            raise RuntimeError(detail or f"服务返回错误（{exc.response.status_code}）") from exc
+        except httpx.RequestError as exc:
+            raise RuntimeError(
+                f"无法连接 ILearn API：{self.base_url}。请确认 API 已启动。"
+            ) from exc
+        return response.json()
+
+    def start_session(
+        self, region: str, grade: int, age: int
+    ) -> tuple[str, dict[str, Any]]:
+        created = self._request(
+            "POST",
+            "/sessions",
+            json={"region": region, "grade": grade, "age": age},
+        )
+        session_id = created["session_id"]
+        paper = self._request("POST", f"/sessions/{session_id}/assessment")
+        return session_id, paper
+
+    def submit_and_run(
+        self, session_id: str, answers: dict[str, str]
+    ) -> dict[str, Any]:
+        self._request(
+            "POST", f"/sessions/{session_id}/submit", json={"answers": answers}
+        )
+        return self._request("POST", f"/sessions/{session_id}/run")
+
+    def get_report(self, session_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/sessions/{session_id}/report")
+
+
+def grade_summary(grades: list[dict[str, Any]]) -> dict[str, int]:
+    """Return headline grading counts for display."""
+    return {
+        "correct": sum(bool(grade.get("final_correct")) for grade in grades),
+        "total": len(grades),
+        "degraded": sum(bool(grade.get("grading_degraded")) for grade in grades),
+    }
+
+
+def mastery_rows(mastery: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """Translate diagnosis data into a compact Chinese mastery table."""
+    rows = []
+    for item in mastery:
+        errors = item.get("error_tag_counts") or {}
+        error_text = "—"
+        if errors:
+            error_text = "、".join(
+                f"{_ERROR_LABELS.get(tag, tag)} × {count}"
+                for tag, count in errors.items()
+                if count
+            ) or "—"
+        rows.append(
+            {
+                "知识点": str(item.get("knowledge_id", "—")),
+                "掌握率": f"{float(item.get('score_rate', 0)):.0%}",
+                "水平": _LEVEL_LABELS.get(item.get("level"), str(item.get("level", "—"))),
+                "主要错因": error_text,
+            }
+        )
+    return rows
+
+
+def ability_label(name: str) -> str:
+    """Return a learner-friendly ability name."""
+    return _ABILITY_LABELS.get(name, name.replace("_", " ").title())
+
+
+def _load_css() -> str:
+    return (Path(__file__).with_name("styles.css")).read_text(encoding="utf-8")
+
+
+def _init_state(st: Any) -> None:
+    defaults = {
+        "wizard_step": 0,
+        "session_id": None,
+        "paper": None,
+        "question_index": 0,
+        "answers": {},
+        "session_report": None,
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+def _render_header(st: Any) -> None:
+    st.markdown(
+        """
+        <div class="brand-wrap">
+          <div class="brand">ILearn</div>
+          <div class="subtitle">小学数学学情与规划</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_stepper(st: Any) -> None:
+    current = st.session_state.wizard_step
+    steps = []
+    for index, name in enumerate(STEP_NAMES):
+        state = "active" if index == current else "done" if index < current else ""
+        steps.append(
+            f'<div class="step {state}"><span>{index + 1}</span>{name}</div>'
+        )
+    st.markdown(
+        f'<div class="stepper">{"".join(steps)}</div>', unsafe_allow_html=True
+    )
+
+
+def _show_error(st: Any, exc: Exception) -> None:
+    st.error(str(exc))
+
+
+def _render_profile(st: Any, api: ILearnAPI) -> None:
+    st.markdown("## 先认识一下你")
+    st.caption("完成基础建档后，我们会生成一份 20 题的小学数学测评。")
+    with st.form("profile_form"):
+        region = st.text_input("所在地区", value="北京", placeholder="例如：北京")
+        left, right = st.columns(2)
+        with left:
+            grade = st.selectbox("年级", options=(4, 5, 6), format_func=lambda x: f"{x} 年级")
+        with right:
+            age = st.number_input("年龄", min_value=6, max_value=18, value=11)
+        submitted = st.form_submit_button("开始测评", use_container_width=True)
+
+    if submitted:
+        if not region.strip():
+            st.warning("请填写所在地区。")
+            return
+        try:
+            with st.spinner("正在准备适合你的测评题目…"):
+                session_id, paper = api.start_session(
+                    region.strip(), int(grade), int(age)
+                )
+        except RuntimeError as exc:
+            _show_error(st, exc)
+            return
+        st.session_state.session_id = session_id
+        st.session_state.paper = paper
+        st.session_state.answers = {}
+        st.session_state.question_index = 0
+        st.session_state.wizard_step = 1
+        st.rerun()
+
+
+def _answer_widget(st: Any, item: dict[str, Any]) -> str:
+    item_id = item["id"]
+    current = st.session_state.answers.get(item_id, "")
+    key = f"answer_{item_id}"
+    if item.get("type") == "choice" and item.get("choices"):
+        choices = [str(choice) for choice in item["choices"]]
+        index = choices.index(current) if current in choices else None
+        return st.radio(
+            "请选择一个答案",
+            choices,
+            index=index,
+            key=key,
+            label_visibility="collapsed",
+        ) or ""
+    if item.get("type") == "constructed":
+        return st.text_area(
+            "写出答案和主要步骤",
+            value=current,
+            key=key,
+            height=150,
+            placeholder="请写出答案，并简要说明你的计算过程…",
+        )
+    return st.text_input(
+        "填写答案",
+        value=current,
+        key=key,
+        placeholder="请输入你的答案",
+        label_visibility="collapsed",
+    )
+
+
+def _save_answer(st: Any, item_id: str, answer: str) -> bool:
+    normalized = str(answer).strip()
+    if not normalized:
+        st.warning("请先完成本题，再继续。")
+        return False
+    st.session_state.answers[item_id] = normalized
+    return True
+
+
+def _render_assessment(st: Any, api: ILearnAPI) -> None:
+    items = (st.session_state.paper or {}).get("items", [])
+    if not items:
+        st.error("测评题目尚未生成，请返回建档页重试。")
+        if st.button("返回建档"):
+            st.session_state.wizard_step = 0
+            st.rerun()
+        return
+
+    index = min(st.session_state.question_index, len(items) - 1)
+    item = items[index]
+    st.markdown(
+        f'<div class="question-progress">第 {index + 1}/{len(items)} 题</div>',
+        unsafe_allow_html=True,
+    )
+    st.progress((index + 1) / len(items))
+    st.markdown(
+        f'<div class="question-card"><div class="question-meta">'
+        f'{html.escape(str(item.get("difficulty", ""))).upper()} · '
+        f'{html.escape(str(item.get("type", "")))}</div>'
+        f'<div class="stem">{html.escape(str(item.get("stem", "")))}</div></div>',
+        unsafe_allow_html=True,
+    )
+    answer = _answer_widget(st, item)
+
+    previous, spacer, next_col = st.columns([1, 2, 1.4])
+    with previous:
+        if index > 0 and st.button("← 上一题", use_container_width=True):
+            if str(answer).strip():
+                st.session_state.answers[item["id"]] = str(answer).strip()
+            st.session_state.question_index -= 1
+            st.rerun()
+    with next_col:
+        if index < len(items) - 1:
+            if st.button("下一题 →", type="primary", use_container_width=True):
+                if _save_answer(st, item["id"], answer):
+                    st.session_state.question_index += 1
+                    st.rerun()
+        elif st.button("提交全部答案", type="primary", use_container_width=True):
+            if not _save_answer(st, item["id"], answer):
+                return
+            missing = [
+                question["id"]
+                for question in items
+                if not st.session_state.answers.get(question["id"], "").strip()
+            ]
+            if missing:
+                st.warning(f"还有 {len(missing)} 题未完成，请返回检查。")
+                return
+            try:
+                with st.spinner("正在批改并分析学情，请稍候…"):
+                    api.submit_and_run(
+                        st.session_state.session_id, st.session_state.answers
+                    )
+                    st.session_state.session_report = api.get_report(
+                        st.session_state.session_id
+                    )
+            except RuntimeError as exc:
+                _show_error(st, exc)
+                return
+            st.session_state.wizard_step = 2
+            st.rerun()
+
+
+def _diagnosis(st: Any) -> dict[str, Any]:
+    report = st.session_state.session_report or {}
+    return (report.get("session") or {}).get("diagnosis") or {}
+
+
+def _render_diagnosis(st: Any) -> None:
+    session = (st.session_state.session_report or {}).get("session") or {}
+    grades = session.get("grades") or []
+    diagnosis = session.get("diagnosis") or {}
+    summary = grade_summary(grades)
+
+    st.markdown("## 这次测评表现")
+    first, second, third = st.columns(3)
+    first.metric("答对题数", f'{summary["correct"]} / {summary["total"]}')
+    rate = summary["correct"] / summary["total"] if summary["total"] else 0
+    second.metric("正确率", f"{rate:.0%}")
+    third.metric("重点巩固", f'{len(diagnosis.get("interventions") or [])} 项')
+    if summary["degraded"]:
+        st.caption(f'其中 {summary["degraded"]} 题采用基础规则批改。')
+
+    st.markdown("### 知识掌握")
+    rows = mastery_rows(diagnosis.get("knowledge_mastery") or [])
+    if rows:
+        st.dataframe(rows, hide_index=True, use_container_width=True)
+    else:
+        st.info("暂无知识点掌握数据。")
+
+    st.markdown("### 能力表现")
+    ability_scores = diagnosis.get("ability_scores") or {}
+    for name, score in ability_scores.items():
+        numeric = max(0.0, min(100.0, float(score)))
+        st.markdown(f"**{ability_label(name)}**　{numeric:.0f}")
+        st.progress(int(numeric))
+    st.caption("能力分数由本次题目表现启发式估算，不属于心理测量结果。")
+
+    interventions = diagnosis.get("interventions") or []
+    if interventions:
+        st.markdown("### 优先巩固建议")
+        for item in interventions:
+            with st.expander(
+                f'{item.get("priority", "·")}. {item.get("title", item.get("knowledge_id", "知识点"))}'
+            ):
+                st.write(item.get("why", ""))
+                st.markdown(f'**先从这里开始：** {item.get("what_to_fix_first", "")}')
+
+    disclaimer = diagnosis.get("region_mismatch_disclaimer")
+    if disclaimer:
+        st.warning(disclaimer)
+    if st.button("查看学习计划 →", type="primary", use_container_width=True):
+        st.session_state.wizard_step = 3
+        st.rerun()
+
+
+def _render_plan(st: Any) -> None:
+    report = st.session_state.session_report or {}
+    session = report.get("session") or {}
+    plan = session.get("plan") or {}
+    st.markdown("## 你的学习计划")
+    st.markdown(
+        f'<div class="goal-card"><span>学习目标</span>'
+        f'<strong>{html.escape(str(plan.get("goal", "稳步巩固薄弱知识点")))}</strong></div>',
+        unsafe_allow_html=True,
+    )
+
+    milestones = plan.get("milestones") or []
+    if milestones:
+        st.markdown("### 阶段里程碑")
+        for milestone in milestones:
+            st.markdown(f"- {milestone}")
+
+    st.markdown("### 每日安排")
+    for day in plan.get("days") or []:
+        tasks = "".join(
+            f"<li>{html.escape(str(task))}</li>" for task in day.get("tasks") or []
+        )
+        focus = " · ".join(str(value) for value in day.get("focus_knowledge_ids") or [])
+        st.markdown(
+            f'<div class="day-card"><div class="day-title">'
+            f'<strong>第 {day.get("day", "·")} 天</strong>'
+            f'<span>{day.get("minutes", "—")} 分钟</span></div>'
+            f'<div class="day-focus">{html.escape(focus)}</div><ul>{tasks}</ul></div>',
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("查看完整 Markdown 报告"):
+        st.markdown(report.get("markdown") or plan.get("markdown") or "暂无报告。")
+    st.info(
+        plan.get("disclaimer")
+        or "本计划为智能助手建议，不能替代教师专业评价。"
+    )
+    if st.button("重新建档"):
+        for key in (
+            "session_id",
+            "paper",
+            "answers",
+            "session_report",
+        ):
+            st.session_state[key] = {} if key == "answers" else None
+        st.session_state.question_index = 0
+        st.session_state.wizard_step = 0
+        st.rerun()
+
+
+def main() -> None:
+    """Run the Streamlit application."""
+    import streamlit as st
+
+    st.set_page_config(
+        page_title="ILearn · 小学数学学情与规划",
+        page_icon="📘",
+        layout="centered",
+        initial_sidebar_state="collapsed",
+    )
+    st.markdown(f"<style>{_load_css()}</style>", unsafe_allow_html=True)
+    _init_state(st)
+    _render_header(st)
+    _render_stepper(st)
+    api = ILearnAPI(os.getenv("ILEARN_API_BASE", DEFAULT_API_BASE))
+
+    renderers = (
+        lambda: _render_profile(st, api),
+        lambda: _render_assessment(st, api),
+        lambda: _render_diagnosis(st),
+        lambda: _render_plan(st),
+    )
+    renderers[st.session_state.wizard_step]()
+    st.markdown(
+        '<div class="footer-note">循序学习 · 看见进步</div>',
+        unsafe_allow_html=True,
+    )
+
+
+if __name__ == "__main__":
+    main()

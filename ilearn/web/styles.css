@@ -1,0 +1,238 @@
+:root {
+  --ink: #16343a;
+  --teal: #176b67;
+  --teal-soft: #dcebe6;
+  --paper: #f8f4ea;
+  --card: #fffdf7;
+  --gold: #c58a36;
+  --line: #d9d5ca;
+}
+
+.stApp {
+  background:
+    radial-gradient(circle at 85% 4%, rgba(197, 138, 54, 0.10), transparent 24rem),
+    var(--paper);
+  color: var(--ink);
+}
+
+[data-testid="stHeader"] {
+  background: transparent;
+}
+
+.block-container {
+  max-width: 900px;
+  padding-top: 2.2rem;
+  padding-bottom: 3rem;
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 0.4rem 0 2rem;
+}
+
+.brand {
+  color: var(--teal);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.8rem, 7vw, 4.6rem);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.subtitle {
+  color: #506367;
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 3.2rem;
+}
+
+.step {
+  border-top: 3px solid var(--line);
+  color: #829093;
+  font-size: 0.88rem;
+  padding-top: 0.75rem;
+}
+
+.step span {
+  align-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  display: inline-flex;
+  font-size: 0.72rem;
+  height: 1.4rem;
+  justify-content: center;
+  margin-right: 0.35rem;
+  width: 1.4rem;
+}
+
+.step.active {
+  border-color: var(--gold);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.step.done {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+h1, h2, h3 {
+  color: var(--ink) !important;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  margin-bottom: 0.6rem !important;
+}
+
+.question-progress {
+  color: var(--teal);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.45rem;
+}
+
+.question-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--teal);
+  border-radius: 6px 18px 18px 6px;
+  box-shadow: 0 12px 34px rgba(22, 52, 58, 0.07);
+  margin: 1.8rem 0 1.4rem;
+  padding: clamp(1.5rem, 5vw, 2.6rem);
+}
+
+.question-meta {
+  color: #728185;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 1rem;
+}
+
+.stem {
+  color: var(--ink);
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 650;
+  line-height: 1.75;
+}
+
+[data-testid="stRadio"] label {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin: 0.2rem 0;
+  padding: 0.55rem 0.8rem;
+}
+
+[data-testid="stRadio"] label:hover {
+  border-color: var(--teal);
+}
+
+.stButton > button,
+.stFormSubmitButton > button {
+  border-radius: 8px;
+  font-weight: 700;
+  min-height: 2.8rem;
+}
+
+.stButton > button[kind="primary"],
+.stFormSubmitButton > button {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+
+.goal-card {
+  background: var(--teal);
+  border-radius: 16px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1.4rem 0 2.2rem;
+  padding: 1.6rem 1.8rem;
+}
+
+.goal-card span {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
+}
+
+.goal-card strong {
+  font-size: 1.3rem;
+  line-height: 1.6;
+}
+
+.day-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin: 0 0 1rem;
+  padding: 1.25rem 1.4rem;
+}
+
+.day-title {
+  align-items: center;
+  color: var(--teal);
+  display: flex;
+  justify-content: space-between;
+}
+
+.day-title span {
+  background: var(--teal-soft);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.7rem;
+}
+
+.day-focus {
+  color: #718083;
+  font-size: 0.82rem;
+  margin-top: 0.35rem;
+}
+
+.day-card li {
+  line-height: 1.7;
+  margin-top: 0.35rem;
+}
+
+.footer-note {
+  border-top: 1px solid var(--line);
+  color: #839093;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  margin-top: 4rem;
+  padding-top: 1.2rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .block-container {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+  }
+
+  .brand-wrap {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .step {
+    font-size: 0;
+  }
+
+  .step span {
+    font-size: 0.72rem;
+  }
+}
