@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -16,6 +17,16 @@ Difficulty = Literal["easy", "medium", "hard"]
 MasteryLevel = Literal["mastered", "unstable", "weak"]
 StepStatus = Literal["correct", "incorrect", "partial"]
 HintLevel = Literal["none", "low", "medium", "high"]
+
+
+class SessionPhase(str, Enum):
+    ONBOARD = "onboard"
+    ASSESS = "assess"
+    PRACTICE = "practice"
+    GRADE = "grade"
+    DIAGNOSE = "diagnose"
+    PLAN = "plan"
+    PRACTICE_LOOP = "practice_loop"
 
 
 class StudentProfile(BaseModel):
@@ -77,6 +88,12 @@ class StudentAnswer(BaseModel):
 
     item_id: str
     answer_text: str
+
+
+class ImageAnswer(BaseModel):
+    item_id: str
+    image_base64: str
+    mime_type: Literal["image/png", "image/jpeg", "image/webp"] = "image/png"
 
 
 class StepResult(BaseModel):
@@ -151,13 +168,40 @@ class LearningPlanReport(BaseModel):
     disclaimer: str = "本计划为智能助手建议，不能替代教师专业评价。"
 
 
+class WeaknessEntry(BaseModel):
+    knowledge_id: str
+    topic: str
+    logic_gap: str
+    session_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class LearnerPortrait(BaseModel):
+    student_key: str
+    knowledge_state: dict[str, float] = Field(default_factory=dict)
+    ability_ema: dict[str, float] = Field(default_factory=dict)
+    weakness_log: list[WeaknessEntry] = Field(default_factory=list)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class CurriculumCitation(BaseModel):
+    citation_id: str
+    title: str
+    excerpt: str
+    source_label: str
+
+
 class SessionState(BaseModel):
     """Persisted session artifact spanning the full MVP loop."""
 
     session_id: str
     profile: StudentProfile
+    phase: SessionPhase = SessionPhase.ONBOARD
     paper: AssessmentPaper | None = None
     answers: list[StudentAnswer] = Field(default_factory=list)
+    image_answers: list[ImageAnswer] = Field(default_factory=list)
     grades: list[GradeResult] = Field(default_factory=list)
     diagnosis: DiagnosisReport | None = None
     plan: LearningPlanReport | None = None
+    portrait: LearnerPortrait | None = None
+    loop_count: int = 0
