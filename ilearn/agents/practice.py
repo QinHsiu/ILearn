@@ -5,7 +5,30 @@ from __future__ import annotations
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.grader import ItemGrader
 from ilearn.core.ocr import OcrExtractor
+from ilearn.core.schemas import GradeResult, KnowledgeEvidence
 from ilearn.providers.llm import LLMClient
+
+
+def evidence_from_grades(
+    session_id: str, grades: list[GradeResult]
+) -> list[KnowledgeEvidence]:
+    """Build KnowledgeEvidence events from graded items."""
+    events: list[KnowledgeEvidence] = []
+    for grade in grades:
+        for knowledge_id in grade.knowledge_ids:
+            events.append(
+                KnowledgeEvidence(
+                    session_id=session_id,
+                    item_id=grade.item_id,
+                    knowledge_id=knowledge_id,
+                    lane=grade.lane,
+                    correct=grade.final_correct,
+                    error_tag=grade.error_tags[0] if grade.error_tags else None,
+                    hint_level=grade.hint_level_suggestion,
+                    confidence=0.5 if grade.grading_degraded else 1.0,
+                )
+            )
+    return events
 
 
 class PracticeAgent:
@@ -50,7 +73,11 @@ class PracticeAgent:
             elif not ocr_result.degraded:
                 grade.grading_degraded = False
             grades_by_id[image_answer.item_id] = grade
+        grades = list(grades_by_id.values())
         return AgentResult(
             phase=SessionPhase.DIAGNOSE,
-            payload={"grades": list(grades_by_id.values())},
+            payload={
+                "grades": grades,
+                "evidence": evidence_from_grades(ctx.session_id, grades),
+            },
         )

@@ -8,7 +8,8 @@ from ilearn.agents.assessment import AssessmentAgent
 from ilearn.agents.curriculum import CurriculumAgent
 from ilearn.agents.diagnosis import DiagnosisAgent
 from ilearn.agents.planning import PlanningAgent
-from ilearn.agents.practice import PracticeAgent
+from ilearn.agents.practice import PracticeAgent, evidence_from_grades
+from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
 from ilearn.core.report import render_full_report
 from ilearn.core.schemas import (
@@ -128,6 +129,10 @@ class MultiAgentOrchestrator:
             self._ctx(session, phase=SessionPhase.GRADE)
         )
         session.grades = result.payload["grades"]
+        for event in result.payload.get("evidence") or evidence_from_grades(
+            session.session_id, session.grades
+        ):
+            append_evidence(session, event)
         session.diagnosis = None
         session.plan = None
         session.phase = result.phase
