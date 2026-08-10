@@ -785,6 +785,9 @@
       "b": "int:2-7",
       "d": "choice:6,8,10,12"
     },
+    "derived_slots": {
+      "c": "a+b"
+    },
     "answer_expr": "a+b",
     "rubric_steps": [
       "分子相加"
