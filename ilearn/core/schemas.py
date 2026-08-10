@@ -259,6 +259,16 @@ class WeaknessEntry(BaseModel):
     created_at: datetime = Field(default_factory=utc_now)
 
 
+class WeaknessEvent(BaseModel):
+    knowledge_id: str
+    step_index: int | None = None
+    error_tag: ErrorTag | None = None
+    confidence: float = 1.0
+    evidence_id: str | None = None
+    session_id: str = ""
+    created_at: datetime = Field(default_factory=utc_now)
+
+
 class PortraitDimensions(BaseModel):
     """Five-dimension learner portrait extension (OPT-022)."""
 
@@ -276,6 +286,7 @@ class LearnerPortrait(BaseModel):
     review_states: dict[str, "ReviewState"] = Field(default_factory=dict)
     ability_ema: dict[str, float] = Field(default_factory=dict)
     weakness_log: list[WeaknessEntry] = Field(default_factory=list)
+    weakness_events: list[WeaknessEvent] = Field(default_factory=list)
     dimensions: PortraitDimensions = Field(default_factory=PortraitDimensions)
     updated_at: datetime = Field(default_factory=utc_now)
 

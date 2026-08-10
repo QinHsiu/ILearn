@@ -23,6 +23,7 @@ from ilearn.core.schemas import (
     MasteryRecord,
     StudentProfile,
     WeaknessEntry,
+    WeaknessEvent,
 )
 from ilearn.providers.curriculum import CurriculumProvider, PilotBeijingRenjiaoProvider
 
@@ -247,6 +248,33 @@ def _knowledge_name(
     return knowledge_id
 
 
+def _upsert_weakness_event(portrait: LearnerPortrait, event: WeaknessEvent) -> None:
+    for idx, existing in enumerate(portrait.weakness_events):
+        if (
+            existing.session_id == event.session_id
+            and existing.knowledge_id == event.knowledge_id
+        ):
+            portrait.weakness_events[idx] = WeaknessEvent(
+                knowledge_id=event.knowledge_id,
+                session_id=event.session_id,
+                step_index=(
+                    event.step_index
+                    if event.step_index is not None
+                    else existing.step_index
+                ),
+                error_tag=event.error_tag if event.error_tag is not None else existing.error_tag,
+                confidence=max(existing.confidence, event.confidence),
+                evidence_id=(
+                    event.evidence_id
+                    if event.confidence >= existing.confidence
+                    else existing.evidence_id
+                ),
+                created_at=existing.created_at,
+            )
+            return
+    portrait.weakness_events.append(event)
+
+
 class PortraitUpdater:
     """Append weakness entries and decay knowledge state from incorrect grades."""
 
@@ -262,6 +290,21 @@ class PortraitUpdater:
         now = utc_now()
         if evidence:
             apply_evidence_to_mastery(portrait, evidence)
+            for ev in evidence:
+                if ev.correct:
+                    continue
+                _upsert_weakness_event(
+                    portrait,
+                    WeaknessEvent(
+                        knowledge_id=ev.knowledge_id,
+                        step_index=ev.step_index,
+                        error_tag=ev.error_tag,
+                        confidence=ev.confidence,
+                        evidence_id=ev.evidence_id,
+                        session_id=session_id,
+                        created_at=ev.created_at,
+                    ),
+                )
 
         for grade_row in grades:
             if not evidence:
@@ -298,6 +341,18 @@ class PortraitUpdater:
                         ),
                         session_id=session_id,
                     )
+                )
+                _upsert_weakness_event(
+                    portrait,
+                    WeaknessEvent(
+                        knowledge_id=kid,
+                        error_tag=(
+                            grade_row.error_tags[0]
+                            if grade_row.error_tags
+                            else None
+                        ),
+                        session_id=session_id,
+                    ),
                 )
                 if not evidence:
                     portrait.knowledge_state[kid] = min(
