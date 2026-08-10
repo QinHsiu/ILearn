@@ -17,6 +17,7 @@ Difficulty = Literal["easy", "medium", "hard"]
 MasteryLevel = Literal["mastered", "unstable", "weak"]
 StepStatus = Literal["correct", "incorrect", "partial"]
 HintLevel = Literal["none", "low", "medium", "high"]
+EvidenceLane = Literal["practice", "probe"]
 
 
 class SessionPhase(str, Enum):
@@ -103,6 +104,40 @@ class StepResult(BaseModel):
     step_text: str
     status: StepStatus
     comment: str = ""
+
+
+class StepAttempt(BaseModel):
+    """Student work on a single rubric step before grading."""
+
+    item_id: str
+    step_index: int = Field(ge=0)
+    step_text: str
+    student_expression: str
+    lane: EvidenceLane = "practice"
+    hint_level: HintLevel = "none"
+
+
+class StepVerdict(BaseModel):
+    """Grader verdict for one rubric step."""
+
+    step_index: int = Field(ge=0)
+    status: StepStatus
+    comment: str = ""
+
+
+class KnowledgeEvidence(BaseModel):
+    """Observed evidence linking an item attempt to a knowledge node."""
+
+    session_id: str
+    item_id: str
+    knowledge_id: str
+    lane: EvidenceLane
+    correct: bool
+    error_tag: ErrorTag | None = None
+    hint_level: HintLevel = "none"
+    confidence: float = Field(ge=0.0, le=1.0, default=1.0)
+    step_index: int | None = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class GradeResult(BaseModel):
@@ -206,3 +241,4 @@ class SessionState(BaseModel):
     plan: LearningPlanReport | None = None
     portrait: LearnerPortrait | None = None
     loop_count: int = 0
+    evidence_log: list[KnowledgeEvidence] = Field(default_factory=list)
