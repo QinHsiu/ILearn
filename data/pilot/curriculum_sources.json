@@ -1,0 +1,42 @@
+[
+  {
+    "source_id": "bj-g4-math-2024",
+    "region": "北京",
+    "grade": 4,
+    "subject": "math",
+    "title": "人教版四年级数学",
+    "excerpt": "四年级上册：三位数加减法竖式计算，掌握进位与退位；两位数乘两位数理解算理。",
+    "keywords": ["加减法", "乘法", "竖式", "进位"],
+    "content_hash": "sha256:g4math001abc"
+  },
+  {
+    "source_id": "bj-g5-math-2024",
+    "region": "北京",
+    "grade": 5,
+    "subject": "math",
+    "title": "人教版五年级数学",
+    "excerpt": "五年级上册：同分母分数加减法，分母不变，分子相加减；异分母分数需先通分。",
+    "keywords": ["小数", "分数", "分数加减", "通分"],
+    "content_hash": "sha256:g5math002def"
+  },
+  {
+    "source_id": "bj-g6-math-2024",
+    "region": "北京",
+    "grade": 6,
+    "subject": "math",
+    "title": "人教版六年级数学",
+    "excerpt": "六年级上册：比和比例的意义，按比例分配；百分数的意义与应用题。",
+    "keywords": ["比", "比例", "百分数", "应用题"],
+    "content_hash": "sha256:g6math003ghi"
+  },
+  {
+    "source_id": "bj-g5-frac-detail",
+    "region": "北京",
+    "grade": 5,
+    "subject": "math",
+    "title": "分数加减法课标要点",
+    "excerpt": "同分母分数加减：分母不变，分子相加减。异分母分数加减需先通分再计算。",
+    "keywords": ["分数", "分数加减", "同分母", "异分母", "通分"],
+    "content_hash": "sha256:g5frac004jkl"
+  }
+]
