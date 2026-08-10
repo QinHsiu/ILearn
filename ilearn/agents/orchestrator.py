@@ -67,6 +67,7 @@ class MultiAgentOrchestrator:
             plan=session.plan,
             portrait=session.portrait,
             loop_count=session.loop_count,
+            evidence_log=list(session.evidence_log),
             metadata=metadata or {},
         )
 

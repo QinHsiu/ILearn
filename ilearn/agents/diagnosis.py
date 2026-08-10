@@ -25,15 +25,29 @@ class DiagnosisAgent:
     def run(self, ctx: AgentContext) -> AgentResult:
         if ctx.paper is None:
             raise ValueError("DiagnosisAgent requires paper in context")
-        diagnosis = self._diagnoser.diagnose(ctx.profile, ctx.paper, ctx.grades)
+        evidence = list(ctx.evidence_log)
+        portrait = ctx.portrait or LearnerPortrait(student_key=_student_key(ctx.profile))
         portrait = PortraitUpdater.update(
-            ctx.portrait or LearnerPortrait(student_key=_student_key(ctx.profile)),
+            portrait,
             ctx.grades,
             ctx.session_id,
             self._curriculum,
             grade=ctx.profile.grade,
+            evidence=evidence or None,
         )
-        portrait = PortraitDimensionUpdater.apply(portrait, ctx.grades, profile=ctx.profile)
+        diagnosis = self._diagnoser.diagnose(
+            ctx.profile,
+            ctx.paper,
+            ctx.grades,
+            portrait=portrait,
+            evidence=evidence or None,
+        )
+        if evidence:
+            portrait = PortraitDimensionUpdater.apply_from_evidence(portrait, evidence)
+        else:
+            portrait = PortraitDimensionUpdater.apply(
+                portrait, ctx.grades, profile=ctx.profile
+            )
         return AgentResult(
             phase=SessionPhase.PLAN,
             payload={"diagnosis": diagnosis, "portrait": portrait},

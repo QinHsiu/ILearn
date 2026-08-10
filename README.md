@@ -7,7 +7,7 @@
 > **当前试点：** 小学数学（四至六年级）· 北京·人教课标包；架构按多学科 / 全学段扩展预留。
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-177%20passed-2ea44f)](./tests)
+[![Tests](https://img.shields.io/badge/tests-198%20passed-2ea44f)](./tests)
 [![GitHub](https://img.shields.io/badge/GitHub-QinHsiu%2FILearn-181717?logo=github)](https://github.com/QinHsiu/ILearn)
 
 ```text
@@ -38,7 +38,7 @@
 | --- | --- |
 | **课标约束组卷** | 诊断卷 20 题（难度 10/8/2，题型 8/8/4）；PaperBlueprint 两阶段组卷；巩固卷 1–10 题 |
 | **分步批改** | 客观题规则 + 构造题 LLM；手写图 OCR → 文本批改；错误标签受控、结果可降级标记 |
-| **学情诊断** | 知识点掌握、五维画像、Top-N 干预建议、SM-2 间隔复习状态 |
+| **学情诊断** | 知识点掌握、五维画像、Top-N 干预建议、SM-2 间隔复习；leech 检测、evidence_id 引用、practice–probe gap 标记 |
 | **学习计划** | 1–2 周 Markdown / JSON 计划，含课标 citation 与复习日 |
 | **巩固闭环** | 诊断后按薄弱点自动触发练→评→练（`loop_count` ≤ 2） |
 | **离线评测** | 分步 fixtures、mistake_location、步骤完整度基准 |
@@ -176,10 +176,10 @@ streamlit run ilearn/web/app.py
 
 ```powershell
 python -m pytest -q
-python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py -v
+python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py tests/test_e2e_phase2a_diagnosis.py -v
 ```
 
-当前仓库基线：**177** 项测试通过（离线可跑）。
+当前仓库基线：**198** 项测试通过（离线可跑）。
 
 ---
 

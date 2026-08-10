@@ -6,6 +6,7 @@ from ilearn.core.schemas import (
     DiagnosisReport,
     GradeResult,
     ImageAnswer,
+    KnowledgeEvidence,
     LearnerPortrait,
     LearningPlanReport,
     SessionPhase,
@@ -29,6 +30,7 @@ class AgentContext:
     plan: LearningPlanReport | None = None
     portrait: LearnerPortrait | None = None
     loop_count: int = 0
+    evidence_log: list[KnowledgeEvidence] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)
 
 
