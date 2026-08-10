@@ -332,6 +332,21 @@ class CurriculumCitation(BaseModel):
     source_id: str | None = None
 
 
+class AgentDecision(BaseModel):
+    agent: str
+    phase: SessionPhase
+    reason: str = ""
+    evidence_ids: list[str] = Field(default_factory=list)
+    ok: bool = True
+    degraded: bool = False
+
+
+class PendingQuestion(BaseModel):
+    question_id: str
+    expected_answer: str
+    paper_id: str | None = None
+
+
 class SessionState(BaseModel):
     """Persisted session artifact spanning the full MVP loop."""
 
@@ -349,6 +364,8 @@ class SessionState(BaseModel):
     portrait: LearnerPortrait | None = None
     loop_count: int = 0
     evidence_log: list[KnowledgeEvidence] = Field(default_factory=list)
+    decision_log: list[AgentDecision] = Field(default_factory=list)
+    pending_questions: list[PendingQuestion] = Field(default_factory=list)
 
 
 from ilearn.core.review import ReviewState  # noqa: E402
