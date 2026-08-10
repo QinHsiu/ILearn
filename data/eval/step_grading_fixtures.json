@@ -1,0 +1,203 @@
+[
+  {
+    "id": "choice_correct_b",
+    "item": {
+      "id": "eval_c1",
+      "stem": "3/4 与 2/3 相比，哪个更大？",
+      "type": "choice",
+      "difficulty": "easy",
+      "knowledge_ids": ["frac_compare"],
+      "answer_key": "B",
+      "choices": ["A. 2/3", "B. 3/4", "C. 一样大", "D. 无法比较"]
+    },
+    "student_answer": "B",
+    "expected_final_correct": true,
+    "expected_error_tags": []
+  },
+  {
+    "id": "choice_wrong_letter_misread",
+    "item": {
+      "id": "eval_c2",
+      "stem": "下列哪个是质数？",
+      "type": "choice",
+      "difficulty": "easy",
+      "knowledge_ids": ["prime"],
+      "answer_key": "B",
+      "choices": ["A. 4", "B. 7", "C. 9", "D. 15"]
+    },
+    "student_answer": "A",
+    "expected_final_correct": false,
+    "expected_error_tags": ["misread"]
+  },
+  {
+    "id": "choice_wrong_free_text",
+    "item": {
+      "id": "eval_c3",
+      "stem": "一个长方形长 6 cm、宽 4 cm，面积是多少？",
+      "type": "choice",
+      "difficulty": "easy",
+      "knowledge_ids": ["area_rect"],
+      "answer_key": "C",
+      "choices": ["A. 10 cm²", "B. 20 cm²", "C. 24 cm²", "D. 28 cm²"]
+    },
+    "student_answer": "24",
+    "expected_final_correct": false,
+    "expected_error_tags": ["concept_gap"]
+  },
+  {
+    "id": "choice_case_whitespace",
+    "item": {
+      "id": "eval_c4",
+      "stem": "0.5 写成最简分数是？",
+      "type": "choice",
+      "difficulty": "easy",
+      "knowledge_ids": ["decimal_frac"],
+      "answer_key": "b",
+      "choices": ["A. 1/4", "B. 1/2", "C. 2/3", "D. 3/4"]
+    },
+    "student_answer": "  B  ",
+    "expected_final_correct": true,
+    "expected_error_tags": []
+  },
+  {
+    "id": "choice_e_option_wrong",
+    "item": {
+      "id": "eval_c5",
+      "stem": "100 以内最大的两位数是？",
+      "type": "choice",
+      "difficulty": "easy",
+      "knowledge_ids": ["place_value"],
+      "answer_key": "A",
+      "choices": ["A. 99", "B. 90", "C. 100", "D. 98", "E. 89"]
+    },
+    "student_answer": "E",
+    "expected_final_correct": false,
+    "expected_error_tags": ["misread"]
+  },
+  {
+    "id": "fill_exact_match",
+    "item": {
+      "id": "eval_f1",
+      "stem": "12 × 7 = ?",
+      "type": "fill",
+      "difficulty": "easy",
+      "knowledge_ids": ["mult_basic"],
+      "answer_key": "84"
+    },
+    "student_answer": "84",
+    "expected_final_correct": true,
+    "expected_error_tags": []
+  },
+  {
+    "id": "fill_numeric_tolerance",
+    "item": {
+      "id": "eval_f2",
+      "stem": "圆周率 π 保留两位小数约为？",
+      "type": "fill",
+      "difficulty": "medium",
+      "knowledge_ids": ["decimal_round"],
+      "answer_key": "3.14"
+    },
+    "student_answer": "3.140000",
+    "expected_final_correct": true,
+    "expected_error_tags": []
+  },
+  {
+    "id": "fill_comma_number",
+    "item": {
+      "id": "eval_f3",
+      "stem": "1000 + 2000 = ?",
+      "type": "fill",
+      "difficulty": "easy",
+      "knowledge_ids": ["add_large"],
+      "answer_key": "3000"
+    },
+    "student_answer": "3,000",
+    "expected_final_correct": true,
+    "expected_error_tags": []
+  },
+  {
+    "id": "fill_wrong_numeric",
+    "item": {
+      "id": "eval_f4",
+      "stem": "56 ÷ 8 = ?",
+      "type": "fill",
+      "difficulty": "easy",
+      "knowledge_ids": ["div_basic"],
+      "answer_key": "7"
+    },
+    "student_answer": "8",
+    "expected_final_correct": false,
+    "expected_error_tags": ["calc_error"]
+  },
+  {
+    "id": "fill_wrong_text",
+    "item": {
+      "id": "eval_f5",
+      "stem": "一个正方形边长 5 cm，周长是多少 cm？",
+      "type": "fill",
+      "difficulty": "easy",
+      "knowledge_ids": ["perimeter"],
+      "answer_key": "20"
+    },
+    "student_answer": "二十",
+    "expected_final_correct": false,
+    "expected_error_tags": ["concept_gap"]
+  },
+  {
+    "id": "fill_zero_equivalent",
+    "item": {
+      "id": "eval_f6",
+      "stem": "5 − 5 = ?",
+      "type": "fill",
+      "difficulty": "easy",
+      "knowledge_ids": ["sub_basic"],
+      "answer_key": "0"
+    },
+    "student_answer": "0.0",
+    "expected_final_correct": true,
+    "expected_error_tags": []
+  },
+  {
+    "id": "constructed_no_key_incomplete",
+    "item": {
+      "id": "eval_x1",
+      "stem": "用算式说明为什么 1/2 + 1/4 = 3/4。",
+      "type": "constructed",
+      "difficulty": "medium",
+      "knowledge_ids": ["frac_add"],
+      "rubric_steps": ["通分", "分子相加", "化简并解释"]
+    },
+    "student_answer": "因为加起来就是四分之三",
+    "expected_final_correct": false,
+    "expected_error_tags": ["incomplete"]
+  },
+  {
+    "id": "constructed_key_match",
+    "item": {
+      "id": "eval_x2",
+      "stem": "计算 15 × 4。",
+      "type": "constructed",
+      "difficulty": "easy",
+      "knowledge_ids": ["mult_basic"],
+      "answer_key": "60"
+    },
+    "student_answer": "60",
+    "expected_final_correct": true,
+    "expected_error_tags": []
+  },
+  {
+    "id": "constructed_key_mismatch",
+    "item": {
+      "id": "eval_x3",
+      "stem": "计算 15 × 4。",
+      "type": "constructed",
+      "difficulty": "easy",
+      "knowledge_ids": ["mult_basic"],
+      "answer_key": "60"
+    },
+    "student_answer": "55",
+    "expected_final_correct": false,
+    "expected_error_tags": ["incomplete"]
+  }
+]

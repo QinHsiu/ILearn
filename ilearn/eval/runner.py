@@ -1,4 +1,4 @@
-"""Minimal step-grading eval runner (Task 10 will expand fixtures and tests)."""
+"""Offline step-grading eval harness: fixtures, metrics, and runner."""
 
 from __future__ import annotations
 
@@ -26,7 +26,22 @@ class EvalMetrics(BaseModel):
     json_valid_rate: float
 
 
-def _tag_set_f1(expected: set[str], predicted: set[str]) -> float:
+def final_correct_accuracy(expected: list[bool], predicted: list[bool]) -> float:
+    """Fraction of items where predicted final_correct matches expected."""
+    if not expected:
+        return 0.0
+    pairs = zip(expected, predicted, strict=True)
+    return sum(exp == pred for exp, pred in pairs) / len(expected)
+
+
+def json_valid_rate(valid_flags: list[bool]) -> float:
+    """Fraction of grading outputs that parsed as valid structured JSON."""
+    if not valid_flags:
+        return 0.0
+    return sum(valid_flags) / len(valid_flags)
+
+
+def tag_set_f1(expected: set[str], predicted: set[str]) -> float:
     if not expected and not predicted:
         return 1.0
     if not expected or not predicted:
@@ -45,7 +60,7 @@ def macro_f1_error_tags(
     if not expected_list:
         return 0.0
     pairs = zip(expected_list, predicted_list, strict=True)
-    scores = [_tag_set_f1(set(exp), set(pred)) for exp, pred in pairs]
+    scores = [tag_set_f1(set(exp), set(pred)) for exp, pred in pairs]
     return sum(scores) / len(scores)
 
 
@@ -65,21 +80,21 @@ def run_eval(
         return EvalMetrics(accuracy=0.0, macro_f1=0.0, json_valid_rate=0.0)
 
     grader = grader or StepGrader(None)
-    correct = 0
+    expected_correct: list[bool] = []
+    predicted_correct: list[bool] = []
     expected_tags: list[list[str]] = []
     predicted_tags: list[list[str]] = []
 
     for fixture in fixtures:
         item = AssessmentItem.model_validate(fixture.item)
         result = grader.grade_item(item, fixture.student_answer)
-        if result.final_correct == fixture.expected_final_correct:
-            correct += 1
+        expected_correct.append(fixture.expected_final_correct)
+        predicted_correct.append(result.final_correct)
         expected_tags.append(fixture.expected_error_tags)
         predicted_tags.append(list(result.error_tags))
 
-    total = len(fixtures)
     return EvalMetrics(
-        accuracy=correct / total,
+        accuracy=final_correct_accuracy(expected_correct, predicted_correct),
         macro_f1=macro_f1_error_tags(expected_tags, predicted_tags),
         json_valid_rate=1.0,
     )
