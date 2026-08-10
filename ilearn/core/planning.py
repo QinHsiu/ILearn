@@ -6,8 +6,10 @@ from datetime import date
 from pathlib import Path
 
 from ilearn.core.review import due_knowledge_ids
+from ilearn.core.replan import replan_adjustments, should_replan
 from ilearn.core.schemas import (
     DiagnosisReport,
+    KnowledgeMastery,
     LearnerPortrait,
     LearningPlanReport,
     PlanDay,
@@ -44,7 +46,8 @@ class Planner:
             node.id: node for node in self._curriculum.list_knowledge(profile.grade)
         }
 
-        focus_order = self._focus_knowledge_order(diagnosis)
+        replan = portrait is not None and should_replan(portrait, diagnosis)
+        focus_order = self._focus_knowledge_order(diagnosis, easier_first=replan)
         review_ids = (
             due_knowledge_ids(portrait, today or date.today())
             if portrait is not None
@@ -61,6 +64,8 @@ class Planner:
             knowledge_by_id,
             daily_minutes,
             review_ids=review_ids,
+            replan=replan,
+            diagnosis=diagnosis,
         )
         markdown = self._render_plan_markdown(
             profile, diagnosis, goal, milestones, days, daily_minutes
@@ -73,19 +78,42 @@ class Planner:
             markdown=markdown,
         )
 
-    def _focus_knowledge_order(self, diagnosis: DiagnosisReport) -> list[str]:
+    def _focus_knowledge_order(
+        self, diagnosis: DiagnosisReport, *, easier_first: bool = False
+    ) -> list[str]:
+        mastery_by_id = {km.knowledge_id: km for km in diagnosis.knowledge_mastery}
         if diagnosis.interventions:
-            return [
+            ordered = [
                 item.knowledge_id
                 for item in sorted(diagnosis.interventions, key=lambda x: x.priority)
             ]
-        return [
+            if easier_first:
+                return sorted(
+                    ordered,
+                    key=lambda kid: mastery_by_id.get(
+                        kid,
+                        KnowledgeMastery(knowledge_id=kid, score_rate=0.0, level="weak"),
+                    ).score_rate,
+                    reverse=True,
+                )
+            return ordered
+        weak = [
             km.knowledge_id
             for km in sorted(
                 (km for km in diagnosis.knowledge_mastery if km.level != "mastered"),
                 key=lambda km: (km.score_rate, km.knowledge_id),
             )
         ]
+        if easier_first and weak:
+            return sorted(
+                weak,
+                key=lambda kid: mastery_by_id.get(
+                    kid,
+                    KnowledgeMastery(knowledge_id=kid, score_rate=0.0, level="weak"),
+                ).score_rate,
+                reverse=True,
+            )
+        return weak
 
     def _build_milestones(
         self,
@@ -116,8 +144,15 @@ class Planner:
         daily_minutes: int,
         *,
         review_ids: list[str] | None = None,
+        replan: bool = False,
+        diagnosis: DiagnosisReport | None = None,
     ) -> list[PlanDay]:
         review_ids = review_ids or []
+        confidence_task = (
+            replan_adjustments(diagnosis).get("confidence_task")
+            if replan and diagnosis is not None
+            else None
+        )
         days: list[PlanDay] = []
         for day_num in range(1, plan_days + 1):
             if focus_order:
@@ -127,6 +162,8 @@ class Planner:
             else:
                 focus_ids = []
                 tasks = ["复习已掌握内容，完成5道同年级综合题并核对答案"]
+            if confidence_task and day_num == 1:
+                tasks = [confidence_task] + tasks
             if review_ids and day_num == 1:
                 review_tasks = [
                     f"复习「{self._knowledge_name(kid, knowledge_by_id)}」（间隔复习）"
