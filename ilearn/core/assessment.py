@@ -134,6 +134,32 @@ class AssessmentBuilder:
             curriculum_label=self._provider.label,
         )
 
+    def build_followup(
+        self,
+        profile: StudentProfile,
+        weak_knowledge_ids: list[str],
+        size: int = 8,
+    ) -> AssessmentPaper:
+        """Build a smaller practice paper targeting weak knowledge nodes."""
+        templates = [
+            template
+            for template in self._provider.list_templates(profile.grade)
+            if any(kid in weak_knowledge_ids for kid in template.knowledge_ids)
+        ]
+        if not templates:
+            raise AssessmentBuildError("no templates for weak knowledge ids")
+        self._rng.shuffle(templates)
+        picked = templates[: min(size, len(templates))]
+        items = [
+            self._instantiate(template, index)
+            for index, template in enumerate(picked)
+        ]
+        return AssessmentPaper(
+            items=items,
+            grade=profile.grade,
+            curriculum_label=self._provider.label,
+        )
+
     def _instantiate(self, template: ItemTemplate, index: int) -> AssessmentItem:
         record = self._provider.get_template_record(template.id)
         values = fill_template_slots(record, self._rng)
