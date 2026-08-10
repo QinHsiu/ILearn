@@ -7,7 +7,7 @@
 > **当前试点：** 小学数学（四至六年级）· 北京·人教课标包；架构按多学科 / 全学段扩展预留。
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-165%20passed-2ea44f)](./tests)
+[![Tests](https://img.shields.io/badge/tests-177%20passed-2ea44f)](./tests)
 [![GitHub](https://img.shields.io/badge/GitHub-QinHsiu%2FILearn-181717?logo=github)](https://github.com/QinHsiu/ILearn)
 
 ```text
@@ -179,7 +179,7 @@ python -m pytest -q
 python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py -v
 ```
 
-当前仓库基线：**165** 项测试通过（离线可跑）。
+当前仓库基线：**177** 项测试通过（离线可跑）。
 
 ---
 
