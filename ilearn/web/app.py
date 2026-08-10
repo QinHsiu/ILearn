@@ -6,6 +6,7 @@ diagnosis, or planning business logic.
 
 from __future__ import annotations
 
+import base64
 import html
 import os
 from pathlib import Path
@@ -15,6 +16,16 @@ import httpx
 
 DEFAULT_API_BASE = "http://127.0.0.1:8000"
 STEP_NAMES = ("建档", "测评作答", "批改与学情", "学习计划")
+
+_PHASE_LABELS = {
+    "onboard": "建档",
+    "assess": "组题",
+    "practice": "练题",
+    "grade": "批改",
+    "diagnose": "诊断",
+    "plan": "规划",
+    "practice_loop": "巩固练习",
+}
 
 _LEVEL_LABELS = {
     "mastered": "已掌握",
@@ -81,15 +92,67 @@ class ILearnAPI:
         return session_id, paper
 
     def submit_and_run(
-        self, session_id: str, answers: dict[str, str]
+        self,
+        session_id: str,
+        answers: dict[str, str],
+        *,
+        images: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
         self._request(
             "POST", f"/sessions/{session_id}/submit", json={"answers": answers}
         )
+        if images:
+            self._request(
+                "POST",
+                f"/sessions/{session_id}/submit-images",
+                json={"images": images},
+            )
         return self._request("POST", f"/sessions/{session_id}/run")
+
+    def get_phase(self, session_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/sessions/{session_id}/phase")
+
+    def submit_images(
+        self, session_id: str, images: list[dict[str, str]]
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/sessions/{session_id}/submit-images",
+            json={"images": images},
+        )
 
     def get_report(self, session_id: str) -> dict[str, Any]:
         return self._request("GET", f"/sessions/{session_id}/report")
+
+
+def phase_label(phase: str) -> str:
+    """Return a learner-friendly label for an orchestrator phase."""
+    return _PHASE_LABELS.get(phase, phase)
+
+
+def image_payload(
+    item_id: str,
+    file_bytes: bytes,
+    *,
+    mime_type: str = "image/png",
+) -> dict[str, str]:
+    """Build an ImageAnswer payload for the submit-images API."""
+    return {
+        "item_id": item_id,
+        "image_base64": base64.b64encode(file_bytes).decode("ascii"),
+        "mime_type": mime_type,
+    }
+
+
+def mime_type_for_upload(filename: str) -> str | None:
+    """Map an uploaded filename to a supported image MIME type."""
+    suffix = Path(filename).suffix.lower()
+    return {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+    }.get(suffix)
 
 
 def grade_summary(grades: list[dict[str, Any]]) -> dict[str, int]:
@@ -147,6 +210,7 @@ def _init_state(st: Any) -> None:
         "paper": None,
         "question_index": 0,
         "answers": {},
+        "image_uploads": {},
         "session_report": None,
     }
     for key, value in defaults.items():
@@ -210,6 +274,7 @@ def _render_profile(st: Any, api: ILearnAPI) -> None:
         st.session_state.session_id = session_id
         st.session_state.paper = paper
         st.session_state.answers = {}
+        st.session_state.image_uploads = {}
         st.session_state.question_index = 0
         st.session_state.wizard_step = 1
         st.rerun()
@@ -230,13 +295,31 @@ def _answer_widget(st: Any, item: dict[str, Any]) -> str:
             label_visibility="collapsed",
         ) or ""
     if item.get("type") == "constructed":
-        return st.text_area(
+        answer = st.text_area(
             "请填写最终答案（可附主要步骤）",
             value=current,
             key=key,
             height=150,
             placeholder="请优先写最终答案；如有需要，可继续写计算过程…",
         )
+        upload = st.file_uploader(
+            "可选：上传手写作答照片",
+            type=("png", "jpg", "jpeg", "webp"),
+            key=f"image_{item_id}",
+            help="支持 PNG / JPG / WebP，将随提交一并发送至批改服务。",
+        )
+        if upload is not None:
+            mime_type = mime_type_for_upload(upload.name)
+            if mime_type is None:
+                st.warning("仅支持 PNG、JPG 或 WebP 格式的图片。")
+            else:
+                st.session_state.image_uploads[item_id] = {
+                    "bytes": upload.getvalue(),
+                    "mime_type": mime_type,
+                }
+        elif item_id in st.session_state.image_uploads:
+            del st.session_state.image_uploads[item_id]
+        return answer
     return st.text_input(
         "填写答案",
         value=current,
@@ -306,8 +389,18 @@ def _render_assessment(st: Any, api: ILearnAPI) -> None:
                 return
             try:
                 with st.spinner("正在批改并分析学情，请稍候…"):
+                    image_payloads = [
+                        image_payload(
+                            item_id,
+                            payload["bytes"],
+                            mime_type=payload["mime_type"],
+                        )
+                        for item_id, payload in st.session_state.image_uploads.items()
+                    ]
                     api.submit_and_run(
-                        st.session_state.session_id, st.session_state.answers
+                        st.session_state.session_id,
+                        st.session_state.answers,
+                        images=image_payloads or None,
                     )
                     st.session_state.session_report = api.get_report(
                         st.session_state.session_id
@@ -409,12 +502,38 @@ def _render_plan(st: Any) -> None:
             "session_id",
             "paper",
             "answers",
+            "image_uploads",
             "session_report",
         ):
-            st.session_state[key] = {} if key == "answers" else None
+            st.session_state[key] = (
+                {} if key in ("answers", "image_uploads") else None
+            )
         st.session_state.question_index = 0
         st.session_state.wizard_step = 0
         st.rerun()
+
+
+def _render_sidebar(st: Any, api: ILearnAPI) -> None:
+    with st.sidebar:
+        st.markdown("### 会话状态")
+        session_id = st.session_state.session_id
+        if not session_id:
+            st.caption("完成建档后将显示当前阶段。")
+            return
+        st.caption(f"会话 {session_id[:8]}…")
+        try:
+            phase_info = api.get_phase(session_id)
+        except RuntimeError as exc:
+            st.warning(str(exc))
+            return
+        phase = phase_info.get("phase", "—")
+        st.markdown(
+            f'<span class="phase-badge">{html.escape(phase_label(str(phase)))}</span>',
+            unsafe_allow_html=True,
+        )
+        loop_count = int(phase_info.get("loop_count") or 0)
+        if loop_count:
+            st.caption(f"巩固练习轮次：{loop_count}")
 
 
 def main() -> None:
@@ -425,13 +544,14 @@ def main() -> None:
         page_title="ILearn · 小学数学学情与规划",
         page_icon="📘",
         layout="centered",
-        initial_sidebar_state="collapsed",
+        initial_sidebar_state="expanded",
     )
     st.markdown(f"<style>{_load_css()}</style>", unsafe_allow_html=True)
     _init_state(st)
+    api = ILearnAPI(os.getenv("ILEARN_API_BASE", DEFAULT_API_BASE))
+    _render_sidebar(st, api)
     _render_header(st)
     _render_stepper(st)
-    api = ILearnAPI(os.getenv("ILEARN_API_BASE", DEFAULT_API_BASE))
 
     renderers = (
         lambda: _render_profile(st, api),

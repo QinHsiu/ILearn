@@ -49,6 +49,63 @@ def test_api_client_runs_assessment_flow_over_http():
     ]
 
 
+def test_api_client_get_phase():
+    from ilearn.web.app import ILearnAPI
+
+    http = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda _request: httpx.Response(
+                200, json={"phase": "practice", "loop_count": 0}
+            )
+        )
+    )
+
+    assert ILearnAPI("http://api.test", client=http).get_phase("session-1") == {
+        "phase": "practice",
+        "loop_count": 0,
+    }
+
+
+def test_api_client_submit_images_before_run():
+    from ilearn.web.app import ILearnAPI
+
+    requests = []
+
+    def handler(request):
+        requests.append((request.method, request.url.path))
+        if request.url.path.endswith("/submit"):
+            return httpx.Response(200, json={"session_id": "session-1"})
+        if request.url.path.endswith("/submit-images"):
+            body = request.read()
+            assert b'"item_id":"c1"' in body
+            assert b'"image_base64":"aGVsbG8="' in body
+            return httpx.Response(200, json={"session_id": "session-1"})
+        if request.url.path.endswith("/run"):
+            return httpx.Response(200, json={"grades": []})
+        return httpx.Response(404)
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    api = ILearnAPI("http://api.test", client=http)
+
+    api.submit_and_run(
+        "session-1",
+        {"c1": "20"},
+        images=[
+            {
+                "item_id": "c1",
+                "image_base64": "aGVsbG8=",
+                "mime_type": "image/png",
+            }
+        ],
+    )
+
+    assert requests == [
+        ("POST", "/sessions/session-1/submit"),
+        ("POST", "/sessions/session-1/submit-images"),
+        ("POST", "/sessions/session-1/run"),
+    ]
+
+
 def test_api_client_surfaces_server_error_detail():
     from ilearn.web.app import ILearnAPI
 
@@ -67,7 +124,10 @@ def test_report_helpers_prepare_readable_summary():
         ability_label,
         ability_progress,
         grade_summary,
+        image_payload,
         mastery_rows,
+        mime_type_for_upload,
+        phase_label,
     )
 
     grades = [
@@ -97,3 +157,8 @@ def test_report_helpers_prepare_readable_summary():
     assert ability_progress(75) == 0.75
     assert ability_progress(-10) == 0.0
     assert ability_progress(120) == 1.0
+    assert phase_label("practice") == "练题"
+    assert phase_label("unknown") == "unknown"
+    assert mime_type_for_upload("work.jpg") == "image/jpeg"
+    assert mime_type_for_upload("work.gif") is None
+    assert image_payload("c1", b"hello")["image_base64"] == "aGVsbG8="

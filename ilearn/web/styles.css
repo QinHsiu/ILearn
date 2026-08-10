@@ -236,3 +236,13 @@ h2 {
     font-size: 0.72rem;
   }
 }
+
+.phase-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--teal-soft);
+  color: var(--teal);
+  font-weight: 600;
+  font-size: 0.95rem;
+}

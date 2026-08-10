@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import typer
@@ -10,7 +11,7 @@ from dotenv import load_dotenv
 
 from ilearn.core.grading import StepGrader
 from ilearn.core.orchestrator import Orchestrator
-from ilearn.core.schemas import StudentProfile
+from ilearn.core.schemas import SessionPhase, StudentProfile
 from ilearn.eval.runner import run_eval
 from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
 from ilearn.providers.llm import LLMClient
@@ -23,6 +24,18 @@ _DEFAULT_FIXTURES = _PROJECT_ROOT / "data" / "eval" / "step_grading_fixtures.jso
 _REPORT_EXCERPT_LINES = 12
 
 app = typer.Typer(help="ILearn MVP CLI")
+agents_app = typer.Typer(help="Multi-agent pipeline commands")
+app.add_typer(agents_app, name="agents")
+
+_PHASE_LABELS = {
+    SessionPhase.ONBOARD: "建档",
+    SessionPhase.ASSESS: "组题",
+    SessionPhase.PRACTICE: "练题",
+    SessionPhase.GRADE: "批改",
+    SessionPhase.DIAGNOSE: "诊断",
+    SessionPhase.PLAN: "规划",
+    SessionPhase.PRACTICE_LOOP: "巩固练习",
+}
 
 
 def _load_configured_llm() -> LLMClient | None:
@@ -31,9 +44,18 @@ def _load_configured_llm() -> LLMClient | None:
     return configured_llm if configured_llm.available() else None
 
 
-def _build_orchestrator(sessions_dir: Path | None = None) -> Orchestrator:
-    llm = _load_configured_llm()
-    store = SessionStore(sessions_dir or _DEFAULT_SESSIONS_DIR)
+def _resolve_sessions_dir() -> Path:
+    configured = os.getenv("ILEARN_SESSIONS_DIR")
+    return Path(configured) if configured else _DEFAULT_SESSIONS_DIR
+
+
+def _build_orchestrator(
+    sessions_dir: Path | None = None,
+    *,
+    offline: bool = False,
+) -> Orchestrator:
+    llm = None if offline else _load_configured_llm()
+    store = SessionStore(sessions_dir or _resolve_sessions_dir())
     curriculum = PilotBeijingRenjiaoProvider(_DEFAULT_PILOT_DATA)
     return Orchestrator(store=store, curriculum=curriculum, llm=llm)
 
@@ -126,6 +148,49 @@ def eval(
     typer.echo(f"accuracy: {metrics.accuracy:.4f}")
     typer.echo(f"macro_f1: {metrics.macro_f1:.4f}")
     typer.echo(f"json_valid_rate: {metrics.json_valid_rate:.4f}")
+
+
+@agents_app.command("run")
+def agents_run(
+    region: str = typer.Option(..., "--region", help="Learner region, e.g. 北京"),
+    grade: int = typer.Option(..., "--grade", help="Grade level (4, 5, or 6)"),
+    age: int = typer.Option(..., "--age", help="Learner age"),
+    offline: bool = typer.Option(
+        False,
+        "--offline",
+        help="Run without LLM (auto-answer demo using answer keys)",
+    ),
+) -> None:
+    """Run the multi-agent pipeline and print session phase plus report path."""
+    sessions_dir = _resolve_sessions_dir()
+    orchestrator = _build_orchestrator(sessions_dir, offline=offline)
+    profile = StudentProfile(region=region, grade=grade, age=age)
+
+    session_id = orchestrator.create_session(profile)
+    typer.echo(f"会话 ID: {session_id}")
+
+    paper = orchestrator.generate_assessment(session_id)
+    phase = orchestrator.current_phase(session_id)
+    typer.echo(
+        f"Phase: {phase.value} ({_PHASE_LABELS.get(phase, phase.value)}) · {len(paper.items)} 题"
+    )
+
+    answers = {item.id: (item.answer_key or "") for item in paper.items}
+    orchestrator.submit(session_id, answers)
+    session = orchestrator.run_after_submit(session_id)
+    report_md = orchestrator.report(session_id)
+
+    artifact_dir = _session_artifact_dir(session_id, sessions_dir)
+    report_path = artifact_dir / "report.md"
+    report_path.write_text(report_md, encoding="utf-8")
+
+    final_phase = orchestrator.current_phase(session_id)
+    typer.echo(
+        f"Phase: {final_phase.value} ({_PHASE_LABELS.get(final_phase, final_phase.value)})"
+    )
+    if session.loop_count:
+        typer.echo(f"Practice loops: {session.loop_count}")
+    typer.echo(f"Report: {report_path}")
 
 
 if __name__ == "__main__":
