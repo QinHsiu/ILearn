@@ -61,7 +61,7 @@ def test_submit_rejects_answer_id_not_in_pending_questions(tmp_path):
         orchestrator.submit(session_id, {"unknown-question": "42"})
 
 
-def test_submit_without_pending_questions_keeps_legacy_behavior(tmp_path):
+def test_submit_without_pending_questions_rejects_unknown_paper_item_id(tmp_path):
     orchestrator, store = _orchestrator(tmp_path)
     session_id = orchestrator.create_session(
         StudentProfile(region="北京", grade=5, age=11)
@@ -71,9 +71,10 @@ def test_submit_without_pending_questions_keeps_legacy_behavior(tmp_path):
     session.pending_questions = []
     store.save(session)
 
-    saved = orchestrator.submit(session_id, {"unknown-question": "42"})
-
-    assert saved.phase == SessionPhase.GRADE
+    with pytest.raises(
+        ValueError, match="answers contain unknown item ids: unknown-question"
+    ):
+        orchestrator.submit(session_id, {"unknown-question": "42"})
 
 
 def test_submit_accepts_answer_ids_in_pending_questions(tmp_path):

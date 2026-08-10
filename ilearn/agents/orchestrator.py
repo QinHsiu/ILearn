@@ -168,6 +168,7 @@ class MultiAgentOrchestrator:
             self._assessment.name,
             SessionPhase.ASSESS,
             "assessment generated",
+            ok=not degraded,
             degraded=degraded,
         )
         self._store.save(session)
@@ -184,10 +185,12 @@ class MultiAgentOrchestrator:
             known_ids = {
                 question.question_id for question in session.pending_questions
             }
-            unknown_ids = set(answers) - known_ids
-            if unknown_ids:
-                unknown = ", ".join(sorted(unknown_ids))
-                raise ValueError(f"answers contain unknown item ids: {unknown}")
+        else:
+            known_ids = {item.id for item in paper.items}
+        unknown_ids = set(answers) - known_ids
+        if unknown_ids:
+            unknown = ", ".join(sorted(unknown_ids))
+            raise ValueError(f"answers contain unknown item ids: {unknown}")
 
         session.answers = [
             StudentAnswer(item_id=item.id, answer_text=answers.get(item.id, ""))
@@ -263,6 +266,7 @@ class MultiAgentOrchestrator:
             self._diagnosis.name,
             SessionPhase.DIAGNOSE,
             "diagnosis completed",
+            ok=not degraded,
             degraded=degraded,
         )
         self._store.save(session)
@@ -297,6 +301,7 @@ class MultiAgentOrchestrator:
             self._planning.name,
             SessionPhase.PLAN,
             "learning plan created",
+            ok=not degraded,
             degraded=degraded,
         )
         self._store.save(session)

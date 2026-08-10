@@ -144,3 +144,27 @@ def test_quality_gate_degradation_is_recorded_for_gated_agents(tmp_path):
     assert assessment_decision.degraded is True
     assert diagnosis_decision.degraded is True
     assert planning_decision.degraded is True
+    assert assessment_decision.ok is False
+    assert diagnosis_decision.ok is False
+    assert planning_decision.ok is False
+
+
+def test_grade_decision_references_emitted_evidence(tmp_path):
+    orchestrator, store = _orchestrator(tmp_path)
+    session_id = orchestrator.create_session(
+        StudentProfile(region="北京", grade=5, age=11)
+    )
+    paper = orchestrator.generate_assessment(session_id)
+    orchestrator.submit(
+        session_id,
+        {item.id: item.answer_key or "" for item in paper.items},
+    )
+
+    orchestrator.grade(session_id)
+
+    session = store.load(session_id)
+    grade_decision = session.decision_log[-1]
+    assert grade_decision.agent == "practice"
+    assert grade_decision.evidence_ids == [
+        event.evidence_id for event in session.evidence_log
+    ]
