@@ -28,6 +28,7 @@ from ilearn.providers.curriculum import (
     fill_template_slots,
     render_choices,
     render_template_text,
+    require_pilot_grade,
 )
 
 
@@ -53,7 +54,7 @@ def build_blueprint(
                 knowledge_id=kid,
             )
         )
-    return PaperBlueprint(grade=profile.grade, slots=slots)
+    return PaperBlueprint(grade=require_pilot_grade(profile.grade), slots=slots)  # type: ignore[arg-type]
 
 
 def fill_blueprint(
@@ -72,7 +73,7 @@ def fill_blueprint(
     ]
     return AssessmentPaper(
         items=items,
-        grade=profile.grade,
+        grade=require_pilot_grade(profile.grade),  # type: ignore[arg-type]
         curriculum_label=curriculum.label,
         blueprint=blueprint,
         paper_version="1.0.0",
@@ -183,7 +184,7 @@ class AssessmentBuilder:
 
         return AssessmentPaper(
             items=items,
-            grade=grade,
+            grade=require_pilot_grade(grade),  # type: ignore[arg-type]
             curriculum_label=self._provider.label,
             paper_version="1.0.0",
         )
@@ -251,7 +252,7 @@ class AssessmentBuilder:
         ]
         return AssessmentPaper(
             items=items,
-            grade=profile.grade,
+            grade=require_pilot_grade(profile.grade),  # type: ignore[arg-type]
             curriculum_label=self._provider.label,
         )
 

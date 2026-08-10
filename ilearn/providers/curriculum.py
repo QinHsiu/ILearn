@@ -16,7 +16,20 @@ from typing import Any
 from ilearn.core.schemas import Difficulty, ItemTemplate, ItemType, KnowledgeNode
 
 PILOT_LABEL = "北京·人教·小学数学"
+PILOT_GRADES = frozenset({4, 5, 6})
 _PLACEHOLDER = re.compile(r"\{([^{}]+)\}")
+
+
+class CurriculumError(Exception):
+    """Raised when curriculum data is unavailable for the requested context."""
+
+
+def require_pilot_grade(grade: int) -> int:
+    if grade not in PILOT_GRADES:
+        raise CurriculumError(
+            f"试点内容目前覆盖 4–6 年级数学，暂不支持 {grade} 年级"
+        )
+    return grade
 
 
 def load_syllabus(pilot_dir: str | Path) -> list[dict[str, Any]]:
@@ -283,6 +296,7 @@ class PilotBeijingRenjiaoProvider(CurriculumProvider):
         return PILOT_LABEL
 
     def list_knowledge(self, grade: int) -> list[KnowledgeNode]:
+        require_pilot_grade(grade)
         return [node for node in self._knowledge if node.grade == grade]
 
     def list_templates(
@@ -291,6 +305,7 @@ class PilotBeijingRenjiaoProvider(CurriculumProvider):
         difficulty: Difficulty | None = None,
         item_type: ItemType | None = None,
     ) -> list[ItemTemplate]:
+        require_pilot_grade(grade)
         rows: list[ItemTemplate] = []
         for raw in self._raw_templates:
             grades = raw.get("grades") or [raw.get("grade")]

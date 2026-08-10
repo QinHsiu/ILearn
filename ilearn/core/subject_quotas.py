@@ -7,6 +7,8 @@ from pathlib import Path
 
 from ilearn.core.schemas import BlueprintSlot, Difficulty, ItemType, PaperBlueprint, StudentProfile
 
+from ilearn.providers.curriculum import require_pilot_grade
+
 # Joint (difficulty, type) blueprint: 10 easy / 8 medium / 2 hard and 8 choice / 8 fill / 4 constructed.
 MIX_BLUEPRINT: list[tuple[Difficulty, ItemType]] = [
     ("easy", "choice"),
@@ -84,4 +86,4 @@ def build_blueprint_for_subject(
                 knowledge_id=kid,
             )
         )
-    return PaperBlueprint(grade=profile.grade, slots=slots)
+    return PaperBlueprint(grade=require_pilot_grade(profile.grade), slots=slots)  # type: ignore[arg-type]

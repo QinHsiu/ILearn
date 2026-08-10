@@ -18,7 +18,8 @@ def _new_evidence_id() -> str:
 ERROR_TAGS = ("concept_gap", "calc_error", "misread", "method_wrong", "incomplete")
 
 ErrorTag = Literal["concept_gap", "calc_error", "misread", "method_wrong", "incomplete"]
-GradeLevel = Literal[4, 5, 6]
+GradeLevel = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+PilotGradeLevel = Literal[4, 5, 6]
 Subject = Literal["math", "chinese"]
 ItemType = Literal["choice", "fill", "constructed"]
 Difficulty = Literal["easy", "medium", "hard"]
@@ -44,7 +45,7 @@ class StudentProfile(BaseModel):
     """Learner context collected at session start."""
 
     region: str
-    grade: Literal[4, 5, 6]
+    grade: GradeLevel
     age: int = Field(ge=6, le=18)
     subject: Subject = "math"
 
@@ -56,7 +57,7 @@ class KnowledgeNode(BaseModel):
     """Curriculum knowledge unit from the pilot pack."""
 
     id: str
-    grade: Literal[4, 5, 6]
+    grade: PilotGradeLevel
     name: str
     ability_tags: list[str] = Field(default_factory=list)
     kc_type: KcType | None = None
@@ -67,7 +68,7 @@ class ItemTemplate(BaseModel):
 
     id: str
     knowledge_ids: list[str]
-    grade: Literal[4, 5, 6]
+    grade: PilotGradeLevel
     item_type: ItemType
     difficulty: Difficulty
     stem_template: str
@@ -102,7 +103,7 @@ class BlueprintSlot(BaseModel):
 class PaperBlueprint(BaseModel):
     """Two-phase paper assembly plan matching MIX_BLUEPRINT quotas."""
 
-    grade: Literal[4, 5, 6]
+    grade: PilotGradeLevel
     slots: list[BlueprintSlot]
 
 
@@ -110,7 +111,7 @@ class AssessmentPaper(BaseModel):
     """Fixed-size assessment paper assembled from pilot templates."""
 
     items: list[AssessmentItem]
-    grade: Literal[4, 5, 6]
+    grade: PilotGradeLevel
     curriculum_label: str
     created_at: datetime = Field(default_factory=utc_now)
     blueprint: PaperBlueprint | None = None

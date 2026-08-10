@@ -249,12 +249,17 @@ def _show_error(st: Any, exc: Exception) -> None:
 
 def _render_profile(st: Any, api: ILearnAPI) -> None:
     st.markdown("## 先认识一下你")
-    st.caption("完成基础建档后，我们将按当前试点课标生成一份 20 题测评（小学数学 · 四至六年级）。")
+    st.caption("完成基础建档后，我们将按当前试点课标生成一份 20 题测评。试点内容目前覆盖 4–6 年级数学。")
     with st.form("profile_form"):
         region = st.text_input("所在地区", value="北京", placeholder="例如：北京")
         left, right = st.columns(2)
         with left:
-            grade = st.selectbox("年级", options=(4, 5, 6), format_func=lambda x: f"{x} 年级")
+            grade = st.selectbox(
+                "年级",
+                options=tuple(range(1, 13)),
+                index=4,
+                format_func=lambda x: f"{x} 年级",
+            )
         with right:
             age = st.number_input("年龄", min_value=6, max_value=18, value=11)
         submitted = st.form_submit_button("开始测评", use_container_width=True)
