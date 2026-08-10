@@ -2,8 +2,9 @@
 
 **Love learn · I learn.**
 
-> 面向小学数学（四至六年级）的**学情诊断与个性化学习规划**多 Agent 系统。  
-> 一次测评 → 分步批改 → 精准诊断 → 课标对齐的学习计划 → 薄弱点巩固闭环。
+> 面向 **K12 全学段** 的学情诊断与个性化学习规划多 Agent 系统。  
+> 一次测评 → 分步批改 → 精准诊断 → 课标对齐的学习计划 → 薄弱点巩固闭环。  
+> **当前试点：** 小学数学（四至六年级）· 北京·人教课标包；架构按多学科 / 全学段扩展预留。
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-165%20passed-2ea44f)](./tests)
@@ -23,7 +24,7 @@
 
 | | |
 | --- | --- |
-| **课标在环** | 试点「北京·人教」课标包 + keyword RAG citation，计划可追溯到纲要依据 |
+| **课标在环** | 地区 / 年级课标约束 + keyword RAG citation；当前试点「北京·人教」，计划可追溯到纲要依据 |
 | **批改可审计** | Host-owned `ItemGrader`；OCR 与判分分离；`GradingReceipt` 绑定试卷与 grader 版本 |
 | **掌握度不糊弄** | practice / probe 双轨 + `KnowledgeEvidence` 证据日志，避免「带提示做对」当成已掌握 |
 | **多 Agent 编排** | 六大 Agent + 明确状态机，而不是一个巨型 prompt |
@@ -179,11 +180,13 @@ python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1
 
 ---
 
-## 本版范围与非目标
+## 定位、本版范围与非目标
 
-**范围内**
+**产品定位：** K12 全学段学情诊断与个性化学习规划（多科目可扩展）。
 
-- 小学数学四至六年级；默认诊断卷 20 题
+**本版已落地（试点）**
+
+- 首发试点学科 / 学段：**小学数学（四至六年级）**；默认诊断卷 20 题
 - 试点课标：**北京·人教**（`data/pilot/`）；非北京 region 在报告中标注课标不匹配
 - 分步批改、错误标签、学情 Top-5、学习者画像、1–2 周计划、巩固环（≤ 2）
 - FastAPI + Streamlit + CLI；会话 JSON 持久化；OpenAI 兼容 LLM（可选）
@@ -191,7 +194,7 @@ python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1
 **本版不做**
 
 - TutorAgent 多轮苏格拉底辅导
-- 多科目、实时网页课标爬取
+- 多科目并行上线、实时网页课标爬取
 - 教师备课、班级报表、真实学生 PII
 - LangGraph / 向量课标库（当前为试点 JSON + keyword RAG）
 

@@ -223,7 +223,7 @@ def _render_header(st: Any) -> None:
         """
         <div class="brand-wrap">
           <div class="brand">ILearn</div>
-          <div class="subtitle">小学数学学情与规划</div>
+          <div class="subtitle">K12 学情诊断与个性化学习规划</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -249,7 +249,7 @@ def _show_error(st: Any, exc: Exception) -> None:
 
 def _render_profile(st: Any, api: ILearnAPI) -> None:
     st.markdown("## 先认识一下你")
-    st.caption("完成基础建档后，我们会生成一份 20 题的小学数学测评。")
+    st.caption("完成基础建档后，我们将按当前试点课标生成一份 20 题测评（小学数学 · 四至六年级）。")
     with st.form("profile_form"):
         region = st.text_input("所在地区", value="北京", placeholder="例如：北京")
         left, right = st.columns(2)
@@ -541,7 +541,7 @@ def main() -> None:
     import streamlit as st
 
     st.set_page_config(
-        page_title="ILearn · 小学数学学情与规划",
+        page_title="ILearn · K12 学情与学习规划",
         page_icon="📘",
         layout="centered",
         initial_sidebar_state="expanded",
