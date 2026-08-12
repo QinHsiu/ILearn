@@ -1,0 +1,63 @@
+/* Primary band — playful layout; female accent */
+:root {
+  --accent: #e84393;
+  --teal: var(--accent);
+  --gold: #ff9f43;
+  --btn-radius: 16px;
+  --card-radius: 18px 22px 22px 18px;
+  --step-size: 1.55rem;
+  --brand-scale: 1.05;
+}
+
+.brand {
+  font-family: "Comic Sans MS", "Segoe UI", sans-serif;
+  transform: scale(var(--brand-scale));
+  transform-origin: left center;
+}
+
+.stepper {
+  gap: 0.65rem;
+}
+
+.step {
+  border-top-width: 4px;
+  font-size: 0.92rem;
+}
+
+.step span {
+  height: var(--step-size);
+  width: var(--step-size);
+}
+
+.question-card {
+  border-left-color: var(--accent);
+  border-radius: var(--card-radius);
+}
+
+.stButton > button,
+.stFormSubmitButton > button {
+  border-radius: var(--btn-radius);
+}
+
+.stButton > button[kind="primary"],
+.stFormSubmitButton > button {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.goal-card {
+  background: var(--accent);
+}
+
+.day-title {
+  color: var(--accent);
+}
+
+.day-title span {
+  background: color-mix(in srgb, var(--accent) 18%, white);
+}
+
+.phase-badge {
+  background: color-mix(in srgb, var(--accent) 15%, white);
+  color: var(--accent);
+}

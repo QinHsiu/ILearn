@@ -213,8 +213,12 @@ def ability_progress(score: float) -> float:
     return max(0.0, min(100.0, float(score))) / 100.0
 
 
-def _load_css() -> str:
-    return (Path(__file__).with_name("styles.css")).read_text(encoding="utf-8")
+def _load_css(grade: int = 5, gender: str = "unspecified") -> str:
+    from ilearn.web.themes import load_theme_css, theme_key_for
+
+    base = Path(__file__).with_name("styles.css").read_text(encoding="utf-8")
+    theme = load_theme_css(theme_key_for(grade, gender))
+    return f"{base}\n{theme}"
 
 
 def _init_state(st: Any) -> None:
@@ -303,6 +307,7 @@ def _render_profile(st: Any, api: ILearnAPI) -> None:
         except RuntimeError as exc:
             _show_error(st, exc)
             return
+        st.session_state.profile = {"grade": int(grade), "gender": gender}
         st.session_state.session_id = session_id
         st.session_state.paper = paper
         st.session_state.answers = {}
@@ -578,8 +583,12 @@ def main() -> None:
         layout="centered",
         initial_sidebar_state="expanded",
     )
-    st.markdown(f"<style>{_load_css()}</style>", unsafe_allow_html=True)
     _init_state(st)
+    profile = st.session_state.get("profile") or {}
+    st.markdown(
+        f"<style>{_load_css(profile.get('grade', 5), profile.get('gender', 'unspecified'))}</style>",
+        unsafe_allow_html=True,
+    )
     api = ILearnAPI(os.getenv("ILEARN_API_BASE", DEFAULT_API_BASE))
     _render_sidebar(st, api)
     _render_header(st)

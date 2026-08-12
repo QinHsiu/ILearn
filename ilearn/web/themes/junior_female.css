@@ -1,0 +1,59 @@
+/* Junior band — flat layout; female accent */
+:root {
+  --accent: #db2777;
+  --teal: var(--accent);
+  --gold: #64748b;
+  --btn-radius: 8px;
+  --card-radius: 10px;
+  --step-size: 1.35rem;
+}
+
+.brand {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.stepper {
+  gap: 0.4rem;
+}
+
+.step {
+  border-top-width: 3px;
+  font-size: 0.86rem;
+}
+
+.question-card {
+  border-left-width: 4px;
+  border-left-color: var(--accent);
+  border-radius: var(--card-radius);
+  box-shadow: none;
+}
+
+.stButton > button,
+.stFormSubmitButton > button {
+  border-radius: var(--btn-radius);
+}
+
+.stButton > button[kind="primary"],
+.stFormSubmitButton > button {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.goal-card {
+  background: var(--accent);
+  border-radius: 10px;
+}
+
+.day-title {
+  color: var(--accent);
+}
+
+.day-title span {
+  background: #fce7f3;
+}
+
+.phase-badge {
+  background: #fce7f3;
+  color: var(--accent);
+}
