@@ -80,12 +80,26 @@ class ILearnAPI:
         return response.json()
 
     def start_session(
-        self, region: str, grade: int, age: int
+        self,
+        region: str,
+        grade: int,
+        age: int,
+        *,
+        nickname: str | None = None,
+        gender: str = "unspecified",
     ) -> tuple[str, dict[str, Any]]:
+        payload: dict[str, Any] = {
+            "region": region,
+            "grade": grade,
+            "age": age,
+            "gender": gender,
+        }
+        if nickname is not None:
+            payload["nickname"] = nickname
         created = self._request(
             "POST",
             "/sessions",
-            json={"region": region, "grade": grade, "age": age},
+            json=payload,
         )
         session_id = created["session_id"]
         paper = self._request("POST", f"/sessions/{session_id}/assessment")
@@ -251,6 +265,7 @@ def _render_profile(st: Any, api: ILearnAPI) -> None:
     st.markdown("## 先认识一下你")
     st.caption("完成基础建档后，我们将按当前试点课标生成一份 20 题测评。试点内容目前覆盖 4–6 年级数学。")
     with st.form("profile_form"):
+        nickname = st.text_input("昵称", placeholder="例如：小明（可选）")
         region = st.text_input("所在地区", value="北京", placeholder="例如：北京")
         left, right = st.columns(2)
         with left:
@@ -262,16 +277,28 @@ def _render_profile(st: Any, api: ILearnAPI) -> None:
             )
         with right:
             age = st.number_input("年龄", min_value=6, max_value=18, value=11)
+        gender = st.selectbox(
+            "性别",
+            options=("unspecified", "male", "female"),
+            format_func=lambda x: {"unspecified": "不愿透露", "male": "男", "female": "女"}[
+                x
+            ],
+        )
         submitted = st.form_submit_button("开始测评", use_container_width=True)
 
     if submitted:
         if not region.strip():
             st.warning("请填写所在地区。")
             return
+        nickname_value = nickname.strip() or None
         try:
             with st.spinner("正在准备适合你的测评题目…"):
                 session_id, paper = api.start_session(
-                    region.strip(), int(grade), int(age)
+                    region.strip(),
+                    int(grade),
+                    int(age),
+                    nickname=nickname_value,
+                    gender=gender,
                 )
         except RuntimeError as exc:
             _show_error(st, exc)

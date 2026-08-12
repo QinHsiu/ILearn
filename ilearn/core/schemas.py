@@ -21,6 +21,7 @@ ErrorTag = Literal["concept_gap", "calc_error", "misread", "method_wrong", "inco
 GradeLevel = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 PilotGradeLevel = Literal[4, 5, 6]
 Subject = Literal["math", "chinese"]
+Gender = Literal["male", "female", "unspecified"]
 ItemType = Literal["choice", "fill", "constructed"]
 Difficulty = Literal["easy", "medium", "hard"]
 MasteryLevel = Literal["mastered", "unstable", "weak"]
@@ -48,6 +49,8 @@ class StudentProfile(BaseModel):
     grade: GradeLevel
     age: int = Field(ge=6, le=18)
     subject: Subject = "math"
+    nickname: str | None = None
+    gender: Gender = "unspecified"
 
 
 KcType = Literal["fact", "skill", "principle"]
