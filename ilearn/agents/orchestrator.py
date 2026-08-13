@@ -9,6 +9,7 @@ from ilearn.agents.assessment import AssessmentAgent, bind_source_refs_to_item
 from ilearn.agents.capabilities import assert_writes_allowed
 from ilearn.agents.curriculum import CurriculumAgent
 from ilearn.agents.diagnosis import DiagnosisAgent
+from ilearn.agents.guard import SAFE_FALLBACK, GuardAgent
 from ilearn.agents.planning import PlanningAgent
 from ilearn.agents.practice import PracticeAgent, evidence_from_grades
 from ilearn.agents.tutor import TutorAgent
@@ -52,6 +53,7 @@ class MultiAgentOrchestrator:
         store: SessionStore,
         curriculum: CurriculumProvider,
         llm: LLMClient | None = None,
+        tutor: TutorAgent | None = None,
     ) -> None:
         self._store = store
         self._curriculum = curriculum
@@ -65,7 +67,8 @@ class MultiAgentOrchestrator:
         self._practice = PracticeAgent(llm)
         self._diagnosis = DiagnosisAgent(curriculum)
         self._planning = PlanningAgent(curriculum)
-        self._tutor = TutorAgent()
+        self._tutor = tutor or TutorAgent()
+        self._guard = GuardAgent()
 
     @staticmethod
     def _ctx(
@@ -408,6 +411,7 @@ class MultiAgentOrchestrator:
         grade = next((g for g in session.grades if g.item_id == item_id), None)
         error_tag = grade.error_tags[0] if grade and grade.error_tags else None
         turn = self._tutor.start(item, error_tag)
+        turn = self._guard_turn(session, item, turn)
         session.tutor_by_item[item_id] = turn
         self._record_decision(
             session,
@@ -435,6 +439,7 @@ class MultiAgentOrchestrator:
             item,
             previous.error_tag,
         )
+        turn = self._guard_turn(session, item, turn)
         session.tutor_by_item[item_id] = turn
         self._record_decision(
             session,
@@ -443,6 +448,21 @@ class MultiAgentOrchestrator:
             "tutoring hint",
         )
         self._store.save(session)
+        return turn
+
+    def _guard_turn(
+        self, session: SessionState, item, turn: TutorTurn
+    ) -> TutorTurn:
+        verdict = self._guard.check(turn.message, item.answer_key)
+        if verdict.is_leak and verdict.confidence > 0.8:
+            self._record_decision(
+                session,
+                "guard",
+                SessionPhase.PRACTICE,
+                f"leak blocked ({verdict.reason})",
+                ok=False,
+            )
+            return turn.model_copy(update={"message": SAFE_FALLBACK})
         return turn
 
     def run_after_submit(self, session_id: str) -> SessionState:

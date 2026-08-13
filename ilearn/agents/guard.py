@@ -5,6 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+SAFE_FALLBACK = "先别着急看答案。先写下已知条件，再选择运算，最后自己验算一遍。"
+
+
 @dataclass(frozen=True)
 class GuardVerdict:
     is_leak: bool
