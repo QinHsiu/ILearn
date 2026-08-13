@@ -10,6 +10,9 @@
   --danger: #b42318;
   --ok: #0f7a4c;
   --radius: 14px;
+  --btn-radius: var(--radius);
+  --card-radius: var(--radius);
+  --theme-scale: 1;
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
 }
@@ -61,6 +64,8 @@ textarea {
   letter-spacing: -0.04em;
   color: var(--accent);
   line-height: 1;
+  transform: scale(var(--theme-scale));
+  transform-origin: left center;
 }
 
 .brand-sub {
@@ -158,7 +163,7 @@ textarea {
 .btn {
   appearance: none;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius);
   padding: 0.7rem 1.2rem;
   background: var(--accent);
   color: #fff;
@@ -183,9 +188,10 @@ textarea {
   font-size: 0.92rem;
 }
 
+.question-card,
 .item-card {
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 1rem;
   margin-bottom: 0.85rem;
   background: #fff;

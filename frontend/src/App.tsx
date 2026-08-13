@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api, fileToImageAnswer } from './api/client'
 import type {
@@ -87,6 +87,10 @@ export default function App() {
     () => (session ? wrongItemEntries(session) : []),
     [session],
   )
+
+  useEffect(() => {
+    applyTheme(profile.grade, profile.gender || 'unspecified')
+  }, [profile.grade, profile.gender])
 
   async function onStart(e: FormEvent) {
     e.preventDefault()
@@ -181,7 +185,12 @@ export default function App() {
     <div className="app-shell">
       <header className="brand-row">
         <h1 className="brand">ILearn</h1>
-        <p className="brand-sub">课标在环的个性化学习向导</p>
+        <div className="brand-copy">
+          {(profile.nickname || '').trim() ? (
+            <p className="brand-sub">你好，{(profile.nickname || '').trim()}</p>
+          ) : null}
+          <p className="brand-sub">课标在环的个性化学习向导</p>
+        </div>
       </header>
 
       <nav className="stepper" aria-label="向导步骤">
@@ -296,7 +305,7 @@ export default function App() {
             {paper.curriculum_label} · 共 {paper.items.length} 题 · 可文本作答，也可上传手写照片
           </p>
           {paper.items.map((item, index) => (
-            <article className="item-card" key={item.id}>
+            <article className="question-card" key={item.id}>
               <div className="item-meta">
                 <span className="pill">第 {index + 1} 题</span>
                 <span className="pill">{item.difficulty}</span>
