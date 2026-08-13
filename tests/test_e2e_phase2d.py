@@ -80,6 +80,7 @@ def test_phase2d_orchestration_contracts_work_together(tmp_path):
     assert completed.plan is not None
     assert [decision.agent for decision in completed.decision_log] == [
         "assessment",
+        "item_validators",
         "practice",
         "diagnosis",
         "planning",

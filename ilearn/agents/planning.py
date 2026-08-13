@@ -4,16 +4,30 @@ from __future__ import annotations
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.planning import Planner
-from ilearn.core.schemas import DiagnosisReport, LearningPlanReport, PlanVersion
+from ilearn.core.schemas import (
+    DiagnosisReport,
+    LearningPlanReport,
+    PlanVersion,
+    StudentProfile,
+)
 from ilearn.providers.curriculum import CurriculumProvider
 
-__all__ = ["PlanningAgent", "should_enter_practice_loop"]
+__all__ = ["PlanningAgent", "max_practice_loops", "should_enter_practice_loop"]
 
 _MAX_LOOPS = 2
 
 
-def should_enter_practice_loop(diagnosis: DiagnosisReport, loop_count: int) -> bool:
-    if loop_count >= _MAX_LOOPS:
+def max_practice_loops(profile: StudentProfile) -> int:
+    return 4 if profile.learning_difficulty else _MAX_LOOPS
+
+
+def should_enter_practice_loop(
+    diagnosis: DiagnosisReport,
+    loop_count: int,
+    *,
+    profile: StudentProfile | None = None,
+) -> bool:
+    if loop_count >= (max_practice_loops(profile) if profile else _MAX_LOOPS):
         return False
     return any(m.level == "weak" for m in diagnosis.knowledge_mastery)
 
@@ -48,7 +62,9 @@ class PlanningAgent:
             plan.markdown += "\n\n## 课标依据\n" + "\n".join(
                 f"- {c.title}：{c.excerpt}" for c in citations[:3]
             )
-        should_loop = should_enter_practice_loop(ctx.diagnosis, ctx.loop_count)
+        should_loop = should_enter_practice_loop(
+            ctx.diagnosis, ctx.loop_count, profile=ctx.profile
+        )
         next_phase = SessionPhase.PRACTICE_LOOP if should_loop else SessionPhase.PLAN
         return AgentResult(
             phase=next_phase,

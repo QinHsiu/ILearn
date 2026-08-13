@@ -5,7 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
-from ilearn.agents.assessment import AssessmentAgent
+from ilearn.agents.assessment import AssessmentAgent, bind_source_refs_to_item
 from ilearn.agents.capabilities import assert_writes_allowed
 from ilearn.agents.curriculum import CurriculumAgent
 from ilearn.agents.diagnosis import DiagnosisAgent
@@ -13,6 +13,7 @@ from ilearn.agents.planning import PlanningAgent
 from ilearn.agents.practice import PracticeAgent, evidence_from_grades
 from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
+from ilearn.core.item_validators import revise_paper_once, validate_paper as validate_item_paper
 from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
 from ilearn.core.quality_gate import (
@@ -38,7 +39,7 @@ from ilearn.core.schemas import (
     StudentProfile,
     TutorTurn,
 )
-from ilearn.providers.curriculum import CurriculumProvider
+from ilearn.providers.curriculum import CurriculumProvider, load_example_bank
 from ilearn.providers.llm import LLMClient
 from ilearn.storage.sessions import SessionStore
 
@@ -53,6 +54,7 @@ class MultiAgentOrchestrator:
         llm: LLMClient | None = None,
     ) -> None:
         self._store = store
+        self._curriculum = curriculum
         pilot_dir = getattr(
             curriculum,
             "_data_dir",
@@ -72,6 +74,8 @@ class MultiAgentOrchestrator:
         phase: SessionPhase | None = None,
         metadata: dict | None = None,
     ) -> AgentContext:
+        context_metadata = dict(session.metadata)
+        context_metadata.update(metadata or {})
         return trim_context(
             deepcopy(
                 AgentContext(
@@ -87,7 +91,7 @@ class MultiAgentOrchestrator:
                     portrait=session.portrait,
                     loop_count=session.loop_count,
                     evidence_log=list(session.evidence_log),
-                    metadata=metadata or {},
+                    metadata=context_metadata,
                 )
             )
         )
@@ -134,6 +138,47 @@ class MultiAgentOrchestrator:
             for item in paper.items
         ]
 
+    def _validate_and_revise_paper(
+        self,
+        session: SessionState,
+        paper: AssessmentPaper,
+    ) -> tuple[AssessmentPaper, str]:
+        issues = validate_item_paper(paper, grade=session.profile.grade)
+        revised_paper = revise_paper_once(
+            paper,
+            issues,
+            profile=session.profile,
+            curriculum=self._curriculum,
+        )
+        revised = revised_paper.items != paper.items
+        if revised:
+            pilot_dir = getattr(
+                self._curriculum,
+                "_data_dir",
+                Path(__file__).resolve().parents[2] / "data" / "pilot",
+            )
+            example_bank = load_example_bank(Path(pilot_dir))
+            for item in revised_paper.items:
+                item.source_refs = bind_source_refs_to_item(
+                    item,
+                    list(session.curriculum_citations),
+                    example_bank,
+                )
+        remaining_issues = validate_item_paper(
+            revised_paper, grade=session.profile.grade
+        )
+        if revised:
+            revision_summary = "revised once"
+        elif issues:
+            revision_summary = "revision no-op"
+        else:
+            revision_summary = "all clear"
+        summary = (
+            f"validated paper: {len(issues)} issue(s), {revision_summary}; "
+            f"remaining {len(remaining_issues)} issue(s)"
+        )
+        return revised_paper, summary
+
     def generate_assessment(self, session_id: str) -> AssessmentPaper:
         session = self._store.load(session_id)
         citation_result = self._curriculum_agent.run(self._ctx(session))
@@ -151,6 +196,12 @@ class MultiAgentOrchestrator:
         )
         if degraded:
             result = degraded_assessment_result(session.profile)
+            validator_summary: str | None = None
+        else:
+            paper, validator_summary = self._validate_and_revise_paper(
+                session, result.payload["paper"]
+            )
+            result.payload["paper"] = paper
         assert_writes_allowed(
             self._assessment.name,
             set(result.payload) & {"paper"},
@@ -171,6 +222,14 @@ class MultiAgentOrchestrator:
             ok=not degraded,
             degraded=degraded,
         )
+        if validator_summary is not None:
+            self._record_decision(
+                session,
+                "item_validators",
+                SessionPhase.ASSESS,
+                validator_summary,
+                ok=True,
+            )
         self._store.save(session)
         return session.paper
 
@@ -178,6 +237,8 @@ class MultiAgentOrchestrator:
         self,
         session_id: str,
         answers: dict[str, str],
+        *,
+        item_meta: dict[str, dict] | None = None,
     ) -> SessionState:
         session = self._store.load(session_id)
         paper = self._require_paper(session)
@@ -196,6 +257,7 @@ class MultiAgentOrchestrator:
             StudentAnswer(item_id=item.id, answer_text=answers.get(item.id, ""))
             for item in paper.items
         ]
+        session.metadata["item_meta"] = item_meta or {}
         session.grades = []
         session.diagnosis = None
         session.plan = None
@@ -390,7 +452,15 @@ class MultiAgentOrchestrator:
             self._assessment.name,
             set(result.payload) & {"paper"},
         )
-        session.paper = result.payload["paper"]
+        session.paper, validator_summary = self._validate_and_revise_paper(
+            session, result.payload["paper"]
+        )
+        self._record_decision(
+            session,
+            "item_validators",
+            SessionPhase.PRACTICE_LOOP,
+            validator_summary,
+        )
         self._bind_pending_questions(session, session.paper)
         session.answers = []
         session.image_answers = []

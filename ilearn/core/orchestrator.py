@@ -38,8 +38,9 @@ class Orchestrator:
         self,
         session_id: str,
         answers: dict[str, str],
+        item_meta: dict[str, dict] | None = None,
     ) -> SessionState:
-        return self._inner.submit(session_id, answers)
+        return self._inner.submit(session_id, answers, item_meta=item_meta)
 
     def grade(self, session_id: str) -> list[GradeResult]:
         return self._inner.grade(session_id)

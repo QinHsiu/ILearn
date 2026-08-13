@@ -94,3 +94,27 @@ def test_planning_agent_stays_on_plan_when_loop_cap_reached():
     result = agent.run(ctx)
     assert result.payload["should_loop"] is False
     assert result.phase == SessionPhase.PLAN
+
+
+def test_planning_agent_allows_third_loop_for_learning_difficulty():
+    agent = PlanningAgent(PilotBeijingRenjiaoProvider(PILOT))
+    diagnosis = DiagnosisReport(
+        curriculum_label="北京·人教·小学数学",
+        knowledge_mastery=[
+            KnowledgeMastery(knowledge_id="k1", score_rate=0.2, level="weak"),
+        ],
+    )
+    ctx = AgentContext(
+        session_id="s1",
+        phase=SessionPhase.PLAN,
+        profile=StudentProfile(
+            region="北京", grade=5, age=11, learning_difficulty=True
+        ),
+        diagnosis=diagnosis,
+        loop_count=3,
+    )
+
+    result = agent.run(ctx)
+
+    assert result.payload["should_loop"] is True
+    assert result.phase == SessionPhase.PRACTICE_LOOP

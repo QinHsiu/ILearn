@@ -1,3 +1,4 @@
+import math
 import random
 from pathlib import Path
 
@@ -74,6 +75,26 @@ def test_g4_easy_fill_08_string_answer():
     p = PilotBeijingRenjiaoProvider(ROOT)
     record = p.get_template_record("g4_easy_fill_08")
     assert eval_answer_expr(record["answer_expr"], {}) == "平行"
+
+
+def test_g6_easy_fill_08_fruit_boxes_are_a_valid_gcd_story():
+    p = PilotBeijingRenjiaoProvider(ROOT)
+    record = p.get_template_record("g6_easy_fill_08")
+    stem = record["stem_template"]
+    assert "苹果" in stem and "梨" in stem
+    assert "最多能装" in stem
+    assert "最大公因数" not in stem
+    rng = random.Random(0)
+    for _ in range(30):
+        values = fill_template_slots(record, rng)
+        a, b = int(values["a"]), int(values["b"])
+        assert a != b
+        assert math.gcd(a, b) >= 2
+        answer = eval_answer_expr(record["answer_expr"], values)
+        assert int(answer) == math.gcd(a, b)
+        rendered = render_template_text(stem, values)
+        assert f"{a}个苹果" in rendered
+        assert f"{b}个梨" in rendered
 
 
 def test_g4_hard_fill_20_coupled_slots():

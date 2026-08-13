@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from random import Random
+from typing import Any
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.assessment import (
@@ -12,8 +13,8 @@ from ilearn.core.assessment import (
     fill_blueprint,
     validate_paper,
 )
-from ilearn.core.schemas import AssessmentItem, CurriculumCitation
-from ilearn.providers.curriculum import CurriculumProvider
+from ilearn.core.schemas import AssessmentItem, CurriculumCitation, ItemSourceRef
+from ilearn.providers.curriculum import CurriculumProvider, load_example_bank
 
 _TOKEN_PATTERN = re.compile(r"[\w\u4e00-\u9fff]+")
 
@@ -76,6 +77,49 @@ def bind_citations_to_item(
     return result
 
 
+def _pick_example(
+    knowledge_ids: list[str],
+    example_bank: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any] | None:
+    for knowledge_id in knowledge_ids:
+        examples = example_bank.get(knowledge_id) or []
+        if examples:
+            return examples[0]
+    return None
+
+
+def bind_source_refs_to_item(
+    item: AssessmentItem,
+    citations: list[CurriculumCitation],
+    example_bank: dict[str, list[dict[str, Any]]],
+) -> list[ItemSourceRef]:
+    """Attach example-bank and curriculum provenance for traceability."""
+    objective_ids = (
+        bind_citations_to_item(item, citations)
+        if citations
+        else list(item.curriculum_objective_ids)
+    )
+    example = _pick_example(item.knowledge_ids, example_bank)
+    if not objective_ids and example is None:
+        return []
+
+    citation_labels = {
+        c.source_id or c.citation_id: c.source_label for c in citations
+    }
+    source_label = example.get("label") if example else None
+    if not source_label and objective_ids:
+        source_label = citation_labels.get(objective_ids[0])
+
+    return [
+        ItemSourceRef(
+            example_id=example.get("id") if example else None,
+            curriculum_objective_ids=objective_ids,
+            textbook_chapter=example.get("chapter") if example else None,
+            source_label=source_label,
+        )
+    ]
+
+
 class AssessmentAgent:
     name = "assessment"
 
@@ -83,29 +127,48 @@ class AssessmentAgent:
         self._curriculum = curriculum
         self._builder = AssessmentBuilder(curriculum)
 
+    def _example_bank(self) -> dict[str, list[dict[str, Any]]]:
+        pilot_dir = getattr(self._curriculum, "_data_dir", None)
+        if pilot_dir is None:
+            return {}
+        return load_example_bank(pilot_dir)
+
     def run(self, ctx: AgentContext) -> AgentResult:
         paper_type = ctx.metadata.get("paper_type", "diagnostic")
         if paper_type == "followup":
             weak_ids = ctx.metadata.get("weak_knowledge_ids", [])
-            paper = self._builder.build_followup(ctx.profile, weak_ids)
+            paper = self._builder.build_followup(
+                ctx.profile, weak_ids, portrait=ctx.portrait
+            )
         else:
             weak_ids = ctx.metadata.get("weak_knowledge_ids")
             weak_list = list(weak_ids) if weak_ids else None
             blueprint = build_blueprint(ctx.profile, weak_list)
             rng_seed = ctx.metadata.get("rng_seed")
             rng = Random(rng_seed) if rng_seed is not None else None
-            paper = fill_blueprint(ctx.profile, blueprint, self._curriculum, rng=rng)
+            paper = fill_blueprint(
+                ctx.profile,
+                blueprint,
+                self._curriculum,
+                rng=rng,
+                portrait=ctx.portrait,
+            )
             validate_paper(paper)
 
-        citation_ids = [
-            c.source_id if c.source_id else c.citation_id
-            for c in (ctx.metadata.get("citations") or [])
-        ]
         raw_citations = list(ctx.metadata.get("citations") or [])
+        citation_ids = [
+            c.source_id if c.source_id else c.citation_id for c in raw_citations
+        ]
+        example_bank = self._example_bank()
         for item in paper.items:
             if not item.curriculum_objective_ids and raw_citations:
-                item.curriculum_objective_ids = bind_citations_to_item(item, raw_citations)
+                item.curriculum_objective_ids = bind_citations_to_item(
+                    item, raw_citations
+                )
             elif not item.curriculum_objective_ids and citation_ids:
                 item.curriculum_objective_ids = citation_ids[:1]
+            item.source_refs = bind_source_refs_to_item(
+                item, raw_citations, example_bank
+            )
 
         return AgentResult(phase=SessionPhase.PRACTICE, payload={"paper": paper})

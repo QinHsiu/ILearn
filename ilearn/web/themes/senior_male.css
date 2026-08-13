@@ -1,0 +1,88 @@
+/* Senior band — calm, dense layout; male accent */
+:root {
+  --accent: #1e40af;
+  --teal: var(--accent);
+  --gold: #94a3b8;
+  --ink: #1e293b;
+  --paper: #f1f5f9;
+  --card: #ffffff;
+  --line: #cbd5e1;
+  --btn-radius: 4px;
+  --card-radius: 6px;
+  --step-size: 1.25rem;
+}
+
+.stApp {
+  background: var(--paper);
+}
+
+.brand {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+}
+
+.subtitle {
+  font-size: 0.92rem;
+  letter-spacing: 0.08em;
+}
+
+.block-container {
+  max-width: 960px;
+  padding-top: 1.6rem;
+}
+
+.stepper {
+  gap: 0.25rem;
+  margin-bottom: 2.4rem;
+}
+
+.step {
+  border-top-width: 2px;
+  font-size: 0.8rem;
+  padding-top: 0.55rem;
+}
+
+.question-card {
+  border-left-width: 3px;
+  border-left-color: var(--accent);
+  border-radius: var(--card-radius);
+  box-shadow: none;
+  padding: 1.2rem 1.4rem;
+}
+
+.stem {
+  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+  line-height: 1.6;
+}
+
+.stButton > button,
+.stFormSubmitButton > button {
+  border-radius: var(--btn-radius);
+  min-height: 2.4rem;
+}
+
+.stButton > button[kind="primary"],
+.stFormSubmitButton > button {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.goal-card {
+  background: var(--accent);
+  border-radius: 6px;
+  padding: 1.2rem 1.4rem;
+}
+
+.day-title {
+  color: var(--accent);
+}
+
+.day-title span {
+  background: #e2e8f0;
+}
+
+.phase-badge {
+  background: #e2e8f0;
+  color: var(--accent);
+  font-size: 0.85rem;
+}

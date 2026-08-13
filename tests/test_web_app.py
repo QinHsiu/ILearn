@@ -16,7 +16,7 @@ def test_api_client_runs_assessment_flow_over_http():
     def handler(request):
         requests.append((request.method, request.url.path))
         if request.url.path == "/sessions":
-            assert request.read() == b'{"region":"Beijing","grade":5,"age":11}'
+            assert request.read() == b'{"region":"Beijing","grade":5,"age":11,"gender":"unspecified"}'
             return httpx.Response(200, json={"session_id": "session-1"})
         if request.url.path.endswith("/assessment"):
             return httpx.Response(200, json={"items": [{"id": "q1"}]})

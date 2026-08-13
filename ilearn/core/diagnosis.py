@@ -361,6 +361,8 @@ class PortraitUpdater:
         curriculum: CurriculumProvider,
         grade: int | None = None,
         evidence: list[KnowledgeEvidence] | None = None,
+        item_meta: dict[str, dict[str, object]] | None = None,
+        item_situations: dict[str, str] | None = None,
     ) -> LearnerPortrait:
         now = utc_now()
         if evidence:
@@ -433,8 +435,41 @@ class PortraitUpdater:
                     portrait.knowledge_state[kid] = min(
                         portrait.knowledge_state.get(kid, 1.0), 0.4
                     )
+        PortraitUpdater._update_situation_interest(
+            portrait, grades, item_meta or {}, item_situations or {}
+        )
         portrait.updated_at = now
         return portrait
+
+    @staticmethod
+    def _update_situation_interest(
+        portrait: LearnerPortrait,
+        grades: list[GradeResult],
+        item_meta: dict[str, dict[str, object]],
+        item_situations: dict[str, str],
+    ) -> None:
+        """Track a bounded preference signal from correctness and item behavior."""
+        by_tag: dict[str, list[float]] = defaultdict(list)
+        for grade_row in grades:
+            meta = item_meta.get(grade_row.item_id, {})
+            tag = item_situations.get(grade_row.item_id) or meta.get("situation_tag")
+            if not tag:
+                continue
+            signal = 0.1 if grade_row.final_correct else -0.1
+            if meta.get("skipped"):
+                signal -= 0.2
+            elapsed_ms = meta.get("elapsed_ms")
+            if isinstance(elapsed_ms, (int, float)):
+                if elapsed_ms < 1500:
+                    signal -= 0.05
+                elif elapsed_ms > 30000:
+                    signal += 0.05
+            by_tag[tag].append(signal)
+        for tag, signals in by_tag.items():
+            current = portrait.situation_interest.get(tag, 0.5)
+            portrait.situation_interest[tag] = _clamp_score(
+                current + sum(signals) / len(signals)
+            )
 
 
 _HINT_BEHAVIORAL_DELTA: dict[HintLevel, float] = {

@@ -21,7 +21,9 @@ ErrorTag = Literal["concept_gap", "calc_error", "misread", "method_wrong", "inco
 GradeLevel = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 PilotGradeLevel = Literal[4, 5, 6]
 Subject = Literal["math", "chinese"]
+Gender = Literal["male", "female", "unspecified"]
 ItemType = Literal["choice", "fill", "constructed"]
+SituationTag = Literal["sports", "games", "life", "science", "neutral"]
 Difficulty = Literal["easy", "medium", "hard"]
 MasteryLevel = Literal["mastered", "unstable", "weak"]
 StepStatus = Literal["correct", "incorrect", "partial"]
@@ -48,6 +50,9 @@ class StudentProfile(BaseModel):
     grade: GradeLevel
     age: int = Field(ge=6, le=18)
     subject: Subject = "math"
+    nickname: str | None = None
+    gender: Gender = "unspecified"
+    learning_difficulty: bool | None = None
 
 
 KcType = Literal["fact", "skill", "principle"]
@@ -63,6 +68,15 @@ class KnowledgeNode(BaseModel):
     kc_type: KcType | None = None
 
 
+class ItemSourceRef(BaseModel):
+    """Traceable provenance for an assessment item (example + curriculum)."""
+
+    example_id: str | None = None
+    curriculum_objective_ids: list[str] = Field(default_factory=list)
+    textbook_chapter: str | None = None
+    source_label: str | None = None
+
+
 class ItemTemplate(BaseModel):
     """Parameterized item blueprint with optional slot placeholders."""
 
@@ -76,6 +90,7 @@ class ItemTemplate(BaseModel):
     rubric_steps: list[str] = Field(default_factory=list)
     choices_template: list[str] | None = None
     slot_names: list[str] = Field(default_factory=list)
+    situation_tag: SituationTag | None = None
 
 
 class AssessmentItem(BaseModel):
@@ -90,6 +105,8 @@ class AssessmentItem(BaseModel):
     rubric_steps: list[str] = Field(default_factory=list)
     choices: list[str] | None = None
     curriculum_objective_ids: list[str] = Field(default_factory=list)
+    source_refs: list[ItemSourceRef] = Field(default_factory=list)
+    situation_tag: SituationTag | None = None
 
 
 class BlueprintSlot(BaseModel):
@@ -321,6 +338,7 @@ class LearnerPortrait(BaseModel):
     weakness_log: list[WeaknessEntry] = Field(default_factory=list)
     weakness_events: list[WeaknessEvent] = Field(default_factory=list)
     dimensions: PortraitDimensions = Field(default_factory=PortraitDimensions)
+    situation_interest: dict[str, float] = Field(default_factory=dict)
     updated_at: datetime = Field(default_factory=utc_now)
 
 
@@ -366,6 +384,7 @@ class SessionState(BaseModel):
     evidence_log: list[KnowledgeEvidence] = Field(default_factory=list)
     decision_log: list[AgentDecision] = Field(default_factory=list)
     pending_questions: list[PendingQuestion] = Field(default_factory=list)
+    metadata: dict[str, object] = Field(default_factory=dict)
 
 
 from ilearn.core.review import ReviewState  # noqa: E402

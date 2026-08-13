@@ -53,6 +53,28 @@ def test_full_session_api_flow(tmp_path):
     assert "计划" in body["markdown"] or "学习计划" in body["markdown"]
 
 
+def test_submit_persists_optional_item_meta(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post(
+        "/sessions", json={"region": "北京", "grade": 5, "age": 11}
+    ).json()["session_id"]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    item_id = paper["items"][0]["id"]
+
+    response = c.post(
+        f"/sessions/{sid}/submit",
+        json={
+            "answers": {item_id: ""},
+            "item_meta": {item_id: {"skipped": True, "elapsed_ms": 1200}},
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["metadata"]["item_meta"] == {
+        item_id: {"skipped": True, "elapsed_ms": 1200}
+    }
+
+
 def test_stepwise_endpoints(tmp_path):
     c = _client(tmp_path)
     sid = c.post(
@@ -136,7 +158,20 @@ def test_followup_endpoint(tmp_path):
     assert phase["loop_count"] == 1
 
 
-def test_cors_allows_streamlit_origin(tmp_path):
+def test_cors_allows_vite_origin(tmp_path):
+    c = _client(tmp_path)
+    r = c.options(
+        "/sessions",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+    assert r.status_code == 200
+    assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+def test_cors_allows_legacy_streamlit_origin(tmp_path):
     c = _client(tmp_path)
     r = c.options(
         "/sessions",
