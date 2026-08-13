@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.schemas import (
@@ -39,6 +39,7 @@ class CreateSessionResponse(BaseModel):
 
 class SubmitRequest(BaseModel):
     answers: dict[str, str]
+    item_meta: dict[str, dict] = Field(default_factory=dict)
 
 
 class ImageSubmitRequest(BaseModel):
@@ -103,7 +104,9 @@ def create_app(
 
     @app.post("/sessions/{session_id}/submit", response_model=SessionState)
     def submit(session_id: str, body: SubmitRequest) -> SessionState:
-        return orchestrator.submit(session_id, body.answers)
+        return orchestrator.submit(
+            session_id, body.answers, item_meta=body.item_meta
+        )
 
     @app.post("/sessions/{session_id}/grade", response_model=list[GradeResult])
     def grade(session_id: str) -> list[GradeResult]:

@@ -53,6 +53,28 @@ def test_full_session_api_flow(tmp_path):
     assert "计划" in body["markdown"] or "学习计划" in body["markdown"]
 
 
+def test_submit_persists_optional_item_meta(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post(
+        "/sessions", json={"region": "北京", "grade": 5, "age": 11}
+    ).json()["session_id"]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    item_id = paper["items"][0]["id"]
+
+    response = c.post(
+        f"/sessions/{sid}/submit",
+        json={
+            "answers": {item_id: ""},
+            "item_meta": {item_id: {"skipped": True, "elapsed_ms": 1200}},
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["metadata"]["item_meta"] == {
+        item_id: {"skipped": True, "elapsed_ms": 1200}
+    }
+
+
 def test_stepwise_endpoints(tmp_path):
     c = _client(tmp_path)
     sid = c.post(

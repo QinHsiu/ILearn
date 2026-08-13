@@ -384,6 +384,7 @@ class SessionState(BaseModel):
     evidence_log: list[KnowledgeEvidence] = Field(default_factory=list)
     decision_log: list[AgentDecision] = Field(default_factory=list)
     pending_questions: list[PendingQuestion] = Field(default_factory=list)
+    metadata: dict[str, object] = Field(default_factory=dict)
 
 
 from ilearn.core.review import ReviewState  # noqa: E402

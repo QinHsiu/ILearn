@@ -16,6 +16,8 @@ from ilearn.core.item_validators import (
 from ilearn.core.schemas import (
     AssessmentItem,
     AssessmentPaper,
+    DiagnosisReport,
+    KnowledgeMastery,
     StudentProfile,
 )
 from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
@@ -153,6 +155,38 @@ def test_orchestrator_appends_item_validators_decision(tmp_path):
     orchestrator.generate_assessment(session_id)
     decisions = store.load(session_id).decision_log
     assert any(decision.agent == "item_validators" for decision in decisions)
+
+
+def test_practice_loop_validates_and_logs_revision(tmp_path):
+    store = SessionStore(tmp_path)
+    orchestrator = MultiAgentOrchestrator(
+        store=store,
+        curriculum=PilotBeijingRenjiaoProvider(PILOT),
+        llm=None,
+    )
+    session_id = orchestrator.create_session(
+        StudentProfile(region="北京", grade=5, age=11)
+    )
+    session = store.load(session_id)
+    session.diagnosis = DiagnosisReport(
+        curriculum_label="pilot",
+        knowledge_mastery=[
+            KnowledgeMastery(
+                knowledge_id="frac_add_same",
+                score_rate=0.0,
+                level="weak",
+                item_ids=["i"],
+            )
+        ],
+    )
+    store.save(session)
+
+    orchestrator.start_practice_loop(session_id)
+
+    decision = store.load(session_id).decision_log[-1]
+    assert decision.agent == "item_validators"
+    assert "validated paper" in decision.reason
+    assert "remaining" in decision.reason
 
 
 def test_validation_issue_fields():
