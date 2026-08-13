@@ -51,11 +51,13 @@ def test_pipeline_appends_persisted_agent_decisions(tmp_path):
     decisions = store.load(session_id).decision_log
     assert [decision.agent for decision in decisions] == [
         "assessment",
+        "item_validators",
         "practice",
         "diagnosis",
         "planning",
     ]
     assert [decision.phase for decision in decisions] == [
+        SessionPhase.ASSESS,
         SessionPhase.ASSESS,
         SessionPhase.GRADE,
         SessionPhase.DIAGNOSE,

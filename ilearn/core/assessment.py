@@ -287,4 +287,5 @@ class AssessmentBuilder:
             answer_key=answer_key,
             rubric_steps=rubric_steps,
             choices=choices,
+            situation_tag=template.situation_tag,
         )

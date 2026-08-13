@@ -5,7 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 
-from ilearn.agents.assessment import AssessmentAgent
+from ilearn.agents.assessment import AssessmentAgent, bind_source_refs_to_item
 from ilearn.agents.capabilities import assert_writes_allowed
 from ilearn.agents.curriculum import CurriculumAgent
 from ilearn.agents.diagnosis import DiagnosisAgent
@@ -13,6 +13,7 @@ from ilearn.agents.planning import PlanningAgent
 from ilearn.agents.practice import PracticeAgent, evidence_from_grades
 from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
+from ilearn.core.item_validators import revise_paper_once, validate_paper as validate_item_paper
 from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
 from ilearn.core.quality_gate import (
@@ -38,7 +39,7 @@ from ilearn.core.schemas import (
     StudentProfile,
     TutorTurn,
 )
-from ilearn.providers.curriculum import CurriculumProvider
+from ilearn.providers.curriculum import CurriculumProvider, load_example_bank
 from ilearn.providers.llm import LLMClient
 from ilearn.storage.sessions import SessionStore
 
@@ -53,6 +54,7 @@ class MultiAgentOrchestrator:
         llm: LLMClient | None = None,
     ) -> None:
         self._store = store
+        self._curriculum = curriculum
         pilot_dir = getattr(
             curriculum,
             "_data_dir",
@@ -151,6 +153,41 @@ class MultiAgentOrchestrator:
         )
         if degraded:
             result = degraded_assessment_result(session.profile)
+            validator_summary: str | None = None
+        else:
+            paper = result.payload["paper"]
+            issues = validate_item_paper(paper, grade=session.profile.grade)
+            revise_issues = [
+                issue for issue in issues if issue.dimension != "authenticity"
+            ]
+            if revise_issues:
+                paper = revise_paper_once(
+                    paper,
+                    revise_issues,
+                    profile=session.profile,
+                    curriculum=self._curriculum,
+                )
+                pilot_dir = getattr(
+                    self._curriculum,
+                    "_data_dir",
+                    Path(__file__).resolve().parents[2] / "data" / "pilot",
+                )
+                example_bank = load_example_bank(Path(pilot_dir))
+                for item in paper.items:
+                    item.source_refs = bind_source_refs_to_item(
+                        item,
+                        list(session.curriculum_citations),
+                        example_bank,
+                    )
+            result.payload["paper"] = paper
+            validator_summary = (
+                f"validated paper: {len(issues)} issue(s)"
+                + (
+                    ", revised once"
+                    if revise_issues
+                    else (", all clear" if not issues else ", authenticity soft only")
+                )
+            )
         assert_writes_allowed(
             self._assessment.name,
             set(result.payload) & {"paper"},
@@ -171,6 +208,14 @@ class MultiAgentOrchestrator:
             ok=not degraded,
             degraded=degraded,
         )
+        if validator_summary is not None:
+            self._record_decision(
+                session,
+                "item_validators",
+                SessionPhase.ASSESS,
+                validator_summary,
+                ok=True,
+            )
         self._store.save(session)
         return session.paper
 

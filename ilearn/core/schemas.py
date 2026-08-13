@@ -105,6 +105,7 @@ class AssessmentItem(BaseModel):
     choices: list[str] | None = None
     curriculum_objective_ids: list[str] = Field(default_factory=list)
     source_refs: list[ItemSourceRef] = Field(default_factory=list)
+    situation_tag: SituationTag | None = None
 
 
 class BlueprintSlot(BaseModel):
