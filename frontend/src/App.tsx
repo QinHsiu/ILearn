@@ -10,6 +10,7 @@ import type {
   StudentProfile,
 } from './api/client'
 import MarkdownView from './MarkdownView'
+import HistoryList from './components/HistoryList'
 import { applyTheme } from './theme'
 import './styles.css'
 
@@ -91,6 +92,17 @@ export default function App() {
   useEffect(() => {
     applyTheme(profile.grade, profile.gender || 'unspecified')
   }, [profile.grade, profile.gender])
+
+  async function onResume(id: string) {
+    const nextReport = await api.getReport(id)
+    setSessionId(id)
+    setPaper(nextReport.session.paper || null)
+    setReport(nextReport)
+    if (nextReport.session.plan) setStep(3)
+    else if (nextReport.session.grades?.length) setStep(2)
+    else if (nextReport.session.paper) setStep(1)
+    else setStep(0)
+  }
 
   async function onStart(e: FormEvent) {
     e.preventDefault()
@@ -295,6 +307,14 @@ export default function App() {
               </button>
             </div>
           </form>
+          <HistoryList
+            nickname={profile.nickname || ''}
+            onResume={(id) => {
+              void onResume(id).catch((err) => {
+                setError(err instanceof Error ? err.message : String(err))
+              })
+            }}
+          />
         </section>
       )}
 

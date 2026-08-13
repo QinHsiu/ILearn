@@ -76,6 +76,13 @@ export type ReportResponse = {
   session: SessionState
 }
 
+export type SessionSummary = {
+  session_id: string
+  nickname?: string | null
+  grade: number
+  phase: string
+}
+
 const MIME_BY_EXT: Record<string, ImageMime> = {
   png: 'image/png',
   jpg: 'image/jpeg',
@@ -125,6 +132,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
   }
+  if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
 
@@ -157,6 +165,13 @@ export const api = {
   },
   getReport(sessionId: string) {
     return request<ReportResponse>(`/sessions/${sessionId}/report`)
+  },
+  listSessions(nickname: string) {
+    const q = new URLSearchParams({ nickname })
+    return request<SessionSummary[]>(`/sessions?${q.toString()}`)
+  },
+  deleteSession(sessionId: string) {
+    return request<void>(`/sessions/${sessionId}`, { method: 'DELETE' })
   },
   getPhase(sessionId: string) {
     return request<{ phase: string; loop_count: number }>(`/sessions/${sessionId}/phase`)
