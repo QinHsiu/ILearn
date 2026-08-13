@@ -20,5 +20,13 @@ def test_guard_allows_socratic_hint():
 def test_leak_miss_rate_below_five_percent():
     cases = json.loads(FIXTURES.read_text(encoding="utf-8"))
     assert len(cases) >= 50
-    rate = leak_miss_rate(cases, GuardAgent().check)
+    check = GuardAgent().check
+    missed = [
+        row
+        for row in cases
+        if row["expect_leak"]
+        and not check(row["message"], row["answer_key"]).is_leak
+    ]
+    assert missed == []
+    rate = leak_miss_rate(cases, check)
     assert rate < 0.05
