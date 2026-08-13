@@ -73,6 +73,7 @@ export default function App() {
     Record<string, ImageAnswer & { preview: string; name: string }>
   >({})
   const [report, setReport] = useState<ReportResponse | null>(null)
+  const [historyNickname, setHistoryNickname] = useState('')
 
   const [profile, setProfile] = useState<StudentProfile>({
     region: 'beijing',
@@ -228,6 +229,7 @@ export default function App() {
                   id="nickname"
                   value={profile.nickname || ''}
                   onChange={(e) => setProfile({ ...profile, nickname: e.target.value })}
+                  onBlur={(e) => setHistoryNickname(e.currentTarget.value)}
                   placeholder="可选"
                 />
               </div>
@@ -308,7 +310,7 @@ export default function App() {
             </div>
           </form>
           <HistoryList
-            nickname={profile.nickname || ''}
+            nickname={historyNickname}
             onResume={(id) => {
               void onResume(id).catch((err) => {
                 setError(err instanceof Error ? err.message : String(err))

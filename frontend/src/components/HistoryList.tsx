@@ -1,6 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
 import type { SessionSummary } from '../api/client'
+
+const PHASE_LABELS: Record<string, string> = {
+  onboard: '建档',
+  assess: '测评',
+  practice: '练习',
+  grade: '批改',
+  diagnose: '学情诊断',
+  plan: '学习计划',
+  practice_loop: '巩固练习',
+}
 
 type HistoryListProps = {
   nickname: string
@@ -10,17 +20,20 @@ type HistoryListProps = {
 export default function HistoryList({ nickname, onResume }: HistoryListProps) {
   const [sessions, setSessions] = useState<SessionSummary[]>([])
   const [busyId, setBusyId] = useState<string | null>(null)
+  const refreshToken = useRef(0)
 
   async function refresh() {
+    const token = ++refreshToken.current
     const trimmed = nickname.trim()
     if (!trimmed) {
       setSessions([])
       return
     }
     try {
-      setSessions(await api.listSessions(trimmed))
+      const nextSessions = await api.listSessions(trimmed)
+      if (token === refreshToken.current) setSessions(nextSessions)
     } catch {
-      setSessions([])
+      if (token === refreshToken.current) setSessions([])
     }
   }
 
@@ -50,7 +63,7 @@ export default function HistoryList({ nickname, onResume }: HistoryListProps) {
             <div>
               <strong>{item.session_id.slice(0, 8)}</strong>
               <span className="pill">{item.grade} 年级</span>
-              <span className="pill">{item.phase}</span>
+              <span className="pill">{PHASE_LABELS[item.phase] || '未知阶段'}</span>
             </div>
             <div className="actions">
               <button
