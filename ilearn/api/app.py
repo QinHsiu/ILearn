@@ -19,6 +19,7 @@ from ilearn.core.schemas import (
     ImageAnswer,
     LearningPlanReport,
     SessionState,
+    SessionSummary,
     StudentProfile,
 )
 from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
@@ -106,6 +107,17 @@ def create_app(
     def create_session(profile: StudentProfile) -> CreateSessionResponse:
         session_id = orchestrator.create_session(profile)
         return CreateSessionResponse(session_id=session_id)
+
+    @app.get("/sessions", response_model=list[SessionSummary])
+    def list_sessions(nickname: str | None = None) -> list[SessionSummary]:
+        if not (nickname or "").strip():
+            raise ValueError("nickname query parameter is required")
+        return orchestrator.list_sessions(nickname)
+
+    @app.delete("/sessions/{session_id}", status_code=204)
+    def delete_session(session_id: str) -> Response:
+        orchestrator.delete_session(session_id)
+        return Response(status_code=204)
 
     @app.post("/sessions/{session_id}/assessment", response_model=AssessmentPaper)
     def generate_assessment(session_id: str) -> AssessmentPaper:

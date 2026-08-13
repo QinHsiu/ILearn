@@ -201,3 +201,34 @@ def test_create_app_loads_dotenv_and_wires_available_llm(
 
     mock_load_dotenv.assert_called_once()
     assert mock_orchestrator.call_args.kwargs["llm"] is llm
+
+
+def test_list_sessions_by_nickname(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post(
+        "/sessions",
+        json={"region": "北京", "grade": 5, "age": 11, "nickname": "小明"},
+    ).json()["session_id"]
+    listed = c.get("/sessions", params={"nickname": "小明"}).json()
+    assert listed == [
+        {
+            "session_id": sid,
+            "nickname": "小明",
+            "grade": 5,
+            "phase": "onboard",
+        }
+    ]
+
+
+def test_list_sessions_requires_nickname(tmp_path):
+    c = _client(tmp_path)
+    assert c.get("/sessions").status_code == 400
+
+
+def test_delete_session(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post("/sessions", json={"region": "北京", "grade": 5, "age": 11}).json()[
+        "session_id"
+    ]
+    assert c.delete(f"/sessions/{sid}").status_code == 204
+    assert c.get(f"/sessions/{sid}/phase").status_code == 404

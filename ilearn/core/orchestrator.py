@@ -10,6 +10,7 @@ from ilearn.core.schemas import (
     LearningPlanReport,
     SessionPhase,
     SessionState,
+    SessionSummary,
     StudentProfile,
 )
 from ilearn.providers.curriculum import CurriculumProvider
@@ -30,6 +31,20 @@ class Orchestrator:
 
     def create_session(self, profile: StudentProfile) -> str:
         return self._inner.create_session(profile)
+
+    def list_sessions(self, nickname: str) -> list[SessionSummary]:
+        return [
+            SessionSummary(
+                session_id=session.session_id,
+                nickname=session.profile.nickname,
+                grade=session.profile.grade,
+                phase=session.phase.value,
+            )
+            for session in self._inner._store.list_by_nickname(nickname)
+        ]
+
+    def delete_session(self, session_id: str) -> None:
+        self._inner._store.delete(session_id)
 
     def generate_assessment(self, session_id: str) -> AssessmentPaper:
         return self._inner.generate_assessment(session_id)

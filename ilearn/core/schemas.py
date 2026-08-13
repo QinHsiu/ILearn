@@ -387,6 +387,13 @@ class SessionState(BaseModel):
     metadata: dict[str, object] = Field(default_factory=dict)
 
 
+class SessionSummary(BaseModel):
+    session_id: str
+    nickname: str | None = None
+    grade: int
+    phase: str
+
+
 from ilearn.core.review import ReviewState  # noqa: E402
 
 LearnerPortrait.model_rebuild()
