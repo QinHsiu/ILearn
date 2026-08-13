@@ -116,6 +116,9 @@ def bind_source_refs_to_item(
             curriculum_objective_ids=objective_ids,
             textbook_chapter=example.get("chapter") if example else None,
             source_label=source_label,
+            example_stem=example.get("stem") if example else None,
+            example_answer=example.get("answer") if example else None,
+            example_difficulty=example.get("difficulty") if example else None,
         )
     ]
 

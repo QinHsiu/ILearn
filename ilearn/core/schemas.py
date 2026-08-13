@@ -75,6 +75,9 @@ class ItemSourceRef(BaseModel):
     curriculum_objective_ids: list[str] = Field(default_factory=list)
     textbook_chapter: str | None = None
     source_label: str | None = None
+    example_stem: str | None = None
+    example_answer: str | None = None
+    example_difficulty: str | None = None
 
 
 class ItemTemplate(BaseModel):
