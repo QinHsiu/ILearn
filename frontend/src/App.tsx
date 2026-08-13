@@ -11,6 +11,8 @@ import type {
 } from './api/client'
 import MarkdownView from './MarkdownView'
 import HistoryList from './components/HistoryList'
+import SourceAccordion from './components/SourceAccordion'
+import TutorPanel from './components/TutorPanel'
 import { applyTheme } from './theme'
 import './styles.css'
 
@@ -30,22 +32,6 @@ const ERROR_LABELS: Record<string, string> = {
   incomplete: '过程不完整',
 }
 
-function formatSourceLines(ref: {
-  example_id?: string | null
-  curriculum_objective_ids?: string[]
-  textbook_chapter?: string | null
-  source_label?: string | null
-}): string[] {
-  const lines: string[] = []
-  if (ref.example_id) lines.push(`例题 ID：${ref.example_id}`)
-  if (ref.textbook_chapter) lines.push(`教材章节：${ref.textbook_chapter}`)
-  if (ref.curriculum_objective_ids?.length) {
-    lines.push(`课标条目：${ref.curriculum_objective_ids.join('、')}`)
-  }
-  if (ref.source_label) lines.push(`来源：${ref.source_label}`)
-  return lines
-}
-
 function wrongItemEntries(session: SessionState) {
   const grades = session.grades || []
   const items = session.paper?.items || []
@@ -55,11 +41,13 @@ function wrongItemEntries(session: SessionState) {
     .map((g) => {
       const item = byId[g.item_id]
       if (!item) return null
-      const sourceLines = (item.source_refs || []).flatMap(formatSourceLines)
-      if (!sourceLines.length) return null
-      return { itemId: item.id, stem: item.stem, sourceLines }
+      return { itemId: item.id, stem: item.stem, sourceRefs: item.source_refs || [] }
     })
-    .filter(Boolean) as Array<{ itemId: string; stem: string; sourceLines: string[] }>
+    .filter(Boolean) as Array<{
+    itemId: string
+    stem: string
+    sourceRefs: NonNullable<SessionState['paper']>['items'][number]['source_refs']
+  }>
 }
 
 export default function App() {
@@ -184,6 +172,21 @@ export default function App() {
       const nextReport = await api.getReport(sessionId)
       setReport(nextReport)
       setStep(2)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onReplan() {
+    if (!sessionId) return
+    setBusy(true)
+    setError(null)
+    try {
+      await api.replan(sessionId)
+      const nextReport = await api.getReport(sessionId)
+      setReport(nextReport)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -467,14 +470,10 @@ export default function App() {
             <>
               <h3>错题参考来源</h3>
               {wrongItems.map((entry) => (
-                <details className="expander" key={entry.itemId}>
-                  <summary>{entry.stem.slice(0, 48)}{entry.stem.length > 48 ? '…' : ''}</summary>
-                  <div className="body">
-                    {entry.sourceLines.map((line) => (
-                      <div key={line}>{line}</div>
-                    ))}
-                  </div>
-                </details>
+                <div key={entry.itemId}>
+                  <SourceAccordion stem={entry.stem} sourceRefs={entry.sourceRefs} />
+                  {sessionId ? <TutorPanel sessionId={sessionId} itemId={entry.itemId} /> : null}
+                </div>
               ))}
             </>
           )}
@@ -502,6 +501,9 @@ export default function App() {
           <div className="actions">
             <button className="btn secondary" type="button" onClick={() => setStep(2)}>
               返回学情
+            </button>
+            <button className="btn" type="button" onClick={() => void onReplan()} disabled={busy}>
+              {busy ? '规划中…' : '重新规划'}
             </button>
             <button
               className="btn"

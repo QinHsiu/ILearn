@@ -10,6 +10,16 @@ export type StudentProfile = {
   subject?: string
 }
 
+export type SourceRef = {
+  example_id?: string | null
+  curriculum_objective_ids?: string[]
+  textbook_chapter?: string | null
+  example_stem?: string | null
+  example_answer?: string | null
+  example_difficulty?: string | null
+  source_label?: string | null
+}
+
 export type AssessmentItem = {
   id: string
   stem: string
@@ -17,12 +27,7 @@ export type AssessmentItem = {
   difficulty: string
   knowledge_ids: string[]
   choices?: string[] | null
-  source_refs?: Array<{
-    example_id?: string | null
-    curriculum_objective_ids?: string[]
-    textbook_chapter?: string | null
-    source_label?: string | null
-  }>
+  source_refs?: SourceRef[]
   situation_tag?: string | null
 }
 
@@ -74,6 +79,12 @@ export type ImageAnswer = {
 export type ReportResponse = {
   markdown: string
   session: SessionState
+}
+
+export type TutorTurn = {
+  phase: string
+  message: string
+  error_tag?: string | null
 }
 
 export type SessionSummary = {
@@ -165,6 +176,24 @@ export const api = {
   },
   getReport(sessionId: string) {
     return request<ReportResponse>(`/sessions/${sessionId}/report`)
+  },
+  tutorStart(sessionId: string, itemId: string) {
+    return request<TutorTurn>(`/sessions/${sessionId}/tutor`, {
+      method: 'POST',
+      body: JSON.stringify({ item_id: itemId }),
+    })
+  },
+  tutorHint(sessionId: string, itemId: string, userMessage: string) {
+    return request<TutorTurn>(`/sessions/${sessionId}/tutor/hint`, {
+      method: 'POST',
+      body: JSON.stringify({ item_id: itemId, user_message: userMessage }),
+    })
+  },
+  replan(sessionId: string) {
+    return request<{ markdown: string; status?: string }>(
+      `/sessions/${sessionId}/replan`,
+      { method: 'POST' },
+    )
   },
   listSessions(nickname: string) {
     const q = new URLSearchParams({ nickname })

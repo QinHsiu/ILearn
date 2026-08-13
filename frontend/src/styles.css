@@ -332,6 +332,25 @@ textarea {
   font-size: 0.9rem;
 }
 
+.tutor-panel {
+  margin: -0.25rem 0 0.9rem;
+  padding: 0 0.85rem 0.85rem;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+
+.tutor-turn {
+  margin: 0.55rem 0;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 6%, white);
+}
+
+.tutor-turn small {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--muted);
+}
+
 .plan-body {
   margin-top: 0.35rem;
 }
