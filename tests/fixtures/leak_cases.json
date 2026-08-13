@@ -1,0 +1,602 @@
+[
+  {
+    "id": "leak-01",
+    "answer_key": "20",
+    "message": "答案是20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-02",
+    "answer_key": "20",
+    "message": "正确答案是20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-03",
+    "answer_key": "20",
+    "message": "填20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-04",
+    "answer_key": "20",
+    "message": "等于20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-05",
+    "answer_key": "20",
+    "message": "结果为20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-06",
+    "answer_key": "20",
+    "message": "所以是20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-07",
+    "answer_key": "20",
+    "message": "选20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-08",
+    "answer_key": "20",
+    "message": "the answer is 20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-09",
+    "answer_key": "20",
+    "message": "20就是最终结果",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-10",
+    "answer_key": "20",
+    "message": "直接写20",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-11",
+    "answer_key": "1/2",
+    "message": "答案是1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-12",
+    "answer_key": "1/2",
+    "message": "正确答案是1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-13",
+    "answer_key": "1/2",
+    "message": "填1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-14",
+    "answer_key": "1/2",
+    "message": "等于1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-15",
+    "answer_key": "1/2",
+    "message": "结果为1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-16",
+    "answer_key": "1/2",
+    "message": "所以是1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-17",
+    "answer_key": "1/2",
+    "message": "选1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-18",
+    "answer_key": "1/2",
+    "message": "the answer is 1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-19",
+    "answer_key": "1/2",
+    "message": "1/2就是最终结果",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-20",
+    "answer_key": "1/2",
+    "message": "直接写1/2",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-21",
+    "answer_key": "3.14",
+    "message": "答案是3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-22",
+    "answer_key": "3.14",
+    "message": "正确答案是3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-23",
+    "answer_key": "3.14",
+    "message": "填3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-24",
+    "answer_key": "3.14",
+    "message": "等于3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-25",
+    "answer_key": "3.14",
+    "message": "结果为3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-26",
+    "answer_key": "3.14",
+    "message": "所以是3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-27",
+    "answer_key": "3.14",
+    "message": "选3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-28",
+    "answer_key": "3.14",
+    "message": "the answer is 3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-29",
+    "answer_key": "3.14",
+    "message": "3.14就是最终结果",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-30",
+    "answer_key": "3.14",
+    "message": "直接写3.14",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-31",
+    "answer_key": "90",
+    "message": "答案是90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-32",
+    "answer_key": "90",
+    "message": "正确答案是90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-33",
+    "answer_key": "90",
+    "message": "填90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-34",
+    "answer_key": "90",
+    "message": "等于90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-35",
+    "answer_key": "90",
+    "message": "结果为90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-36",
+    "answer_key": "90",
+    "message": "所以是90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-37",
+    "answer_key": "90",
+    "message": "选90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-38",
+    "answer_key": "90",
+    "message": "the answer is 90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-39",
+    "answer_key": "90",
+    "message": "90就是最终结果",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-40",
+    "answer_key": "90",
+    "message": "直接写90",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-41",
+    "answer_key": "12",
+    "message": "答案是12",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-42",
+    "answer_key": "12",
+    "message": "正确答案是12",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-43",
+    "answer_key": "12",
+    "message": "填12",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-44",
+    "answer_key": "12",
+    "message": "等于12",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-45",
+    "answer_key": "12",
+    "message": "结果为12",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-46",
+    "answer_key": "12",
+    "message": "所以是12",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-47",
+    "answer_key": "12",
+    "message": "选12",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-48",
+    "answer_key": "12",
+    "message": "the answer is 12",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-49",
+    "answer_key": "12",
+    "message": "12就是最终结果",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-50",
+    "answer_key": "12",
+    "message": "直接写12",
+    "expect_leak": true
+  },
+  {
+    "id": "safe-01-20",
+    "answer_key": "20",
+    "message": "先把已知条件写下来，再选择运算。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-01-1/2",
+    "answer_key": "1/2",
+    "message": "先把已知条件写下来，再选择运算。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-01-3.14",
+    "answer_key": "3.14",
+    "message": "先把已知条件写下来，再选择运算。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-01-90",
+    "answer_key": "90",
+    "message": "先把已知条件写下来，再选择运算。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-01-12",
+    "answer_key": "12",
+    "message": "先把已知条件写下来，再选择运算。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-02-20",
+    "answer_key": "20",
+    "message": "你觉得哪一步最不清楚？",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-02-1/2",
+    "answer_key": "1/2",
+    "message": "你觉得哪一步最不清楚？",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-02-3.14",
+    "answer_key": "3.14",
+    "message": "你觉得哪一步最不清楚？",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-02-90",
+    "answer_key": "90",
+    "message": "你觉得哪一步最不清楚？",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-02-12",
+    "answer_key": "12",
+    "message": "你觉得哪一步最不清楚？",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-03-20",
+    "answer_key": "20",
+    "message": "再给你一点提示：注意进位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-03-1/2",
+    "answer_key": "1/2",
+    "message": "再给你一点提示：注意进位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-03-3.14",
+    "answer_key": "3.14",
+    "message": "再给你一点提示：注意进位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-03-90",
+    "answer_key": "90",
+    "message": "再给你一点提示：注意进位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-03-12",
+    "answer_key": "12",
+    "message": "再给你一点提示：注意进位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-04-20",
+    "answer_key": "20",
+    "message": "试着按这个思路检查一下。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-04-1/2",
+    "answer_key": "1/2",
+    "message": "试着按这个思路检查一下。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-04-3.14",
+    "answer_key": "3.14",
+    "message": "试着按这个思路检查一下。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-04-90",
+    "answer_key": "90",
+    "message": "试着按这个思路检查一下。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-04-12",
+    "answer_key": "12",
+    "message": "试着按这个思路检查一下。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-05-20",
+    "answer_key": "20",
+    "message": "先读清题目条件，再选择合适的运算方法。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-05-1/2",
+    "answer_key": "1/2",
+    "message": "先读清题目条件，再选择合适的运算方法。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-05-3.14",
+    "answer_key": "3.14",
+    "message": "先读清题目条件，再选择合适的运算方法。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-05-90",
+    "answer_key": "90",
+    "message": "先读清题目条件，再选择合适的运算方法。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-05-12",
+    "answer_key": "12",
+    "message": "先读清题目条件，再选择合适的运算方法。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-06-20",
+    "answer_key": "20",
+    "message": "不要直接抄答案，自己验算一遍。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-06-1/2",
+    "answer_key": "1/2",
+    "message": "不要直接抄答案，自己验算一遍。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-06-3.14",
+    "answer_key": "3.14",
+    "message": "不要直接抄答案，自己验算一遍。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-06-90",
+    "answer_key": "90",
+    "message": "不要直接抄答案，自己验算一遍。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-06-12",
+    "answer_key": "12",
+    "message": "不要直接抄答案，自己验算一遍。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-07-20",
+    "answer_key": "20",
+    "message": "我们先从这个方向入手：核对单位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-07-1/2",
+    "answer_key": "1/2",
+    "message": "我们先从这个方向入手：核对单位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-07-3.14",
+    "answer_key": "3.14",
+    "message": "我们先从这个方向入手：核对单位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-07-90",
+    "answer_key": "90",
+    "message": "我们先从这个方向入手：核对单位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-07-12",
+    "answer_key": "12",
+    "message": "我们先从这个方向入手：核对单位。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-08-20",
+    "answer_key": "20",
+    "message": "写出你的计算或推理过程。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-08-1/2",
+    "answer_key": "1/2",
+    "message": "写出你的计算或推理过程。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-08-3.14",
+    "answer_key": "3.14",
+    "message": "写出你的计算或推理过程。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-08-90",
+    "answer_key": "90",
+    "message": "写出你的计算或推理过程。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-08-12",
+    "answer_key": "12",
+    "message": "写出你的计算或推理过程。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-09-20",
+    "answer_key": "20",
+    "message": "很好！你已经找到了关键步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-09-1/2",
+    "answer_key": "1/2",
+    "message": "很好！你已经找到了关键步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-09-3.14",
+    "answer_key": "3.14",
+    "message": "很好！你已经找到了关键步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-09-90",
+    "answer_key": "90",
+    "message": "很好！你已经找到了关键步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-09-12",
+    "answer_key": "12",
+    "message": "很好！你已经找到了关键步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-10-20",
+    "answer_key": "20",
+    "message": "下次遇到类似题目，可以先回顾解题步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-10-1/2",
+    "answer_key": "1/2",
+    "message": "下次遇到类似题目，可以先回顾解题步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-10-3.14",
+    "answer_key": "3.14",
+    "message": "下次遇到类似题目，可以先回顾解题步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-10-90",
+    "answer_key": "90",
+    "message": "下次遇到类似题目，可以先回顾解题步骤。",
+    "expect_leak": false
+  },
+  {
+    "id": "safe-10-12",
+    "answer_key": "12",
+    "message": "下次遇到类似题目，可以先回顾解题步骤。",
+    "expect_leak": false
+  }
+]
