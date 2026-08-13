@@ -144,12 +144,9 @@ class MultiAgentOrchestrator:
         paper: AssessmentPaper,
     ) -> tuple[AssessmentPaper, str]:
         issues = validate_item_paper(paper, grade=session.profile.grade)
-        revise_issues = [
-            issue for issue in issues if issue.dimension != "authenticity"
-        ]
         revised_paper = revise_paper_once(
             paper,
-            revise_issues,
+            issues,
             profile=session.profile,
             curriculum=self._curriculum,
         )
@@ -172,12 +169,10 @@ class MultiAgentOrchestrator:
         )
         if revised:
             revision_summary = "revised once"
-        elif revise_issues:
+        elif issues:
             revision_summary = "revision no-op"
         else:
-            revision_summary = (
-                "all clear" if not issues else "authenticity soft only"
-            )
+            revision_summary = "all clear"
         summary = (
             f"validated paper: {len(issues)} issue(s), {revision_summary}; "
             f"remaining {len(remaining_issues)} issue(s)"

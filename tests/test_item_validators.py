@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from random import Random
-
-import pytest
 
 from ilearn.agents.orchestrator import MultiAgentOrchestrator
 from ilearn.core.item_validators import (
     ValidationIssue,
+    _LIFE_CONTEXT_KEYWORDS,
     revise_paper_once,
     validate_paper,
 )
@@ -82,10 +82,21 @@ def test_missing_situation_and_keywords_raises_authenticity():
     assert any(issue.dimension == "authenticity" for issue in issues)
 
 
-def test_situation_tag_passes_authenticity():
+def test_situation_tag_without_keywords_fails_authenticity():
     paper = _paper(
         _item(
             stem="计算：125 + 375 = ?",
+            situation_tag="life",
+        )
+    )
+    issues = validate_paper(paper, grade=5)
+    assert any(issue.dimension == "authenticity" for issue in issues)
+
+
+def test_life_keywords_pass_authenticity():
+    paper = _paper(
+        _item(
+            stem="小明在学校商店买了3个苹果，一共花了12元。",
             situation_tag="life",
         )
     )
@@ -122,24 +133,26 @@ def test_revise_paper_once_replaces_unsolvable_item():
     assert revised.items[0].answer_key
 
 
-def test_authenticity_only_issues_do_not_revise():
+def test_authenticity_issues_revise_once():
     curriculum = PilotBeijingRenjiaoProvider(PILOT)
     profile = StudentProfile(region="北京", grade=5, age=11)
-    item = _item(stem="计算：125 + 375 = ?", situation_tag=None)
+    item = _item(
+        id="g5_easy_fill_05__00",
+        stem="计算：125 + 375 = ?",
+        situation_tag=None,
+    )
     paper = _paper(item, grade=5)
     issues = validate_paper(paper, grade=5)
     assert any(issue.dimension == "authenticity" for issue in issues)
-    hard_issues = [issue for issue in issues if issue.dimension != "authenticity"]
-    assert not hard_issues
     revised = revise_paper_once(
         paper,
-        hard_issues,
+        issues,
         profile=profile,
         curriculum=curriculum,
         rng=Random(0),
     )
-    assert revised.items[0].id == item.id
-    assert revised.items[0].stem == item.stem
+    assert revised.items[0].id != item.id
+    assert any(keyword in revised.items[0].stem for keyword in _LIFE_CONTEXT_KEYWORDS)
 
 
 def test_orchestrator_appends_item_validators_decision(tmp_path):
@@ -152,9 +165,24 @@ def test_orchestrator_appends_item_validators_decision(tmp_path):
     session_id = orchestrator.create_session(
         StudentProfile(region="北京", grade=5, age=11)
     )
-    orchestrator.generate_assessment(session_id)
-    decisions = store.load(session_id).decision_log
+    paper = orchestrator.generate_assessment(session_id)
+    session = store.load(session_id)
+    decisions = session.decision_log
     assert any(decision.agent == "item_validators" for decision in decisions)
+    validator = next(d for d in decisions if d.agent == "item_validators")
+    assert "authenticity soft only" not in validator.reason
+    issues = validate_paper(paper, grade=5)
+    assert not any(issue.dimension == "authenticity" for issue in issues)
+    assert all(item.situation_tag and item.situation_tag != "neutral" for item in paper.items)
+
+
+def test_pilot_templates_declare_situation_and_life_context():
+    raw = json.loads((PILOT / "templates.json").read_text(encoding="utf-8"))
+    allowed = {"sports", "games", "life", "science"}
+    for template in raw:
+        assert template.get("situation_tag") in allowed, template["id"]
+        stem = template["stem_template"]
+        assert any(keyword in stem for keyword in _LIFE_CONTEXT_KEYWORDS), template["id"]
 
 
 def test_practice_loop_validates_and_logs_revision(tmp_path):

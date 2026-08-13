@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { api } from './api/client'
+import { api, fileToImageAnswer } from './api/client'
 import type {
   AssessmentPaper,
   Gender,
+  ImageAnswer,
   ReportResponse,
   SessionState,
   StudentProfile,
 } from './api/client'
+import MarkdownView from './MarkdownView'
 import { applyTheme } from './theme'
 import './styles.css'
 
@@ -66,6 +68,9 @@ export default function App() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [paper, setPaper] = useState<AssessmentPaper | null>(null)
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [imageUploads, setImageUploads] = useState<
+    Record<string, ImageAnswer & { preview: string; name: string }>
+  >({})
   const [report, setReport] = useState<ReportResponse | null>(null)
 
   const [profile, setProfile] = useState<StudentProfile>({
@@ -103,6 +108,7 @@ export default function App() {
       setSessionId(created.session_id)
       setPaper(nextPaper)
       setAnswers({})
+      setImageUploads({})
       setReport(null)
       setStep(1)
     } catch (err) {
@@ -110,6 +116,31 @@ export default function App() {
     } finally {
       setBusy(false)
     }
+  }
+
+  async function onPickImage(itemId: string, file: File | undefined) {
+    if (!file) return
+    setError(null)
+    try {
+      const payload = await fileToImageAnswer(itemId, file)
+      const preview = URL.createObjectURL(file)
+      setImageUploads((prev) => {
+        const old = prev[itemId]
+        if (old?.preview) URL.revokeObjectURL(old.preview)
+        return { ...prev, [itemId]: { ...payload, preview, name: file.name } }
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  function onClearImage(itemId: string) {
+    setImageUploads((prev) => {
+      const next = { ...prev }
+      if (next[itemId]?.preview) URL.revokeObjectURL(next[itemId].preview)
+      delete next[itemId]
+      return next
+    })
   }
 
   async function onSubmitAnswers() {
@@ -122,6 +153,16 @@ export default function App() {
         payload[item.id] = (answers[item.id] || '').trim()
       }
       await api.submit(sessionId, payload)
+      const images = Object.values(imageUploads).map(
+        ({ item_id, image_base64, mime_type }) => ({
+          item_id,
+          image_base64,
+          mime_type,
+        }),
+      )
+      if (images.length) {
+        await api.submitImages(sessionId, images)
+      }
       await api.run(sessionId)
       const nextReport = await api.getReport(sessionId)
       setReport(nextReport)
@@ -252,7 +293,7 @@ export default function App() {
         <section className="panel">
           <h2>测评作答</h2>
           <p className="lede">
-            {paper.curriculum_label} · 共 {paper.items.length} 题（文本作答 MVP）
+            {paper.curriculum_label} · 共 {paper.items.length} 题 · 可文本作答，也可上传手写照片
           </p>
           {paper.items.map((item, index) => (
             <article className="item-card" key={item.id}>
@@ -294,6 +335,42 @@ export default function App() {
                   />
                 </div>
               )}
+              <div className="field upload-field">
+                <label htmlFor={`img-${item.id}`}>手写作答照片（可选）</label>
+                <input
+                  id={`img-${item.id}`}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+                  disabled={busy}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    void onPickImage(item.id, file)
+                    e.target.value = ''
+                  }}
+                />
+                {imageUploads[item.id] ? (
+                  <div className="upload-preview">
+                    <div className="upload-frame">
+                      <img
+                        src={imageUploads[item.id].preview}
+                        alt={`${item.id} 手写作答预览`}
+                      />
+                    </div>
+                    <div className="upload-meta">
+                      <span className="upload-name">{imageUploads[item.id].name}</span>
+                      <button
+                        className="btn secondary"
+                        type="button"
+                        onClick={() => onClearImage(item.id)}
+                      >
+                        移除图片
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="upload-hint">支持 PNG / JPG / WebP，将随提交送去 OCR 批改</span>
+                )}
+              </div>
             </article>
           ))}
           <div className="actions">
@@ -386,8 +463,10 @@ export default function App() {
             状态：{session.plan?.status || 'draft'}
             {profile.nickname ? ` · ${profile.nickname}` : ''}
           </p>
-          <div className="plan-md">
-            {session.plan?.markdown || report?.markdown || '暂无计划内容'}
+          <div className="plan-body">
+            <MarkdownView
+              source={session.plan?.markdown || report?.markdown || '暂无计划内容'}
+            />
           </div>
           <div className="actions">
             <button className="btn secondary" type="button" onClick={() => setStep(2)}>
@@ -402,6 +481,7 @@ export default function App() {
                 setPaper(null)
                 setReport(null)
                 setAnswers({})
+                setImageUploads({})
               }}
             >
               新会话

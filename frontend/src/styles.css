@@ -189,6 +189,8 @@ textarea {
   padding: 1rem;
   margin-bottom: 0.85rem;
   background: #fff;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .item-meta {
@@ -223,6 +225,66 @@ textarea {
 
 .choice:hover {
   background: color-mix(in srgb, var(--accent) 8%, white);
+}
+
+.upload-field {
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--line);
+  min-width: 0;
+}
+
+.upload-hint {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.upload-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0.45rem;
+}
+
+.upload-frame {
+  width: 100%;
+  max-height: min(56vh, 28rem);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.upload-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(56vh, 28rem);
+  object-fit: contain;
+  object-position: center;
+}
+
+.upload-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.upload-name {
+  color: var(--muted);
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
 }
 
 .table {
@@ -264,10 +326,59 @@ textarea {
   font-size: 0.9rem;
 }
 
-.plan-md {
-  white-space: pre-wrap;
-  line-height: 1.55;
+.plan-body {
+  margin-top: 0.35rem;
+}
+
+.md-view {
+  line-height: 1.6;
   font-size: 0.95rem;
+}
+
+.md-view h1 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  margin: 0 0 0.7rem;
+}
+
+.md-view h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  margin: 1.15rem 0 0.45rem;
+  color: var(--accent);
+}
+
+.md-view h3 {
+  font-size: 1rem;
+  margin: 0.85rem 0 0.3rem;
+}
+
+.md-view p {
+  margin: 0.35rem 0;
+}
+
+.md-view ul {
+  margin: 0.25rem 0 0.55rem;
+  padding-left: 1.2rem;
+}
+
+.md-view li {
+  margin: 0.2rem 0;
+}
+
+.md-view blockquote {
+  margin: 0.85rem 0 0;
+  padding: 0.65rem 0.85rem;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, white);
+  color: var(--muted);
+  border-radius: 0 8px 8px 0;
+}
+
+.md-table-fallback {
+  overflow-x: auto;
+  font-size: 0.85rem;
+  white-space: pre;
 }
 
 html[data-band='primary'] .brand {

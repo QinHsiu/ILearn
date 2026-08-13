@@ -46,6 +46,7 @@ _LIFE_CONTEXT_KEYWORDS = (
     "水果",
     "同学",
     "家庭",
+    "家里",
     "旅行",
     "科学",
     "实验",
@@ -55,6 +56,13 @@ _LIFE_CONTEXT_KEYWORDS = (
     "小红",
     "买了",
     "分给",
+    "操场",
+    "教室",
+    "果汁",
+    "文具",
+    "蛋糕",
+    "门票",
+    "课桌",
 )
 
 
@@ -84,8 +92,6 @@ def _parse_numbers(stem: str) -> list[float]:
 
 
 def _has_life_context(item: AssessmentItem) -> bool:
-    if item.situation_tag and item.situation_tag != "neutral":
-        return True
     return any(keyword in item.stem for keyword in _LIFE_CONTEXT_KEYWORDS)
 
 
@@ -138,7 +144,7 @@ def _validate_item(item: AssessmentItem, *, grade: int) -> list[ValidationIssue]
             ValidationIssue(
                 item_id=item.id,
                 dimension="authenticity",
-                message="missing situation_tag and life-context keywords (soft)",
+                message="missing life-context keywords in stem",
             )
         )
 

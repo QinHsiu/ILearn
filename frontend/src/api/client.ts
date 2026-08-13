@@ -63,9 +63,51 @@ export type SessionState = {
   } | null
 }
 
+export type ImageMime = 'image/png' | 'image/jpeg' | 'image/webp'
+
+export type ImageAnswer = {
+  item_id: string
+  image_base64: string
+  mime_type: ImageMime
+}
+
 export type ReportResponse = {
   markdown: string
   session: SessionState
+}
+
+const MIME_BY_EXT: Record<string, ImageMime> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+}
+
+export function mimeTypeForUpload(filename: string, fallback?: string): ImageMime | null {
+  const ext = filename.split('.').pop()?.toLowerCase() || ''
+  if (ext && MIME_BY_EXT[ext]) return MIME_BY_EXT[ext]
+  if (fallback === 'image/png' || fallback === 'image/jpeg' || fallback === 'image/webp') {
+    return fallback
+  }
+  return null
+}
+
+export function fileToImageAnswer(itemId: string, file: File): Promise<ImageAnswer> {
+  const mime = mimeTypeForUpload(file.name, file.type)
+  if (!mime) {
+    return Promise.reject(new Error('仅支持 PNG、JPG 或 WebP'))
+  }
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '')
+      const comma = dataUrl.indexOf(',')
+      const image_base64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl
+      resolve({ item_id: itemId, image_base64, mime_type: mime })
+    }
+    reader.onerror = () => reject(new Error('图片读取失败'))
+    reader.readAsDataURL(file)
+  })
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -102,6 +144,12 @@ export const api = {
     return request<SessionState>(`/sessions/${sessionId}/submit`, {
       method: 'POST',
       body: JSON.stringify({ answers, item_meta: itemMeta }),
+    })
+  },
+  submitImages(sessionId: string, images: ImageAnswer[]) {
+    return request<SessionState>(`/sessions/${sessionId}/submit-images`, {
+      method: 'POST',
+      body: JSON.stringify({ images }),
     })
   },
   run(sessionId: string) {
