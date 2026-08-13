@@ -111,3 +111,40 @@ def test_diagnosis_agent_returns_top_interventions():
     assert "frac_add_same" in portrait.review_states
     assert "dec_mult" in portrait.review_states
     assert portrait.review_states["frac_add_same"].due_date is not None
+
+
+def test_diagnosis_agent_passes_item_situations_to_interest_tracker():
+    agent = DiagnosisAgent(PilotBeijingRenjiaoProvider(PILOT))
+    paper = AssessmentPaper(
+        items=[
+            AssessmentItem(
+                id="sports-item",
+                stem="q",
+                type="fill",
+                difficulty="easy",
+                knowledge_ids=["frac_add_same"],
+                answer_key="1",
+                situation_tag="sports",
+            )
+        ],
+        grade=5,
+        curriculum_label="pilot",
+    )
+    ctx = AgentContext(
+        session_id="s1",
+        phase=SessionPhase.DIAGNOSE,
+        profile=StudentProfile(region="北京", grade=5, age=11),
+        paper=paper,
+        grades=[
+            GradeResult(
+                item_id="sports-item",
+                final_correct=True,
+                knowledge_ids=["frac_add_same"],
+            )
+        ],
+        metadata={"item_meta": {"sports-item": {"elapsed_ms": 5000}}},
+    )
+
+    result = agent.run(ctx)
+
+    assert result.payload["portrait"].situation_interest["sports"] > 0.5

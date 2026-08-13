@@ -137,14 +137,22 @@ class AssessmentAgent:
         paper_type = ctx.metadata.get("paper_type", "diagnostic")
         if paper_type == "followup":
             weak_ids = ctx.metadata.get("weak_knowledge_ids", [])
-            paper = self._builder.build_followup(ctx.profile, weak_ids)
+            paper = self._builder.build_followup(
+                ctx.profile, weak_ids, portrait=ctx.portrait
+            )
         else:
             weak_ids = ctx.metadata.get("weak_knowledge_ids")
             weak_list = list(weak_ids) if weak_ids else None
             blueprint = build_blueprint(ctx.profile, weak_list)
             rng_seed = ctx.metadata.get("rng_seed")
             rng = Random(rng_seed) if rng_seed is not None else None
-            paper = fill_blueprint(ctx.profile, blueprint, self._curriculum, rng=rng)
+            paper = fill_blueprint(
+                ctx.profile,
+                blueprint,
+                self._curriculum,
+                rng=rng,
+                portrait=ctx.portrait,
+            )
             validate_paper(paper)
 
         raw_citations = list(ctx.metadata.get("citations") or [])

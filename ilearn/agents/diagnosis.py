@@ -27,6 +27,11 @@ class DiagnosisAgent:
             raise ValueError("DiagnosisAgent requires paper in context")
         evidence = list(ctx.evidence_log)
         portrait = ctx.portrait or LearnerPortrait(student_key=_student_key(ctx.profile))
+        item_situations = {
+            item.id: item.situation_tag
+            for item in ctx.paper.items
+            if item.situation_tag is not None
+        }
         portrait = PortraitUpdater.update(
             portrait,
             ctx.grades,
@@ -34,6 +39,8 @@ class DiagnosisAgent:
             self._curriculum,
             grade=ctx.profile.grade,
             evidence=evidence or None,
+            item_meta=ctx.metadata.get("item_meta") or {},
+            item_situations=item_situations,
         )
         diagnosis = self._diagnoser.diagnose(
             ctx.profile,
