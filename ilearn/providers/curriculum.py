@@ -335,6 +335,16 @@ class PilotBeijingRenjiaoProvider(CurriculumProvider):
     @staticmethod
     def _to_item_template(raw: dict[str, Any], grade: int) -> ItemTemplate:
         slots = raw.get("slots") or {}
+        situation_tag = raw.get("situation_tag")
+        if situation_tag is None:
+            suffix = raw["id"].rsplit("_", 1)[-1]
+            if suffix.isdigit():
+                situation_tag = {
+                    1: "sports",
+                    2: "games",
+                    3: "life",
+                    4: "science",
+                }.get(int(suffix) % 5, "neutral")
         return ItemTemplate(
             id=raw["id"],
             knowledge_ids=list(raw["knowledge_ids"]),
@@ -348,5 +358,5 @@ class PilotBeijingRenjiaoProvider(CurriculumProvider):
             if raw.get("choices_template")
             else None,
             slot_names=list(slots.keys()),
-            situation_tag=raw.get("situation_tag"),
+            situation_tag=situation_tag,
         )

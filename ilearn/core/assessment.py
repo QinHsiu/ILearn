@@ -14,6 +14,7 @@ from ilearn.core.schemas import (
     ItemTemplate,
     ItemType,
     PaperBlueprint,
+    LearnerPortrait,
     StudentProfile,
 )
 from ilearn.core.subject_quotas import (
@@ -63,12 +64,13 @@ def fill_blueprint(
     curriculum: CurriculumProvider,
     *,
     rng: random.Random | None = None,
+    portrait: LearnerPortrait | None = None,
 ) -> AssessmentPaper:
     """Instantiate blueprint slots into a full assessment paper."""
     builder = AssessmentBuilder(curriculum, rng=rng)
     used_template_ids: set[str] = set()
     items = [
-        builder.instantiate_slot(profile, slot, index, used_template_ids)
+        builder.instantiate_slot(profile, slot, index, used_template_ids, portrait=portrait)
         for index, slot in enumerate(blueprint.slots)
     ]
     return AssessmentPaper(
@@ -151,7 +153,13 @@ class AssessmentBuilder:
         self._provider = provider
         self._rng = rng or random.Random()
 
-    def build(self, profile: StudentProfile, n: int = 20) -> AssessmentPaper:
+    def build(
+        self,
+        profile: StudentProfile,
+        n: int = 20,
+        *,
+        portrait: LearnerPortrait | None = None,
+    ) -> AssessmentPaper:
         mix = load_quota(profile.subject, Path(__file__).resolve().parents[2] / "data" / "pilot")
         blueprint_slots = _slots_from_quota(mix)
         if n != len(blueprint_slots):
@@ -178,7 +186,7 @@ class AssessmentBuilder:
                     f"no unused template for grade={grade} difficulty={difficulty} type={item_type}"
                 )
 
-            template = self._rng.choice(candidates)
+            template = self._choose_template(candidates, portrait)
             used_template_ids.add(template.id)
             items.append(self._instantiate(template, index))
 
@@ -195,6 +203,7 @@ class AssessmentBuilder:
         slot: BlueprintSlot,
         index: int,
         used_template_ids: set[str],
+        portrait: LearnerPortrait | None = None,
     ) -> AssessmentItem:
         """Pick and instantiate one template matching a blueprint slot."""
         grade = profile.grade
@@ -226,15 +235,38 @@ class AssessmentBuilder:
                 f"no unused template for grade={grade} "
                 f"difficulty={slot.difficulty} type={slot.item_type}"
             )
-        template = self._rng.choice(candidates)
+        template = self._choose_template(candidates, portrait)
         used_template_ids.add(template.id)
         return self._instantiate(template, index)
+
+    def _choose_template(
+        self,
+        candidates: list[ItemTemplate],
+        portrait: LearnerPortrait | None,
+    ) -> ItemTemplate:
+        if portrait and portrait.situation_interest:
+            best = max(portrait.situation_interest.values())
+            preferred_tags = {
+                tag
+                for tag, score in portrait.situation_interest.items()
+                if score == best and score > 0.5
+            }
+            preferred = [
+                template
+                for template in candidates
+                if template.situation_tag in preferred_tags
+            ]
+            if preferred:
+                candidates = preferred
+        return self._rng.choice(candidates)
 
     def build_followup(
         self,
         profile: StudentProfile,
         weak_knowledge_ids: list[str],
         size: int = 8,
+        *,
+        portrait: LearnerPortrait | None = None,
     ) -> AssessmentPaper:
         """Build a smaller practice paper targeting weak knowledge nodes."""
         templates = [
@@ -244,6 +276,19 @@ class AssessmentBuilder:
         ]
         if not templates:
             raise AssessmentBuildError("no templates for weak knowledge ids")
+        if portrait and portrait.situation_interest:
+            best = max(portrait.situation_interest.values())
+            preferred = [
+                template
+                for template in templates
+                if template.situation_tag in {
+                    tag
+                    for tag, score in portrait.situation_interest.items()
+                    if score == best and score > 0.5
+                }
+            ]
+            if preferred:
+                templates = preferred
         self._rng.shuffle(templates)
         picked = templates[: min(size, len(templates))]
         items = [

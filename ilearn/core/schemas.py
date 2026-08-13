@@ -52,6 +52,7 @@ class StudentProfile(BaseModel):
     subject: Subject = "math"
     nickname: str | None = None
     gender: Gender = "unspecified"
+    learning_difficulty: bool | None = None
 
 
 KcType = Literal["fact", "skill", "principle"]
@@ -337,6 +338,7 @@ class LearnerPortrait(BaseModel):
     weakness_log: list[WeaknessEntry] = Field(default_factory=list)
     weakness_events: list[WeaknessEvent] = Field(default_factory=list)
     dimensions: PortraitDimensions = Field(default_factory=PortraitDimensions)
+    situation_interest: dict[str, float] = Field(default_factory=dict)
     updated_at: datetime = Field(default_factory=utc_now)
 
 
