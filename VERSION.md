@@ -5,9 +5,9 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Composition Phase 2d（编排质量）完成 |
-| **基线** | 283 tests（离线可跑） |
-| **日期** | 2026-08-10 |
+| **标签** | Edition 0813 P0+P1（建档 / 主题 / 溯源 / 验证 / 兴趣） |
+| **基线** | 316 tests（离线可跑） |
+| **日期** | 2026-08-13 |
 
 ---
 
@@ -29,6 +29,8 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Phase 2c：** `CurriculumRetriever`（keyword / hash_vector / Qdrant stub）、按题 citation 绑定、语文配额 stub、多地区 source packs、`ILEARN_RETRIEVER_BACKEND`
 - **Phase 2d：** 轻量上下文预算、结构化决策日志、阶段质量门、PendingQuestion 答案绑定、Agent 写能力白名单
 - **工程面：** FastAPI + Streamlit + CLI；会话 JSON；OpenAI 兼容 LLM（可选）
+- **Edition 0813 P0：** `StudentProfile` 昵称 / 性别；Streamlit 六套 CSS 主题（性别 × 学段）；例题库 `source_refs` 绑定与诊断报告 / UI 来源追溯
+- **Edition 0813 P1：** 四维题目验证器（可解 / 现实 / 可读 / 情境）+ 单次修订；情境兴趣 `situation_interest` 双轨评估；`learning_difficulty` 巩固环扩展至 4 轮
 
 ---
 
@@ -42,6 +44,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Phase 2b 规划 / 辅导 | OPT-014、OPT-031…034、OPT-060 | 234 |
 | Phase 2c 课标 / 多科 | A-03、OPT-041/042、OPT-003、D-04、E-05 → 合入 `master` 并 push | **258** |
 | Phase 2d 编排质量 | OPT-050…052、OPT-015、OPT-016 | **283** |
+| Edition 0813 P0+P1 | 建档主题、source_refs、四维验证器、情境兴趣、learning_difficulty | **316** |
 
 ---
 

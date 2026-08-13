@@ -7,7 +7,7 @@
 > **当前试点：** 小学数学（四至六年级）· 北京·人教课标包；架构按多学科 / 全学段扩展预留。
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-283%20passed-2ea44f)](./tests)
+[![Tests](https://img.shields.io/badge/tests-316%20passed-2ea44f)](./tests)
 [![GitHub](https://img.shields.io/badge/GitHub-QinHsiu%2FILearn-181717?logo=github)](https://github.com/QinHsiu/ILearn)
 
 ```text
@@ -30,6 +30,10 @@
 | **多 Agent 编排** | 5 个流水线 Agent + Tutor + Eval，由状态机编排，而不是一个巨型 prompt |
 | **编排可观测** | 上下文预算裁剪、`decision_log`、阶段质量门（失败重试一次再 degrade）、PendingQuestion 绑题、写能力白名单 |
 | **开箱可跑** | 无 LLM 也能离线演示全流程；配置 OpenAI 兼容 API 即升级构造题 / 手写 VL |
+| **建档与主题** | 建档可选昵称 / 性别；Streamlit 按性别 × 学段（小 / 初 / 高）加载六套 CSS 主题 |
+| **题目溯源** | 组卷绑定 `source_refs`（例题 ID、课标条目）；报告与 Streamlit 可展开错题参考来源 |
+| **题目质量门** | 四维验证器（可解 / 现实 / 可读 / 情境）+ 单次修订，接入 Assessment 组卷后 |
+| **双轨个性化** | 诊断更新 `situation_interest`（情境偏好）；巩固组卷优先匹配偏好情境；`learning_difficulty` 可将巩固环扩至 4 轮 |
 
 ---
 
@@ -188,7 +192,7 @@ python -m pytest -q
 python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py tests/test_e2e_phase2a_diagnosis.py tests/test_e2e_phase2b.py tests/test_e2e_phase2c.py tests/test_e2e_phase2d.py -v
 ```
 
-当前仓库基线：**283** 项测试通过（离线可跑）。
+当前仓库基线：**316** 项测试通过（离线可跑）。
 
 ---
 
