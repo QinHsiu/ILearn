@@ -232,3 +232,32 @@ def test_delete_session(tmp_path):
     ]
     assert c.delete(f"/sessions/{sid}").status_code == 204
     assert c.get(f"/sessions/{sid}/phase").status_code == 404
+
+
+def test_tutor_and_replan_endpoints(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post("/sessions", json={"region": "北京", "grade": 5, "age": 11}).json()[
+        "session_id"
+    ]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    answers = {item["id"]: (item.get("answer_key") or "") for item in paper["items"]}
+    c.post(f"/sessions/{sid}/submit", json={"answers": answers})
+    c.post(f"/sessions/{sid}/run")
+    item_id = paper["items"][0]["id"]
+
+    start = c.post(f"/sessions/{sid}/tutor", json={"item_id": item_id})
+    assert start.status_code == 200
+    body = start.json()
+    assert body["phase"] == "locate_gap"
+    assert paper["items"][0].get("answer_key") not in body["message"]
+
+    hint = c.post(
+        f"/sessions/{sid}/tutor/hint",
+        json={"item_id": item_id, "user_message": "第二步不清楚"},
+    )
+    assert hint.status_code == 200
+    assert hint.json()["phase"] == "hint_1"
+
+    replan = c.post(f"/sessions/{sid}/replan")
+    assert replan.status_code == 200
+    assert "markdown" in replan.json()

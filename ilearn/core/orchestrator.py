@@ -12,6 +12,7 @@ from ilearn.core.schemas import (
     SessionState,
     SessionSummary,
     StudentProfile,
+    TutorTurn,
 )
 from ilearn.providers.curriculum import CurriculumProvider
 from ilearn.providers.llm import LLMClient
@@ -65,6 +66,17 @@ class Orchestrator:
 
     def plan(self, session_id: str) -> LearningPlanReport:
         return self._inner.plan(session_id)
+
+    def tutor_start(self, session_id: str, item_id: str) -> TutorTurn:
+        return self._inner.tutor_start(session_id, item_id)
+
+    def tutor_hint(
+        self, session_id: str, item_id: str, user_message: str
+    ) -> TutorTurn:
+        return self._inner.tutor_step(session_id, item_id, user_message)
+
+    def request_replan(self, session_id: str) -> LearningPlanReport:
+        return self._inner.request_replan(session_id)
 
     def run_after_submit(self, session_id: str) -> SessionState:
         return self._inner.run_after_submit(session_id)

@@ -408,11 +408,34 @@ class MultiAgentOrchestrator:
         grade = next((g for g in session.grades if g.item_id == item_id), None)
         error_tag = grade.error_tags[0] if grade and grade.error_tags else None
         turn = self._tutor.start(item, error_tag)
+        session.tutor_by_item[item_id] = turn
         self._record_decision(
             session,
             self._tutor.name,
             SessionPhase.PRACTICE,
             "tutoring started",
+        )
+        self._store.save(session)
+        return turn
+
+    def tutor_step(
+        self, session_id: str, item_id: str, user_message: str
+    ) -> TutorTurn:
+        session = self._store.load(session_id)
+        paper = self._require_paper(session)
+        item = next((row for row in paper.items if row.id == item_id), None)
+        if item is None:
+            raise ValueError(f"unknown item id: {item_id}")
+        previous = session.tutor_by_item.get(item_id)
+        if previous is None:
+            raise ValueError("tutoring has not started for this item")
+        turn = self._tutor.step(previous.phase, user_message, item)
+        session.tutor_by_item[item_id] = turn
+        self._record_decision(
+            session,
+            self._tutor.name,
+            SessionPhase.PRACTICE,
+            "tutoring hint",
         )
         self._store.save(session)
         return turn
