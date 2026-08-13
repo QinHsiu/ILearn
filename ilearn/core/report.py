@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ilearn.core.schemas import SessionState
+from ilearn.core.schemas import ItemSourceRef, SessionState
 
 _ABILITY_LABELS: dict[str, str] = {
     "logic": "逻辑推理",
@@ -15,6 +15,21 @@ _LEVEL_LABELS: dict[str, str] = {
     "unstable": "不稳定",
     "weak": "薄弱",
 }
+
+
+def format_source_ref_lines(ref: ItemSourceRef) -> list[str]:
+    """Render one source reference as Markdown bullet lines."""
+    lines: list[str] = []
+    if ref.example_id:
+        lines.append(f"- **例题 ID：** {ref.example_id}")
+    if ref.textbook_chapter:
+        lines.append(f"- **教材章节：** {ref.textbook_chapter}")
+    if ref.curriculum_objective_ids:
+        ids = "、".join(ref.curriculum_objective_ids)
+        lines.append(f"- **课标条目：** {ids}")
+    if ref.source_label:
+        lines.append(f"- **来源：** {ref.source_label}")
+    return lines
 
 
 def render_full_report(session: SessionState) -> str:
@@ -79,6 +94,26 @@ def render_full_report(session: SessionState) -> str:
                 lines.append(f"   - 优先修复：{item.what_to_fix_first}")
         else:
             lines.append("_当前无明显薄弱知识点，建议保持复习节奏。_")
+
+    if session.paper is not None and session.grades:
+        wrong_grades = [grade for grade in session.grades if not grade.final_correct]
+        if wrong_grades:
+            items_by_id = {item.id: item for item in session.paper.items}
+            lines.extend(["", "### 错题参考来源", ""])
+            for grade in wrong_grades:
+                item = items_by_id.get(grade.item_id)
+                if item is None:
+                    continue
+                stem_preview = item.stem.replace("\n", " ")
+                if len(stem_preview) > 80:
+                    stem_preview = stem_preview[:77] + "..."
+                lines.append(f"**{item.id}** — {stem_preview}")
+                if item.source_refs:
+                    for ref in item.source_refs:
+                        lines.extend(format_source_ref_lines(ref))
+                else:
+                    lines.append("- _暂无参考来源数据。_")
+                lines.append("")
 
     lines.extend(["", "## 学习计划", ""])
 

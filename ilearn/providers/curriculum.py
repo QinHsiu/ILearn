@@ -37,6 +37,14 @@ def load_syllabus(pilot_dir: str | Path) -> list[dict[str, Any]]:
     path = Path(pilot_dir) / "syllabus.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
+
+def load_example_bank(pilot_dir: str | Path) -> dict[str, list[dict[str, Any]]]:
+    """Load teacher-reviewed examples keyed by knowledge_id."""
+    path = Path(pilot_dir) / "example_bank.json"
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
 _SAFE_BINOPS = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
@@ -340,4 +348,5 @@ class PilotBeijingRenjiaoProvider(CurriculumProvider):
             if raw.get("choices_template")
             else None,
             slot_names=list(slots.keys()),
+            situation_tag=raw.get("situation_tag"),
         )

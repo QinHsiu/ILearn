@@ -23,6 +23,7 @@ PilotGradeLevel = Literal[4, 5, 6]
 Subject = Literal["math", "chinese"]
 Gender = Literal["male", "female", "unspecified"]
 ItemType = Literal["choice", "fill", "constructed"]
+SituationTag = Literal["sports", "games", "life", "science", "neutral"]
 Difficulty = Literal["easy", "medium", "hard"]
 MasteryLevel = Literal["mastered", "unstable", "weak"]
 StepStatus = Literal["correct", "incorrect", "partial"]
@@ -66,6 +67,15 @@ class KnowledgeNode(BaseModel):
     kc_type: KcType | None = None
 
 
+class ItemSourceRef(BaseModel):
+    """Traceable provenance for an assessment item (example + curriculum)."""
+
+    example_id: str | None = None
+    curriculum_objective_ids: list[str] = Field(default_factory=list)
+    textbook_chapter: str | None = None
+    source_label: str | None = None
+
+
 class ItemTemplate(BaseModel):
     """Parameterized item blueprint with optional slot placeholders."""
 
@@ -79,6 +89,7 @@ class ItemTemplate(BaseModel):
     rubric_steps: list[str] = Field(default_factory=list)
     choices_template: list[str] | None = None
     slot_names: list[str] = Field(default_factory=list)
+    situation_tag: SituationTag | None = None
 
 
 class AssessmentItem(BaseModel):
@@ -93,6 +104,7 @@ class AssessmentItem(BaseModel):
     rubric_steps: list[str] = Field(default_factory=list)
     choices: list[str] | None = None
     curriculum_objective_ids: list[str] = Field(default_factory=list)
+    source_refs: list[ItemSourceRef] = Field(default_factory=list)
 
 
 class BlueprintSlot(BaseModel):

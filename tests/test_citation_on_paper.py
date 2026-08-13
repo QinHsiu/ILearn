@@ -25,6 +25,9 @@ def test_assessment_items_carry_curriculum_objective_ids():
     )
     paper = AssessmentAgent(PilotBeijingRenjiaoProvider(PILOT)).run(ctx).payload["paper"]
     assert any(item.curriculum_objective_ids for item in paper.items)
+    assert all(item.source_refs for item in paper.items)
+    first_ref = paper.items[0].source_refs[0]
+    assert first_ref.example_id or first_ref.curriculum_objective_ids
 
 
 def test_curriculum_sources_have_content_hash():

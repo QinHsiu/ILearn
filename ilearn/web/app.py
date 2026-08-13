@@ -213,6 +213,51 @@ def ability_progress(score: float) -> float:
     return max(0.0, min(100.0, float(score))) / 100.0
 
 
+def format_source_ref_display(ref: dict[str, Any]) -> list[str]:
+    """Render source reference fields for Streamlit diagnosis expanders."""
+    lines: list[str] = []
+    if ref.get("example_id"):
+        lines.append(f'例题 ID：{ref["example_id"]}')
+    if ref.get("textbook_chapter"):
+        lines.append(f'教材章节：{ref["textbook_chapter"]}')
+    objective_ids = ref.get("curriculum_objective_ids") or []
+    if objective_ids:
+        lines.append(f'课标条目：{"、".join(str(value) for value in objective_ids)}')
+    if ref.get("source_label"):
+        lines.append(f'来源：{ref["source_label"]}')
+    return lines
+
+
+def wrong_item_source_entries(session: dict[str, Any]) -> list[dict[str, Any]]:
+    """Collect wrong items that have traceable source references."""
+    grades = session.get("grades") or []
+    paper = session.get("paper") or {}
+    items_by_id = {item["id"]: item for item in paper.get("items") or []}
+    entries: list[dict[str, Any]] = []
+    for grade in grades:
+        if grade.get("final_correct"):
+            continue
+        item = items_by_id.get(grade.get("item_id", ""))
+        if item is None:
+            continue
+        source_refs = item.get("source_refs") or []
+        source_lines = [
+            line
+            for ref in source_refs
+            for line in format_source_ref_display(ref)
+        ]
+        if not source_lines:
+            continue
+        entries.append(
+            {
+                "item_id": item["id"],
+                "stem": item.get("stem", ""),
+                "source_lines": source_lines,
+            }
+        )
+    return entries
+
+
 def _load_css(grade: int = 5, gender: str = "unspecified") -> str:
     from ilearn.web.themes import load_theme_css, theme_key_for
 
@@ -488,6 +533,17 @@ def _render_diagnosis(st: Any) -> None:
             ):
                 st.write(item.get("why", ""))
                 st.markdown(f'**先从这里开始：** {item.get("what_to_fix_first", "")}')
+
+    wrong_sources = wrong_item_source_entries(session)
+    if wrong_sources:
+        st.markdown("### 错题参考来源")
+        for entry in wrong_sources:
+            stem = str(entry.get("stem", "")).replace("\n", " ")
+            if len(stem) > 60:
+                stem = stem[:57] + "..."
+            with st.expander(f'{entry["item_id"]} · {stem}'):
+                for line in entry.get("source_lines") or []:
+                    st.markdown(f"- {line}")
 
     disclaimer = diagnosis.get("region_mismatch_disclaimer")
     if disclaimer:
