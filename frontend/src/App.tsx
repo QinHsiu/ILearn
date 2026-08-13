@@ -495,7 +495,7 @@ export default function App() {
           </p>
           <div className="plan-body">
             <MarkdownView
-              source={session.plan?.markdown || report?.markdown || '暂无计划内容'}
+              source={report?.markdown || session.plan?.markdown || '暂无计划内容'}
             />
           </div>
           <div className="actions">
