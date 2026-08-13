@@ -11,11 +11,7 @@ _WRONG_KEYWORDS = ("不对", "不会", "还是错", "错了", "不知道", "不�
 class TutorAgent:
     name = "tutor"
 
-    def __init__(self) -> None:
-        self._error_tag: ErrorTag | None = None
-
     def start(self, item: AssessmentItem, error_tag: str | None) -> TutorTurn:
-        self._error_tag = error_tag  # type: ignore[assignment]
         steps_hint = ""
         if item.rubric_steps:
             steps_hint = f"（共 {len(item.rubric_steps)} 步：{' → '.join(item.rubric_steps)}）"
@@ -23,15 +19,16 @@ class TutorAgent:
             f"我们一起来看看这道题{steps_hint}。"
             "你觉得哪一步最不清楚？请告诉我是第几步或描述你的困惑。"
         )
-        return TutorTurn(phase="locate_gap", message=message, error_tag=self._error_tag)
+        return TutorTurn(phase="locate_gap", message=message, error_tag=error_tag)
 
     def step(
         self,
         state: TutorPhase,
         user_message: str,
         item: AssessmentItem,
+        error_tag: str | None = None,
     ) -> TutorTurn:
-        tag = self._error_tag
+        tag: ErrorTag | None = error_tag  # type: ignore[assignment]
         if state == "locate_gap":
             _, hint_text = hint_for_error(tag, fail_streak=0)
             message = f"好的，我们先从这个方向入手：{hint_text}。你可以再想想这一步。"

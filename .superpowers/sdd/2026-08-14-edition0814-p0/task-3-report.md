@@ -47,3 +47,34 @@ Results:
 - `ilearn/core/schemas.py`
 - `tests/test_api.py`
 - `.superpowers/sdd/2026-08-14-edition0814-p0/task-3-report.md`
+
+## Fix report
+
+### What changed
+
+- Removed `TutorAgent`'s mutable per-session `_error_tag` state.
+- Made `TutorAgent.step` consume an explicit `error_tag`, while retaining
+  compatibility for existing callers that omit it.
+- Updated `MultiAgentOrchestrator.tutor_step` to pass the persisted
+  `TutorTurn.error_tag`, preserving item isolation across interleaved tutoring
+  and process restarts.
+- Added tests covering explicit cross-item error-tag isolation and restoration
+  from a persisted turn after a new agent instance.
+
+### Covering tests
+
+- `tests/test_tutor_agent.py`
+- `tests/test_e2e_phase2b.py`
+- `tests/test_api.py`
+
+### Command and output
+
+Command:
+
+`python -m pytest tests/test_api.py tests/test_e2e_phase2b.py tests/test_tutor_agent.py -q`
+
+Output:
+
+`29 passed, 1 warning in 3.05s`
+
+The warning is the existing Starlette/httpx deprecation warning.

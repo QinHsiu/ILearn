@@ -85,3 +85,30 @@ def test_tutor_all_phases_never_leak_answer_key():
     for phase in phases:
         turn = agent.step(phase, "学生回复", item)
         assert "SECRET99" not in turn.message, f"leaked in phase {turn.phase}"
+
+
+def test_tutor_step_uses_explicit_error_tag_without_shared_state():
+    agent = TutorAgent()
+    calc_turn = agent.step("locate_gap", "请提示", _ITEM, "calc_error")
+    concept_turn = agent.step("locate_gap", "请提示", _ITEM, "concept_gap")
+
+    assert "进位/通分" in calc_turn.message
+    assert "定义与例题结构" in concept_turn.message
+    assert calc_turn.error_tag == "calc_error"
+    assert concept_turn.error_tag == "concept_gap"
+
+
+def test_tutor_step_restores_persisted_error_tag_after_restart():
+    first_agent = TutorAgent()
+    persisted = first_agent.start(_ITEM, "calc_error")
+
+    restarted_agent = TutorAgent()
+    turn = restarted_agent.step(
+        persisted.phase,
+        "第二步不清楚",
+        _ITEM,
+        persisted.error_tag,
+    )
+
+    assert turn.error_tag == "calc_error"
+    assert "进位/通分" in turn.message

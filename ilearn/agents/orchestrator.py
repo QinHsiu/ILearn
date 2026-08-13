@@ -429,7 +429,12 @@ class MultiAgentOrchestrator:
         previous = session.tutor_by_item.get(item_id)
         if previous is None:
             raise ValueError("tutoring has not started for this item")
-        turn = self._tutor.step(previous.phase, user_message, item)
+        turn = self._tutor.step(
+            previous.phase,
+            user_message,
+            item,
+            previous.error_tag,
+        )
         session.tutor_by_item[item_id] = turn
         self._record_decision(
             session,
