@@ -154,6 +154,11 @@ python -m ilearn.cli.main eval --scaffolding         # MathTutorBench 脚手架 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | POST | `/sessions` | 建档 |
+| GET | `/sessions?nickname=` | 按昵称查看历史 |
+| DELETE | `/sessions/{session_id}` | 删除历史 |
+| POST | `/sessions/{session_id}/tutor` | 启动苏格拉底辅导 |
+| POST | `/sessions/{session_id}/tutor/hint` | 获取下一条提示 |
+| POST | `/sessions/{session_id}/replan` | 挫败感知重新规划 |
 | POST | `/sessions/{session_id}/assessment` | 组题（写入 `pending_questions`） |
 | POST | `/sessions/{session_id}/submit` | 提交文本答案（校验题号绑定） |
 | POST | `/sessions/{session_id}/submit-images` | 提交手写图片（base64） |
@@ -165,7 +170,7 @@ python -m ilearn.cli.main eval --scaffolding         # MathTutorBench 脚手架 
 | GET | `/sessions/{session_id}/phase` | 当前阶段 |
 | GET | `/sessions/{session_id}/report` | Markdown 报告 |
 
-**尚未挂到 HTTP 的能力**（仅 orchestrator / CLI）：`request_replan`、`tutor_start`。会话里的 `decision_log` / `pending_questions` 会随 `SessionState` 在 submit 等响应中返回。
+现有 `POST /sessions` 仍用于创建会话；完整 HTTP 契约见上方 Swagger `/docs`。会话里的 `decision_log` / `pending_questions` 会随 `SessionState` 在 submit 等响应中返回。
 
 Streamlit 若连非本机 API：
 
