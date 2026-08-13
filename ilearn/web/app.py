@@ -1,7 +1,7 @@
-"""Streamlit teaching interface for the ILearn MVP.
+"""Streamlit teaching interface for the ILearn MVP (DEPRECATED as primary UI).
 
-The web layer deliberately talks to FastAPI over HTTP and contains no grading,
-diagnosis, or planning business logic.
+Prefer the React + Vite app under ``frontend/`` (`npm run dev` on :5173).
+This module is retained temporarily for comparison only.
 """
 
 from __future__ import annotations

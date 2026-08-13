@@ -4,6 +4,10 @@ __pycache__/
 .pytest_cache/
 .env
 
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
 # Local design notes and agent workspace (not for public repo)
 doc/
 docs/

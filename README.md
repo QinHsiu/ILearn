@@ -30,8 +30,8 @@
 | **多 Agent 编排** | 5 个流水线 Agent + Tutor + Eval，由状态机编排，而不是一个巨型 prompt |
 | **编排可观测** | 上下文预算裁剪、`decision_log`、阶段质量门（失败重试一次再 degrade）、PendingQuestion 绑题、写能力白名单 |
 | **开箱可跑** | 无 LLM 也能离线演示全流程；配置 OpenAI 兼容 API 即升级构造题 / 手写 VL |
-| **建档与主题** | 建档可选昵称 / 性别；Streamlit 按性别 × 学段（小 / 初 / 高）加载六套 CSS 主题 |
-| **题目溯源** | 组卷绑定 `source_refs`（例题 ID、课标条目）；报告与 Streamlit 可展开错题参考来源 |
+| **建档与主题** | 建档可选昵称 / 性别；React 向导按性别 × 学段（小 / 初 / 高）切换主题色 |
+| **题目溯源** | 组卷绑定 `source_refs`（例题 ID、课标条目）；报告与 Web 向导可展开错题参考来源 |
 | **题目质量门** | 四维验证器（可解 / 现实 / 可读 / 情境）+ 单次修订，接入 Assessment 组卷后 |
 | **双轨个性化** | 诊断更新 `situation_interest`（情境偏好）；巩固组卷优先匹配偏好情境；`learning_difficulty` 可将巩固环扩至 4 轮 |
 
@@ -97,21 +97,27 @@ python -m ilearn.cli.main agents run --region 北京 --grade 5 --age 11 --offlin
 
 会话产物在 `data/sessions/{session_id}/`（`paper.json`、`report.md` 等）。
 
-想看教学向导界面：先起 API，再起 Streamlit。
+想看教学向导界面：先起 API，再起 React（Vite 开发服务器）。
 
 ```powershell
 # 终端 1 — FastAPI（自带 OpenAPI）
 uvicorn ilearn.api.app:app --reload --host 127.0.0.1 --port 8000
 
-# 终端 2 — Streamlit 向导
-streamlit run ilearn/web/app.py --server.port 8501
+# 终端 2 — React 向导（Node 18+）
+cd frontend
+npm install
+npm run dev
 ```
 
 | 入口 | 地址 |
 | --- | --- |
+| **Web 向导（开发）** | [http://127.0.0.1:5173](http://127.0.0.1:5173) |
 | **API 交互文档（Swagger）** | [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) |
 | API 备用文档（ReDoc） | [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) |
-| Streamlit 向导 | [http://127.0.0.1:8501](http://127.0.0.1:8501) |
+
+生产构建（可选）：在 `frontend/` 执行 `npm run build` 后，FastAPI 会托管 `frontend/dist`（访问 `http://127.0.0.1:8000/`）。
+
+> **已弃用：** Streamlit 入口 `streamlit run ilearn/web/app.py` 不再作为主 UI，仅保留对照。
 
 配置 LLM 后，去掉 `--offline`，构造题与 VL 手写批改走在线模型（见下方环境变量）。
 
@@ -180,7 +186,7 @@ streamlit run ilearn/web/app.py
 | `ILEARN_LLM_API_KEY` | 有则走 LLM；无则规则 + 离线降级 |
 | `ILEARN_LLM_MODEL` | 文本模型（默认 `gpt-4o-mini`） |
 | `ILEARN_VISION_MODEL` | VL / 手写模型；未设则回退文本模型 |
-| `ILEARN_API_BASE` | Streamlit 连接的 API（默认 `http://127.0.0.1:8000`） |
+| `ILEARN_API_BASE` | 遗留 Streamlit 连接的 API（默认 `http://127.0.0.1:8000`） |
 | `ILEARN_RETRIEVER_BACKEND` | 课标 retriever 后端：`keyword`（默认）或 `hash_vector`；`qdrant` 为 stub |
 
 ---
@@ -192,7 +198,7 @@ python -m pytest -q
 python -m pytest tests/test_e2e_multi_agent.py tests/test_e2e_composition_phase1.py tests/test_e2e_phase2a_diagnosis.py tests/test_e2e_phase2b.py tests/test_e2e_phase2c.py tests/test_e2e_phase2d.py -v
 ```
 
-当前仓库基线：**316** 项测试通过（离线可跑）。
+当前仓库基线：**318+** 项测试通过（离线可跑；以 `pytest -q` 为准）。
 
 ---
 
@@ -210,10 +216,11 @@ ilearn/
   core/        # 测评 · 批改 · 证据 · 诊断 · 规划 · OCR · 复习
   providers/   # 课标 · keyword/hash_vector RAG · LLM（含 VL）
   storage/     # 会话 JSON
-  api/         # FastAPI
+  api/         # FastAPI（可托管 frontend/dist）
   cli/         # run / agents run / eval
-  web/         # Streamlit
+  web/         # Streamlit（已弃用主入口）
   eval/        # 离线基准
+frontend/      # React + Vite 教学向导（主 Web UI）
 data/pilot/    # 试点知识点与模板；regions/ 多地区 citation packs
 data/sessions/ # 运行产物
 data/eval/     # 评测 fixtures

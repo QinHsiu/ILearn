@@ -158,7 +158,20 @@ def test_followup_endpoint(tmp_path):
     assert phase["loop_count"] == 1
 
 
-def test_cors_allows_streamlit_origin(tmp_path):
+def test_cors_allows_vite_origin(tmp_path):
+    c = _client(tmp_path)
+    r = c.options(
+        "/sessions",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+    assert r.status_code == 200
+    assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+def test_cors_allows_legacy_streamlit_origin(tmp_path):
     c = _client(tmp_path)
     r = c.options(
         "/sessions",

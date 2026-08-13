@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
@@ -27,10 +28,13 @@ from ilearn.storage.sessions import SessionStore
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _DEFAULT_SESSIONS_DIR = _PROJECT_ROOT / "data" / "sessions"
 _DEFAULT_PILOT_DATA = _PROJECT_ROOT / "data" / "pilot"
-_STREAMLIT_ORIGINS = (
-    "http://localhost:8501",
+_WEB_ORIGINS = (
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8501",  # legacy Streamlit (deprecated)
     "http://127.0.0.1:8501",
 )
+_FRONTEND_DIST = _PROJECT_ROOT / "frontend" / "dist"
 
 
 class CreateSessionResponse(BaseModel):
@@ -75,7 +79,7 @@ def create_app(
     app = FastAPI(title="ILearn", version="0.1.0")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=list(_STREAMLIT_ORIGINS),
+        allow_origins=list(_WEB_ORIGINS),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -89,8 +93,13 @@ def create_app(
     async def handle_bad_request(_request, exc: ValueError) -> JSONResponse:
         return JSONResponse(status_code=400, content={"detail": str(exc)})
 
-    @app.get("/", include_in_schema=False)
-    def root() -> RedirectResponse:
+    spa_index = _FRONTEND_DIST / "index.html"
+    spa_enabled = spa_index.is_file()
+
+    @app.get("/", include_in_schema=False, response_model=None)
+    def root() -> Response:
+        if spa_enabled:
+            return FileResponse(spa_index)
         return RedirectResponse(url="/docs")
 
     @app.post("/sessions", response_model=CreateSessionResponse)
@@ -144,6 +153,29 @@ def create_app(
     @app.post("/sessions/{session_id}/followup", response_model=AssessmentPaper)
     def followup(session_id: str) -> AssessmentPaper:
         return orchestrator.start_practice_loop(session_id)
+
+    if spa_enabled:
+        assets_dir = _FRONTEND_DIST / "assets"
+        if assets_dir.is_dir():
+            app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+        @app.get("/{spa_path:path}", include_in_schema=False, response_model=None)
+        def spa_fallback(spa_path: str) -> Response:
+            # Keep API / OpenAPI surfaces authoritative; only fall back for UI routes.
+            blocked = (
+                "sessions",
+                "docs",
+                "redoc",
+                "openapi.json",
+                "assets",
+            )
+            first = spa_path.split("/", 1)[0]
+            if first in blocked or spa_path.startswith("api"):
+                raise HTTPException(status_code=404, detail="Not Found")
+            candidate = _FRONTEND_DIST / spa_path
+            if candidate.is_file():
+                return FileResponse(candidate)
+            return FileResponse(spa_index)
 
     return app
 
