@@ -84,12 +84,24 @@ export default function App() {
 
   async function onResume(id: string) {
     const nextReport = await api.getReport(id)
+    const nextSession = nextReport.session
     setSessionId(id)
-    setPaper(nextReport.session.paper || null)
+    setPaper(nextSession.paper || null)
+    setAnswers(
+      Object.fromEntries(
+        (nextSession.answers || []).map((answer) => [answer.item_id, answer.answer_text]),
+      ),
+    )
+    setImageUploads({})
     setReport(nextReport)
-    if (nextReport.session.plan) setStep(3)
-    else if (nextReport.session.grades?.length) setStep(2)
-    else if (nextReport.session.paper) setStep(1)
+    if (nextSession.profile) {
+      setProfile(nextSession.profile)
+      setHistoryNickname(nextSession.profile.nickname || '')
+      applyTheme(nextSession.profile.grade, nextSession.profile.gender || 'unspecified')
+    }
+    if (nextSession.plan) setStep(3)
+    else if (nextSession.grades?.length) setStep(2)
+    else if (nextSession.paper) setStep(1)
     else setStep(0)
   }
 
@@ -411,7 +423,14 @@ export default function App() {
             <button
               className="btn secondary"
               type="button"
-              onClick={() => setStep(0)}
+              onClick={() => {
+                setStep(0)
+                setSessionId(null)
+                setPaper(null)
+                setReport(null)
+                setAnswers({})
+                setImageUploads({})
+              }}
               disabled={busy}
             >
               返回建档

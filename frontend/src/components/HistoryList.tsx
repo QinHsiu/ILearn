@@ -20,6 +20,7 @@ type HistoryListProps = {
 export default function HistoryList({ nickname, onResume }: HistoryListProps) {
   const [sessions, setSessions] = useState<SessionSummary[]>([])
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const refreshToken = useRef(0)
 
   async function refresh() {
@@ -46,9 +47,12 @@ export default function HistoryList({ nickname, onResume }: HistoryListProps) {
 
   async function onDelete(sessionId: string) {
     setBusyId(sessionId)
+    setError(null)
     try {
       await api.deleteSession(sessionId)
       await refresh()
+    } catch {
+      setError('删除历史会话失败，请稍后重试。')
     } finally {
       setBusyId(null)
     }
@@ -57,6 +61,7 @@ export default function HistoryList({ nickname, onResume }: HistoryListProps) {
   return (
     <section className="panel">
       <h2>历史会话</h2>
+      {error ? <p className="error">{error}</p> : null}
       <div className="history-list">
         {sessions.map((item) => (
           <article className="history-item" key={item.session_id}>

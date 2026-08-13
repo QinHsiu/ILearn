@@ -43,12 +43,18 @@ export type GradeResult = {
   grading_degraded?: boolean
 }
 
+export type StudentAnswer = {
+  item_id: string
+  answer_text: string
+}
+
 export type SessionState = {
   session_id: string
   phase: string
   loop_count: number
   profile: StudentProfile
   paper?: AssessmentPaper | null
+  answers?: StudentAnswer[]
   grades?: GradeResult[] | null
   diagnosis?: {
     knowledge_mastery?: Array<{
