@@ -19,7 +19,9 @@ from ilearn.core.schemas import (
     ImageAnswer,
     LearningPlanReport,
     SessionState,
+    SessionSummary,
     StudentProfile,
+    TutorTurn,
 )
 from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
 from ilearn.providers.llm import LLMClient
@@ -58,6 +60,15 @@ class PhaseResponse(BaseModel):
 class ReportResponse(BaseModel):
     markdown: str
     session: SessionState
+
+
+class TutorStartRequest(BaseModel):
+    item_id: str
+
+
+class TutorHintRequest(BaseModel):
+    item_id: str
+    user_message: str
 
 
 def create_app(
@@ -107,6 +118,17 @@ def create_app(
         session_id = orchestrator.create_session(profile)
         return CreateSessionResponse(session_id=session_id)
 
+    @app.get("/sessions", response_model=list[SessionSummary])
+    def list_sessions(nickname: str | None = None) -> list[SessionSummary]:
+        if not (nickname or "").strip():
+            raise ValueError("nickname query parameter is required")
+        return orchestrator.list_sessions(nickname)
+
+    @app.delete("/sessions/{session_id}", status_code=204)
+    def delete_session(session_id: str) -> Response:
+        orchestrator.delete_session(session_id)
+        return Response(status_code=204)
+
     @app.post("/sessions/{session_id}/assessment", response_model=AssessmentPaper)
     def generate_assessment(session_id: str) -> AssessmentPaper:
         return orchestrator.generate_assessment(session_id)
@@ -128,6 +150,20 @@ def create_app(
     @app.post("/sessions/{session_id}/plan", response_model=LearningPlanReport)
     def plan(session_id: str) -> LearningPlanReport:
         return orchestrator.plan(session_id)
+
+    @app.post("/sessions/{session_id}/tutor", response_model=TutorTurn)
+    def tutor_start(session_id: str, body: TutorStartRequest) -> TutorTurn:
+        return orchestrator.tutor_start(session_id, body.item_id)
+
+    @app.post("/sessions/{session_id}/tutor/hint", response_model=TutorTurn)
+    def tutor_hint(session_id: str, body: TutorHintRequest) -> TutorTurn:
+        return orchestrator.tutor_hint(
+            session_id, body.item_id, body.user_message
+        )
+
+    @app.post("/sessions/{session_id}/replan", response_model=LearningPlanReport)
+    def replan(session_id: str) -> LearningPlanReport:
+        return orchestrator.request_replan(session_id)
 
     @app.get("/sessions/{session_id}/report", response_model=ReportResponse)
     def report(session_id: str) -> ReportResponse:

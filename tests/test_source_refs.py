@@ -85,6 +85,34 @@ def test_bind_source_refs_merges_example_and_citations():
     assert ref.source_label
 
 
+def test_bind_source_refs_includes_example_snapshot():
+    item = AssessmentItem(
+        id="x",
+        stem="计算 1/2 + 1/2",
+        type="fill",
+        difficulty="easy",
+        knowledge_ids=["frac_add_same"],
+        answer_key="1",
+    )
+    bank = {
+        "frac_add_same": [
+            {
+                "id": "ex-frac-1",
+                "stem": "计算 1/4 + 2/4 = ?",
+                "answer": "3/4",
+                "difficulty": "easy",
+                "chapter": "五年级上册 分数加减",
+                "label": "北京·人教·小学数学",
+            }
+        ]
+    }
+    refs = bind_source_refs_to_item(item, _citations(), bank)
+    assert refs[0].example_id == "ex-frac-1"
+    assert refs[0].example_stem == "计算 1/4 + 2/4 = ?"
+    assert refs[0].example_answer == "3/4"
+    assert refs[0].example_difficulty == "easy"
+
+
 def test_assessment_agent_populates_source_refs_for_pilot_grade():
     profile = StudentProfile(region="北京", grade=5, age=11)
     cur = CurriculumAgent(pilot_dir=PILOT).run(

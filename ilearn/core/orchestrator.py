@@ -10,7 +10,9 @@ from ilearn.core.schemas import (
     LearningPlanReport,
     SessionPhase,
     SessionState,
+    SessionSummary,
     StudentProfile,
+    TutorTurn,
 )
 from ilearn.providers.curriculum import CurriculumProvider
 from ilearn.providers.llm import LLMClient
@@ -31,6 +33,20 @@ class Orchestrator:
     def create_session(self, profile: StudentProfile) -> str:
         return self._inner.create_session(profile)
 
+    def list_sessions(self, nickname: str) -> list[SessionSummary]:
+        return [
+            SessionSummary(
+                session_id=session.session_id,
+                nickname=session.profile.nickname,
+                grade=session.profile.grade,
+                phase=session.phase.value,
+            )
+            for session in self._inner._store.list_by_nickname(nickname)
+        ]
+
+    def delete_session(self, session_id: str) -> None:
+        self._inner._store.delete(session_id)
+
     def generate_assessment(self, session_id: str) -> AssessmentPaper:
         return self._inner.generate_assessment(session_id)
 
@@ -50,6 +66,17 @@ class Orchestrator:
 
     def plan(self, session_id: str) -> LearningPlanReport:
         return self._inner.plan(session_id)
+
+    def tutor_start(self, session_id: str, item_id: str) -> TutorTurn:
+        return self._inner.tutor_start(session_id, item_id)
+
+    def tutor_hint(
+        self, session_id: str, item_id: str, user_message: str
+    ) -> TutorTurn:
+        return self._inner.tutor_step(session_id, item_id, user_message)
+
+    def request_replan(self, session_id: str) -> LearningPlanReport:
+        return self._inner.request_replan(session_id)
 
     def run_after_submit(self, session_id: str) -> SessionState:
         return self._inner.run_after_submit(session_id)

@@ -75,6 +75,9 @@ class ItemSourceRef(BaseModel):
     curriculum_objective_ids: list[str] = Field(default_factory=list)
     textbook_chapter: str | None = None
     source_label: str | None = None
+    example_stem: str | None = None
+    example_answer: str | None = None
+    example_difficulty: str | None = None
 
 
 class ItemTemplate(BaseModel):
@@ -384,7 +387,15 @@ class SessionState(BaseModel):
     evidence_log: list[KnowledgeEvidence] = Field(default_factory=list)
     decision_log: list[AgentDecision] = Field(default_factory=list)
     pending_questions: list[PendingQuestion] = Field(default_factory=list)
+    tutor_by_item: dict[str, TutorTurn] = Field(default_factory=dict)
     metadata: dict[str, object] = Field(default_factory=dict)
+
+
+class SessionSummary(BaseModel):
+    session_id: str
+    nickname: str | None = None
+    grade: int
+    phase: str
 
 
 from ilearn.core.review import ReviewState  # noqa: E402

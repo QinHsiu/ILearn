@@ -4,19 +4,25 @@
       "id": "ex-mult-3d-1",
       "stem": "计算 125 × 36 = ?",
       "chapter": "四年级上册 第4章 三位数乘两位数",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "4500",
+      "difficulty": "easy"
     },
     {
       "id": "ex-mult-3d-2",
       "stem": "学校图书馆有 48 排书架，每排 125 本，共有多少本书？",
       "chapter": "四年级上册 第4章 三位数乘两位数",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "6000",
+      "difficulty": "medium"
     },
     {
       "id": "ex-mult-3d-3",
       "stem": "用竖式计算 308 × 24。",
       "chapter": "四年级上册 第4章 三位数乘两位数",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "7392",
+      "difficulty": "medium"
     }
   ],
   "rect_area": [
@@ -24,19 +30,25 @@
       "id": "ex-rect-1",
       "stem": "长方形长 8 cm、宽 5 cm，面积是多少平方厘米？",
       "chapter": "四年级上册 第6章 多边形的面积",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "40",
+      "difficulty": "easy"
     },
     {
       "id": "ex-rect-2",
       "stem": "一块长方形菜地长 12 m、宽 7 m，面积是多少平方米？",
       "chapter": "四年级上册 第6章 多边形的面积",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "84",
+      "difficulty": "medium"
     },
     {
       "id": "ex-rect-3",
       "stem": "已知长方形面积 48 cm²、宽 6 cm，求长。",
       "chapter": "四年级上册 第6章 多边形的面积",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "8",
+      "difficulty": "easy"
     }
   ],
   "angle_measure": [
@@ -44,13 +56,17 @@
       "id": "ex-angle-1",
       "stem": "用量角器量出 ∠AOB 的度数。",
       "chapter": "四年级上册 第3章 角的度量",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "以量角器实测为准",
+      "difficulty": "easy"
     },
     {
       "id": "ex-angle-2",
       "stem": "一个锐角是 35°，一个直角是 90°，两角之和是多少度？",
       "chapter": "四年级上册 第3章 角的度量",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "125°",
+      "difficulty": "easy"
     }
   ],
   "parallel_perp": [
@@ -58,13 +74,17 @@
       "id": "ex-parallel-1",
       "stem": "在同一平面内，两条直线都垂直于第三条直线，这两条直线互相平行。判断对错。",
       "chapter": "四年级上册 第5章 平行与垂直",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "对",
+      "difficulty": "easy"
     },
     {
       "id": "ex-parallel-2",
       "stem": "过直线外一点能画几条直线与已知直线平行？",
       "chapter": "四年级上册 第5章 平行与垂直",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "1条",
+      "difficulty": "easy"
     }
   ],
   "dec_mult": [
@@ -72,19 +92,25 @@
       "id": "ex-dec-mult-1",
       "stem": "计算 0.8 × 6 = ?",
       "chapter": "五年级上册 第1章 小数乘法",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "4.8",
+      "difficulty": "easy"
     },
     {
       "id": "ex-dec-mult-2",
       "stem": "计算 1.25 × 0.8 = ?",
       "chapter": "五年级上册 第1章 小数乘法",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "1",
+      "difficulty": "easy"
     },
     {
       "id": "ex-dec-mult-3",
       "stem": "苹果每千克 3.5 元，买 2.4 千克应付多少元？",
       "chapter": "五年级上册 第1章 小数乘法",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "8.4",
+      "difficulty": "medium"
     }
   ],
   "frac_add_same": [
@@ -92,19 +118,25 @@
       "id": "ex-frac-add-1",
       "stem": "计算 1/4 + 2/4 = ?",
       "chapter": "五年级上册 第3章 分数加减",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "3/4",
+      "difficulty": "easy"
     },
     {
       "id": "ex-frac-add-2",
       "stem": "计算 3/8 + 1/8 = ?",
       "chapter": "五年级上册 第3章 分数加减",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "1/2",
+      "difficulty": "easy"
     },
     {
       "id": "ex-frac-add-3",
       "stem": "一根绳子用去 2/7，又用去 3/7，一共用去几分之几？",
       "chapter": "五年级上册 第3章 分数加减",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "5/7",
+      "difficulty": "medium"
     }
   ],
   "frac_mult": [
@@ -112,13 +144,17 @@
       "id": "ex-frac-mult-1",
       "stem": "计算 2/3 × 3/4 = ?",
       "chapter": "五年级下册 第4章 分数乘法",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "1/2",
+      "difficulty": "easy"
     },
     {
       "id": "ex-frac-mult-2",
       "stem": "计算 5/6 × 2/5 = ?",
       "chapter": "五年级下册 第4章 分数乘法",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "1/3",
+      "difficulty": "easy"
     }
   ],
   "simple_eq": [
@@ -126,13 +162,17 @@
       "id": "ex-eq-1",
       "stem": "解方程 x + 12 = 35。",
       "chapter": "五年级下册 第8章 简易方程",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "23",
+      "difficulty": "easy"
     },
     {
       "id": "ex-eq-2",
       "stem": "解方程 3x = 27。",
       "chapter": "五年级下册 第8章 简易方程",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "9",
+      "difficulty": "easy"
     }
   ],
   "frac_div": [
@@ -140,13 +180,17 @@
       "id": "ex-frac-div-1",
       "stem": "计算 3/4 ÷ 1/2 = ?",
       "chapter": "六年级上册 第3章 分数除法",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "3/2",
+      "difficulty": "easy"
     },
     {
       "id": "ex-frac-div-2",
       "stem": "计算 5/6 ÷ 5/12 = ?",
       "chapter": "六年级上册 第3章 分数除法",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "2",
+      "difficulty": "easy"
     }
   ],
   "ratio": [
@@ -154,19 +198,25 @@
       "id": "ex-ratio-1",
       "stem": "把 24 按 3:5 分配，较小的一份是多少？",
       "chapter": "六年级上册 第4章 比和比例",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "9",
+      "difficulty": "medium"
     },
     {
       "id": "ex-ratio-2",
       "stem": "甲、乙两数之比是 2:3，甲数是 18，乙数是多少？",
       "chapter": "六年级上册 第4章 比和比例",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "27",
+      "difficulty": "medium"
     },
     {
       "id": "ex-ratio-3",
       "stem": "配制 200 g 药水，药粉与水的比是 1:9，需要药粉多少克？",
       "chapter": "六年级上册 第4章 比和比例",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "20",
+      "difficulty": "medium"
     }
   ],
   "circle_area": [
@@ -174,13 +224,17 @@
       "id": "ex-circle-1",
       "stem": "圆的半径 3 cm，面积是多少平方厘米？（π 取 3.14）",
       "chapter": "六年级上册 第5章 圆的面积",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "28.26",
+      "difficulty": "easy"
     },
     {
       "id": "ex-circle-2",
       "stem": "一个圆形花坛直径 10 m，面积是多少平方米？",
       "chapter": "六年级上册 第5章 圆的面积",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "78.5",
+      "difficulty": "medium"
     }
   ],
   "percent": [
@@ -188,19 +242,25 @@
       "id": "ex-percent-1",
       "stem": "某商品原价 200 元，打八五折，现价是多少元？",
       "chapter": "六年级上册 第6章 百分数",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "170元",
+      "difficulty": "medium"
     },
     {
       "id": "ex-percent-2",
       "stem": "班级 40 人，男生占 55%，男生有多少人？",
       "chapter": "六年级上册 第6章 百分数",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "22人",
+      "difficulty": "medium"
     },
     {
       "id": "ex-percent-3",
       "stem": "存款 5000 元，年利率 2.1%，一年后可得利息多少元？",
       "chapter": "六年级上册 第6章 百分数",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "105元",
+      "difficulty": "medium"
     }
   ],
   "factors": [
@@ -208,13 +268,17 @@
       "id": "ex-factors-1",
       "stem": "写出 12 的所有因数。",
       "chapter": "六年级下册 第2章 因数与倍数",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "1、2、3、4、6、12",
+      "difficulty": "easy"
     },
     {
       "id": "ex-factors-2",
       "stem": "18 和 24 的最大公因数是多少？",
       "chapter": "六年级下册 第2章 因数与倍数",
-      "label": "北京·人教·小学数学"
+      "label": "北京·人教·小学数学",
+      "answer": "6",
+      "difficulty": "easy"
     }
   ]
 }

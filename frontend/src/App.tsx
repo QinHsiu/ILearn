@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api, fileToImageAnswer } from './api/client'
 import type {
@@ -10,6 +10,9 @@ import type {
   StudentProfile,
 } from './api/client'
 import MarkdownView from './MarkdownView'
+import HistoryList from './components/HistoryList'
+import SourceAccordion from './components/SourceAccordion'
+import TutorPanel from './components/TutorPanel'
 import { applyTheme } from './theme'
 import './styles.css'
 
@@ -29,22 +32,6 @@ const ERROR_LABELS: Record<string, string> = {
   incomplete: '过程不完整',
 }
 
-function formatSourceLines(ref: {
-  example_id?: string | null
-  curriculum_objective_ids?: string[]
-  textbook_chapter?: string | null
-  source_label?: string | null
-}): string[] {
-  const lines: string[] = []
-  if (ref.example_id) lines.push(`例题 ID：${ref.example_id}`)
-  if (ref.textbook_chapter) lines.push(`教材章节：${ref.textbook_chapter}`)
-  if (ref.curriculum_objective_ids?.length) {
-    lines.push(`课标条目：${ref.curriculum_objective_ids.join('、')}`)
-  }
-  if (ref.source_label) lines.push(`来源：${ref.source_label}`)
-  return lines
-}
-
 function wrongItemEntries(session: SessionState) {
   const grades = session.grades || []
   const items = session.paper?.items || []
@@ -54,11 +41,13 @@ function wrongItemEntries(session: SessionState) {
     .map((g) => {
       const item = byId[g.item_id]
       if (!item) return null
-      const sourceLines = (item.source_refs || []).flatMap(formatSourceLines)
-      if (!sourceLines.length) return null
-      return { itemId: item.id, stem: item.stem, sourceLines }
+      return { itemId: item.id, stem: item.stem, sourceRefs: item.source_refs || [] }
     })
-    .filter(Boolean) as Array<{ itemId: string; stem: string; sourceLines: string[] }>
+    .filter(Boolean) as Array<{
+    itemId: string
+    stem: string
+    sourceRefs: NonNullable<SessionState['paper']>['items'][number]['source_refs']
+  }>
 }
 
 export default function App() {
@@ -72,6 +61,7 @@ export default function App() {
     Record<string, ImageAnswer & { preview: string; name: string }>
   >({})
   const [report, setReport] = useState<ReportResponse | null>(null)
+  const [historyNickname, setHistoryNickname] = useState('')
 
   const [profile, setProfile] = useState<StudentProfile>({
     region: 'beijing',
@@ -87,6 +77,33 @@ export default function App() {
     () => (session ? wrongItemEntries(session) : []),
     [session],
   )
+
+  useEffect(() => {
+    applyTheme(profile.grade, profile.gender || 'unspecified')
+  }, [profile.grade, profile.gender])
+
+  async function onResume(id: string) {
+    const nextReport = await api.getReport(id)
+    const nextSession = nextReport.session
+    setSessionId(id)
+    setPaper(nextSession.paper || null)
+    setAnswers(
+      Object.fromEntries(
+        (nextSession.answers || []).map((answer) => [answer.item_id, answer.answer_text]),
+      ),
+    )
+    setImageUploads({})
+    setReport(nextReport)
+    if (nextSession.profile) {
+      setProfile(nextSession.profile)
+      setHistoryNickname(nextSession.profile.nickname || '')
+      applyTheme(nextSession.profile.grade, nextSession.profile.gender || 'unspecified')
+    }
+    if (nextSession.plan) setStep(3)
+    else if (nextSession.grades?.length) setStep(2)
+    else if (nextSession.paper) setStep(1)
+    else setStep(0)
+  }
 
   async function onStart(e: FormEvent) {
     e.preventDefault()
@@ -174,6 +191,21 @@ export default function App() {
     }
   }
 
+  async function onReplan() {
+    if (!sessionId) return
+    setBusy(true)
+    setError(null)
+    try {
+      await api.replan(sessionId)
+      const nextReport = await api.getReport(sessionId)
+      setReport(nextReport)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const grades = session?.grades || []
   const correct = grades.filter((g) => g.final_correct).length
 
@@ -181,7 +213,12 @@ export default function App() {
     <div className="app-shell">
       <header className="brand-row">
         <h1 className="brand">ILearn</h1>
-        <p className="brand-sub">课标在环的个性化学习向导</p>
+        <div className="brand-copy">
+          {(profile.nickname || '').trim() ? (
+            <p className="brand-sub">你好，{(profile.nickname || '').trim()}</p>
+          ) : null}
+          <p className="brand-sub">课标在环的个性化学习向导</p>
+        </div>
       </header>
 
       <nav className="stepper" aria-label="向导步骤">
@@ -207,6 +244,7 @@ export default function App() {
                   id="nickname"
                   value={profile.nickname || ''}
                   onChange={(e) => setProfile({ ...profile, nickname: e.target.value })}
+                  onBlur={(e) => setHistoryNickname(e.currentTarget.value)}
                   placeholder="可选"
                 />
               </div>
@@ -286,6 +324,14 @@ export default function App() {
               </button>
             </div>
           </form>
+          <HistoryList
+            nickname={historyNickname}
+            onResume={(id) => {
+              void onResume(id).catch((err) => {
+                setError(err instanceof Error ? err.message : String(err))
+              })
+            }}
+          />
         </section>
       )}
 
@@ -296,7 +342,7 @@ export default function App() {
             {paper.curriculum_label} · 共 {paper.items.length} 题 · 可文本作答，也可上传手写照片
           </p>
           {paper.items.map((item, index) => (
-            <article className="item-card" key={item.id}>
+            <article className="question-card" key={item.id}>
               <div className="item-meta">
                 <span className="pill">第 {index + 1} 题</span>
                 <span className="pill">{item.difficulty}</span>
@@ -377,7 +423,14 @@ export default function App() {
             <button
               className="btn secondary"
               type="button"
-              onClick={() => setStep(0)}
+              onClick={() => {
+                setStep(0)
+                setSessionId(null)
+                setPaper(null)
+                setReport(null)
+                setAnswers({})
+                setImageUploads({})
+              }}
               disabled={busy}
             >
               返回建档
@@ -436,14 +489,10 @@ export default function App() {
             <>
               <h3>错题参考来源</h3>
               {wrongItems.map((entry) => (
-                <details className="expander" key={entry.itemId}>
-                  <summary>{entry.stem.slice(0, 48)}{entry.stem.length > 48 ? '…' : ''}</summary>
-                  <div className="body">
-                    {entry.sourceLines.map((line) => (
-                      <div key={line}>{line}</div>
-                    ))}
-                  </div>
-                </details>
+                <div key={entry.itemId}>
+                  <SourceAccordion stem={entry.stem} sourceRefs={entry.sourceRefs} />
+                  {sessionId ? <TutorPanel sessionId={sessionId} itemId={entry.itemId} /> : null}
+                </div>
               ))}
             </>
           )}
@@ -465,12 +514,15 @@ export default function App() {
           </p>
           <div className="plan-body">
             <MarkdownView
-              source={session.plan?.markdown || report?.markdown || '暂无计划内容'}
+              source={report?.markdown || session.plan?.markdown || '暂无计划内容'}
             />
           </div>
           <div className="actions">
             <button className="btn secondary" type="button" onClick={() => setStep(2)}>
               返回学情
+            </button>
+            <button className="btn" type="button" onClick={() => void onReplan()} disabled={busy}>
+              {busy ? '规划中…' : '重新规划'}
             </button>
             <button
               className="btn"

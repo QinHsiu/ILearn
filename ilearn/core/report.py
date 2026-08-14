@@ -22,6 +22,12 @@ def format_source_ref_lines(ref: ItemSourceRef) -> list[str]:
     lines: list[str] = []
     if ref.example_id:
         lines.append(f"- **例题 ID：** {ref.example_id}")
+    if ref.example_stem:
+        lines.append(f"- **例题原文：** {ref.example_stem}")
+    if ref.example_answer:
+        lines.append(f"- **例题答案：** {ref.example_answer}")
+    if ref.example_difficulty:
+        lines.append(f"- **例题难度：** {ref.example_difficulty}")
     if ref.textbook_chapter:
         lines.append(f"- **教材章节：** {ref.textbook_chapter}")
     if ref.curriculum_objective_ids:

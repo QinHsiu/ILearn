@@ -10,6 +10,16 @@ export type StudentProfile = {
   subject?: string
 }
 
+export type SourceRef = {
+  example_id?: string | null
+  curriculum_objective_ids?: string[]
+  textbook_chapter?: string | null
+  example_stem?: string | null
+  example_answer?: string | null
+  example_difficulty?: string | null
+  source_label?: string | null
+}
+
 export type AssessmentItem = {
   id: string
   stem: string
@@ -17,12 +27,7 @@ export type AssessmentItem = {
   difficulty: string
   knowledge_ids: string[]
   choices?: string[] | null
-  source_refs?: Array<{
-    example_id?: string | null
-    curriculum_objective_ids?: string[]
-    textbook_chapter?: string | null
-    source_label?: string | null
-  }>
+  source_refs?: SourceRef[]
   situation_tag?: string | null
 }
 
@@ -38,12 +43,18 @@ export type GradeResult = {
   grading_degraded?: boolean
 }
 
+export type StudentAnswer = {
+  item_id: string
+  answer_text: string
+}
+
 export type SessionState = {
   session_id: string
   phase: string
   loop_count: number
   profile: StudentProfile
   paper?: AssessmentPaper | null
+  answers?: StudentAnswer[]
   grades?: GradeResult[] | null
   diagnosis?: {
     knowledge_mastery?: Array<{
@@ -74,6 +85,19 @@ export type ImageAnswer = {
 export type ReportResponse = {
   markdown: string
   session: SessionState
+}
+
+export type TutorTurn = {
+  phase: string
+  message: string
+  error_tag?: string | null
+}
+
+export type SessionSummary = {
+  session_id: string
+  nickname?: string | null
+  grade: number
+  phase: string
 }
 
 const MIME_BY_EXT: Record<string, ImageMime> = {
@@ -125,6 +149,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
   }
+  if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
 
@@ -157,6 +182,31 @@ export const api = {
   },
   getReport(sessionId: string) {
     return request<ReportResponse>(`/sessions/${sessionId}/report`)
+  },
+  tutorStart(sessionId: string, itemId: string) {
+    return request<TutorTurn>(`/sessions/${sessionId}/tutor`, {
+      method: 'POST',
+      body: JSON.stringify({ item_id: itemId }),
+    })
+  },
+  tutorHint(sessionId: string, itemId: string, userMessage: string) {
+    return request<TutorTurn>(`/sessions/${sessionId}/tutor/hint`, {
+      method: 'POST',
+      body: JSON.stringify({ item_id: itemId, user_message: userMessage }),
+    })
+  },
+  replan(sessionId: string) {
+    return request<{ markdown: string; status?: string }>(
+      `/sessions/${sessionId}/replan`,
+      { method: 'POST' },
+    )
+  },
+  listSessions(nickname: string) {
+    const q = new URLSearchParams({ nickname })
+    return request<SessionSummary[]>(`/sessions?${q.toString()}`)
+  },
+  deleteSession(sessionId: string) {
+    return request<void>(`/sessions/${sessionId}`, { method: 'DELETE' })
   },
   getPhase(sessionId: string) {
     return request<{ phase: string; loop_count: number }>(`/sessions/${sessionId}/phase`)
