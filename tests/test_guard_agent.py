@@ -18,6 +18,18 @@ def test_guard_flags_phrase_answer_shi():
     assert verdict.confidence >= 0.7
 
 
+def test_guard_flags_0815_strong_answer_phrases():
+    for message in ("答案就是15", "结果等于15", "应该是15"):
+        verdict = GuardAgent().check(message, "15")
+        assert verdict.is_leak is True
+        assert verdict.confidence >= 0.7
+
+
+def test_guard_does_not_match_formula_prefix():
+    verdict = GuardAgent().check("代入后得到 x=20。", "x=2")
+    assert verdict.is_leak is False
+
+
 def test_guard_allows_retry_hint_without_answer():
     verdict = GuardAgent().check(
         "让我们再算一遍，注意加法步骤，你觉得结果会是多少？", "12"
