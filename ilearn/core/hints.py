@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ilearn.core.pedagogical_kb import default_kb
 from ilearn.core.schemas import HintLevel
 
 _STREAK_ESCALATION_SUFFIX = "先对照例题步骤，不要直接看答案"
@@ -21,6 +22,9 @@ _DEFAULT_HINT: tuple[HintLevel, str] = ("medium", "回顾相关定义与例题�
 def hint_for_error(error_tag: str | None, fail_streak: int = 0) -> tuple[HintLevel, str]:
     """Return (level, hint_text). Level escalates with fail_streak; never includes final answer."""
     level, text = _TAG_HINTS.get(error_tag or "", _DEFAULT_HINT)
+    kb_text = default_kb().retrieve(error_tag, fail_streak)
+    if kb_text:
+        text = kb_text
     if fail_streak >= _STREAK_ESCALATION_THRESHOLD:
         level = "high"
         if _STREAK_ESCALATION_SUFFIX not in text:
