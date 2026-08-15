@@ -23,7 +23,7 @@ from ilearn.core.schemas import (
     StudentProfile,
     TutorTurn,
 )
-from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
+from ilearn.providers.curriculum import CurriculumError, PilotBeijingRenjiaoProvider
 from ilearn.providers.llm import LLMClient
 from ilearn.storage.sessions import SessionStore
 
@@ -103,6 +103,10 @@ def create_app(
     @app.exception_handler(ValueError)
     async def handle_bad_request(_request, exc: ValueError) -> JSONResponse:
         return JSONResponse(status_code=400, content={"detail": str(exc)})
+
+    @app.exception_handler(CurriculumError)
+    async def handle_curriculum_error(_request, exc: CurriculumError) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"detail": str(exc)})
 
     spa_index = _FRONTEND_DIST / "index.html"
     spa_enabled = spa_index.is_file()

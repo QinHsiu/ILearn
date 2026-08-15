@@ -100,6 +100,18 @@ def test_missing_session_returns_404(tmp_path):
     assert r.status_code == 404
 
 
+def test_unsupported_grade_assessment_returns_422_with_detail(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post(
+        "/sessions", json={"region": "北京", "grade": 7, "age": 13}
+    ).json()["session_id"]
+
+    r = c.post(f"/sessions/{sid}/assessment")
+
+    assert r.status_code == 422
+    assert "4–6 年级" in r.json()["detail"]
+
+
 def test_phase_endpoint(tmp_path):
     c = _client(tmp_path)
     sid = c.post("/sessions", json={"region": "北京", "grade": 5, "age": 11}).json()[

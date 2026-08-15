@@ -24,6 +24,9 @@ import './styles.css'
 
 const STEPS = ['建档', '测评作答', '批改与学情', '学习计划'] as const
 
+// Pilot pack ships only grade 4–6 math items; other grades have no blueprint.
+const PILOT_GRADES = [4, 5, 6]
+
 const LEVEL_LABELS: Record<string, string> = {
   mastered: '已掌握',
   unstable: '需巩固',
@@ -312,11 +315,12 @@ export default function App() {
                   }
                 >
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((g) => (
-                    <option key={g} value={g}>
-                      {g} 年级
+                    <option key={g} value={g} disabled={!PILOT_GRADES.includes(g)}>
+                      {g} 年级{PILOT_GRADES.includes(g) ? '' : '（暂未开放）'}
                     </option>
                   ))}
                 </select>
+                <p className="field-hint">试点内容目前覆盖 4–6 年级数学。</p>
               </div>
               <div className="field">
                 <label htmlFor="age">年龄</label>
