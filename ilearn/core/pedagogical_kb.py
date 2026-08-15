@@ -48,6 +48,24 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return merged
 
 
+def _collect_phrases(bucket: dict) -> list[str]:
+    """Collect phrase lists from a bucket: default first, then other keys sorted."""
+    phrases: list[str] = []
+    skill_keys = sorted(
+        k
+        for k, v in bucket.items()
+        if k != "default"
+        and isinstance(v, list)
+        and all(isinstance(x, str) for x in v)
+    )
+    default = bucket.get("default")
+    if isinstance(default, list) and all(isinstance(x, str) for x in default):
+        phrases.extend(default)
+    for key in skill_keys:
+        phrases.extend(bucket[key])
+    return phrases
+
+
 def _load_strategies(path: Path) -> dict | None:
     if not path.is_file():
         return None
@@ -75,7 +93,7 @@ class PedagogicalKnowledgeBase:
 
     def retrieve(self, error_tag: str | None, fail_streak: int = 0) -> str | None:
         bucket = _ERROR_TAG_BUCKET.get(error_tag or "", "metacognitive")
-        phrases = list(self.strategies.get(bucket, {}).get("default", []))
+        phrases = _collect_phrases(self.strategies.get(bucket, {}))
         if not phrases:
             return None
         idx = min(max(fail_streak, 0), len(phrases) - 1)
