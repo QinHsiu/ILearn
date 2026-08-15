@@ -1,0 +1,16 @@
+{
+  "routing": {
+    "defaults": {
+      "max_latency_ms": 5000,
+      "max_cost_per_call": 0.05
+    },
+    "overrides": {
+      "grading_objective": "gpt-4o-mini",
+      "tutoring": "gpt-4.1"
+    },
+    "fallback": {
+      "enabled": true,
+      "default": "gpt-4o-mini"
+    }
+  }
+}
