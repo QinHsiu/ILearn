@@ -8,7 +8,7 @@ import type {
 } from '../api/client'
 import DashboardDetail from '../components/DashboardDetail'
 import StudentList from '../components/StudentList'
-import DashboardHome from './DashboardHome'
+import DashboardHome, { updateDashboardQuery } from './DashboardHome'
 
 type TeacherDashboardProps = { userId: string; classId?: string; studentId?: string }
 
@@ -19,6 +19,7 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   const [selected, setSelected] = useState<DashboardStudentDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [bindSessionId, setBindSessionId] = useState('')
+  const [selectedStudentId, setSelectedStudentId] = useState(studentId || '')
 
   useEffect(() => {
     void dashboardApi.teacherClasses(userId).then(setClasses).catch((err) => {
@@ -36,6 +37,7 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   function selectClass(id: string) {
     setClassId(id)
     setSelected(null)
+    updateDashboardQuery({ class_id: id, student_id: null })
     void dashboardApi.teacherStudents(userId, id).then((next) => {
       setStudents(next)
       const target = studentId ? next.find((student) => student.session_id === studentId) : undefined
@@ -44,6 +46,8 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   }
 
   function selectStudent(id: string, student: DashboardStudentSummary) {
+    setSelectedStudentId(student.session_id)
+    updateDashboardQuery({ student_id: student.session_id })
     void dashboardApi.teacherStudent(userId, id, student.session_id).then(setSelected).catch((err) => {
       setError(err instanceof Error ? err.message : String(err))
     })
@@ -52,9 +56,13 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   async function bind(e: FormEvent) {
     e.preventDefault()
     if (!classId || !bindSessionId.trim()) return
-    await dashboardApi.bindTeacher(userId, classId, bindSessionId.trim())
-    setBindSessionId('')
-    selectClass(classId)
+    try {
+      await dashboardApi.bindTeacher(userId, classId, bindSessionId.trim())
+      setBindSessionId('')
+      selectClass(classId)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
   }
 
   return (
@@ -71,7 +79,13 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
               ))}
             </div>
           ) : <p className="dashboard-empty">暂无班级数据</p>}
-          {classId && students ? <StudentList students={students} onSelect={(student) => selectStudent(classId, student)} /> : null}
+          {classId && students ? (
+            <StudentList
+              students={students}
+              selectedId={selectedStudentId}
+              onSelect={(student) => selectStudent(classId, student)}
+            />
+          ) : null}
           {error ? <p className="error">{error}</p> : null}
           <form className="dashboard-bind" onSubmit={(e) => void bind(e)}>
             <label htmlFor="teacher-session">绑定学生会话</label>

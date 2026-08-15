@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
 import { dashboardApi } from '../api/client'
 import type { DashboardStudentDetail, DashboardStudentSummary } from '../api/client'
 import DashboardDetail from '../components/DashboardDetail'
 import StudentList from '../components/StudentList'
-import DashboardHome from './DashboardHome'
+import DashboardHome, { updateDashboardQuery } from './DashboardHome'
 
 type ParentDashboardProps = { userId: string; studentId?: string }
 
@@ -12,6 +13,7 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
   const [selected, setSelected] = useState<DashboardStudentDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState('')
+  const [selectedSessionId, setSelectedSessionId] = useState(studentId || '')
 
   const load = () => {
     setError(null)
@@ -30,17 +32,23 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
 
   function selectStudent(student: DashboardStudentSummary) {
     setSessionId(student.session_id)
+    setSelectedSessionId(student.session_id)
+    updateDashboardQuery({ student_id: student.session_id })
     void dashboardApi.parentChild(userId, student.session_id).then(setSelected).catch((err) => {
       setError(err instanceof Error ? err.message : String(err))
     })
   }
 
-  async function bind(e: React.FormEvent) {
+  async function bind(e: FormEvent) {
     e.preventDefault()
     if (!sessionId.trim()) return
-    await dashboardApi.bindParent(userId, sessionId.trim())
-    setSessionId('')
-    load()
+    try {
+      await dashboardApi.bindParent(userId, sessionId.trim())
+      setSessionId('')
+      load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    }
   }
 
   return (
@@ -48,7 +56,13 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
       <main className="dashboard-content">
         <section className="panel">
           <h2>孩子学习概览</h2>
-          {students === null ? <p>加载中…</p> : <StudentList students={students} onSelect={selectStudent} />}
+          {students === null ? <p>加载中…</p> : (
+            <StudentList
+              students={students}
+              selectedId={selectedSessionId}
+              onSelect={selectStudent}
+            />
+          )}
           {error ? <p className="error">{error}</p> : null}
           <form className="dashboard-bind" onSubmit={(e) => void bind(e)}>
             <label htmlFor="parent-session">绑定学习会话</label>

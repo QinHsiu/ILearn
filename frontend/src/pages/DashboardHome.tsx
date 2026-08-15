@@ -5,6 +5,16 @@ type DashboardHomeProps = {
   children: ReactNode
 }
 
+export function updateDashboardQuery(updates: Record<string, string | null>) {
+  const params = new URLSearchParams(window.location.search)
+  Object.entries(updates).forEach(([key, value]) => {
+    if (value === null) params.delete(key)
+    else params.set(key, value)
+  })
+  const query = params.toString()
+  window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}`)
+}
+
 export default function DashboardHome({ title, children }: DashboardHomeProps) {
   return (
     <div className="app-shell dashboard-shell">

@@ -1,4 +1,5 @@
 import type { DashboardStudentDetail } from '../api/client'
+import MarkdownView from '../MarkdownView'
 
 type DashboardDetailProps = {
   detail: DashboardStudentDetail
@@ -29,7 +30,7 @@ export default function DashboardDetail({ detail }: DashboardDetailProps) {
       <div className="dashboard-report">
         <h3>学习报告</h3>
         <p>计划状态：{detail.plan?.status || '暂无'}</p>
-        {detail.plan?.markdown ? <p>{detail.plan.markdown}</p> : <p>暂无报告内容</p>}
+        {detail.plan?.markdown ? <MarkdownView source={detail.plan.markdown} /> : <p>暂无报告内容</p>}
       </div>
     </section>
   )

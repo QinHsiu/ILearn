@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { dashboardApi } from './api/client'
@@ -71,10 +71,8 @@ describe('dashboard role views', () => {
 
     await waitFor(() => expect(dashboardApi.parentChildren).toHaveBeenCalledWith('p1'))
     screen.getByRole('button', { name: /小明/ }).click()
+    expect(window.location.search).toContain('student_id=s1')
     expect(await screen.findByText('学习计划')).toBeInTheDocument()
-
-    vi.mocked(dashboardApi.parentChildren).mockResolvedValueOnce([])
-    setSearch('/?role=parent&user=p1')
   })
 
   it('renders teacher class, student, and detail states', async () => {
@@ -89,8 +87,34 @@ describe('dashboard role views', () => {
     expect(screen.getByText('加载中…')).toBeInTheDocument()
     expect(await screen.findByText('班级 c1')).toBeInTheDocument()
     screen.getByRole('button', { name: '班级 c1' }).click()
+    expect(window.location.search).toContain('class_id=c1')
     expect(await screen.findByRole('button', { name: /小明/ })).toBeInTheDocument()
     screen.getByRole('button', { name: /小明/ }).click()
+    expect(window.location.search).toContain('student_id=s1')
     expect(await screen.findByText('知识点掌握')).toBeInTheDocument()
+  })
+
+  it('shows parent bind failures instead of leaving rejected promises unhandled', async () => {
+    setSearch('/?role=parent&user=p1')
+    vi.mocked(dashboardApi.parentChildren).mockResolvedValue([])
+    vi.mocked(dashboardApi.bindParent).mockRejectedValue(new Error('绑定失败'))
+
+    render(<App />)
+    await screen.findByText('暂无学生数据')
+    fireEvent.change(screen.getByLabelText('绑定学习会话'), { target: { value: 's1' } })
+    fireEvent.submit(screen.getByRole('button', { name: '绑定并刷新' }).closest('form')!)
+    expect(await screen.findByText('绑定失败')).toBeInTheDocument()
+  })
+
+  it('shows teacher bind failures instead of leaving rejected promises unhandled', async () => {
+    setSearch('/?role=teacher&user=t1&class_id=c1')
+    vi.mocked(dashboardApi.teacherClasses).mockResolvedValue([{ class_id: 'c1', students: [] }])
+    vi.mocked(dashboardApi.bindTeacher).mockRejectedValue(new Error('教师绑定失败'))
+
+    render(<App />)
+    await screen.findByText('班级 c1')
+    fireEvent.change(screen.getByLabelText('绑定学生会话'), { target: { value: 's1' } })
+    fireEvent.submit(screen.getByRole('button', { name: '绑定并刷新' }).closest('form')!)
+    expect(await screen.findByText('教师绑定失败')).toBeInTheDocument()
   })
 })
