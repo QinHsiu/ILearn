@@ -36,6 +36,11 @@ class GuardAgent:
             r"[\d.]+\s*/\s*[\d.]+)",
             "direct_answer",
         ),
+        (
+            r"(?:the\s+)?answer\s+(?:is|=)\s*"
+            r"(?P<answer>[+-]?\d+(?:\.\d+)?|[\d.]+\s*/\s*[\d.]+)",
+            "direct_answer",
+        ),
         (r"(?P<answer>[+-]?\d+(?:\.\d+)?|[\d.]+\s*/\s*[\d.]+)\s*(是|就是)\s*(正确)?答案", "direct_answer"),
         (r"(因此|所以|最终)\s*(答案|结果)\s*[是为：:]\s*(?P<answer>[^\n，。！？,!?]+)", "direct_answer"),
         (r"(填|写|选)\s*(?P<answer>[+-]?\d+(?:\.\d+)?|[\d.]+\s*/\s*[\d.]+)", "direct_answer"),
@@ -76,18 +81,13 @@ class GuardAgent:
         compact_msg = re.sub(r"\s+", "", text)
         compact_key = re.sub(r"\s+", "", key)
         numeric_key = bool(re.fullmatch(r"[+-]?\d+(?:\.\d+)?", compact_key))
-        formula_like_key = "=" in compact_key
         if (
             compact_key
             and not numeric_key
-            and (
-                re.search(
-                    rf"(?<![A-Za-z0-9_.]){re.escape(compact_key)}"
-                    r"(?![A-Za-z0-9_.])",
-                    compact_msg,
-                )
-                if formula_like_key
-                else compact_key in compact_msg
+            and re.search(
+                rf"(?<![A-Za-z0-9_.]){re.escape(compact_key)}"
+                r"(?![A-Za-z0-9_.])",
+                compact_msg,
             )
         ):
             return GuardVerdict(True, 1.0, "answer_key_substring")

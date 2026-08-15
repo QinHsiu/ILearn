@@ -30,6 +30,11 @@ def test_guard_does_not_match_formula_prefix():
     assert verdict.is_leak is False
 
 
+def test_guard_does_not_match_nonnumeric_key_prefix():
+    verdict = GuardAgent().check("请继续检查abcd这个变量。", "abc")
+    assert verdict.is_leak is False
+
+
 def test_guard_allows_retry_hint_without_answer():
     verdict = GuardAgent().check(
         "让我们再算一遍，注意加法步骤，你觉得结果会是多少？", "12"
