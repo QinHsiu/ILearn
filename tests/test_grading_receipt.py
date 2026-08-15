@@ -47,3 +47,20 @@ def test_grade_result_receipt_captures_model_id_from_llm_model_attr():
     result = grader.grade_item(item, "2")
     assert result.receipt is not None
     assert result.receipt.model_id == "gpt-test"
+
+
+def test_receipt_includes_math_verify_result_for_fraction_fill():
+    grader = ItemGrader(llm=None)
+    item = AssessmentItem(
+        id="q1",
+        stem="化简",
+        type="fill",
+        difficulty="easy",
+        knowledge_ids=["k1"],
+        answer_key="1/2",
+    )
+    result = grader.grade_item(item, "2/4")
+    assert result.final_correct is True
+    assert result.receipt is not None
+    assert result.receipt.math_verify_result is not None
+    assert result.receipt.math_verify_result["equivalent"] is True
