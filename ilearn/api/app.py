@@ -11,7 +11,12 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+from ilearn.core.export_markdown import (
+    render_advice_report_markdown,
+    render_assessment_review_markdown,
+)
 from ilearn.core.orchestrator import Orchestrator
+from ilearn.core.pdf_export import markdown_to_pdf
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
@@ -174,6 +179,35 @@ def create_app(
         session = store.load(session_id)
         markdown = orchestrator.report(session_id)
         return ReportResponse(markdown=markdown, session=session)
+
+    @app.get("/sessions/{session_id}/export/assessment.pdf")
+    def export_assessment_pdf(session_id: str) -> Response:
+        session = store.load(session_id)
+        try:
+            markdown = render_assessment_review_markdown(session)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        pdf = markdown_to_pdf(markdown)
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'attachment; filename="ILearn-assessment.pdf"'
+            },
+        )
+
+    @app.get("/sessions/{session_id}/export/report.pdf")
+    def export_report_pdf(session_id: str) -> Response:
+        session = store.load(session_id)
+        markdown = render_advice_report_markdown(session)
+        pdf = markdown_to_pdf(markdown)
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'attachment; filename="ILearn-report.pdf"'
+            },
+        )
 
     @app.post("/sessions/{session_id}/run", response_model=SessionState)
     def run(session_id: str) -> SessionState:

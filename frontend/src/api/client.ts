@@ -211,4 +211,30 @@ export const api = {
   getPhase(sessionId: string) {
     return request<{ phase: string; loop_count: number }>(`/sessions/${sessionId}/phase`)
   },
+  async downloadExport(sessionId: string, kind: 'assessment' | 'report', filename: string) {
+    const path =
+      kind === 'assessment'
+        ? `/sessions/${sessionId}/export/assessment.pdf`
+        : `/sessions/${sessionId}/export/report.pdf`
+    const response = await fetch(path)
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`
+      try {
+        const body = await response.json()
+        detail = body.detail || detail
+      } catch {
+        /* ignore */
+      }
+      throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
+    }
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  },
 }

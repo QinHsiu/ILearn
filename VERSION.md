@@ -5,8 +5,8 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0815_e1 assessment UX（倒计时 / 可视化 / 专注苏格拉底提示） |
-| **基线** | 356 tests（离线可跑） |
+| **标签** | PDF 双导出（做题复盘 / 学习报告） |
+| **基线** | 363 tests（离线可跑） |
 | **日期** | 2026-08-15 |
 
 ---
@@ -33,6 +33,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0813 P1：** 四维题目验证器（可解 / 现实 / 可读 / 情境）+ 单次修订；情境兴趣 `situation_interest` 双轨评估；`learning_difficulty` 巩固环扩展至 4 轮
 - **Edition 0815：** Math-Verify、Guard 多级检测、CitationPanel、主题 token 增强
 - **Edition 0815_e1：** 测评步 60 分钟倒计时、题干启发式可视化、专注模式文本辅导（复用 tutor API，每题≤3 次 HintInteraction）
+- **PDF 导出：** 学习计划页一键导出做题复盘 / 学习报告 PDF（后端 MD→PDF；WeasyPrint 优先、fpdf2 回退；章节结构对齐 `doc/deepseek_edition/report.txt`）
 
 ---
 
@@ -49,6 +50,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0813 P0+P1 | 建档主题、source_refs、四维验证器、情境兴趣、learning_difficulty | **316** |
 | Edition 0815 integration | Math-Verify、Guard tiers、CitationPanel、theme tokens；example bank / validators unchanged；0815 drafts remain under `doc/deepseek_edition/0815/` | **349** |
 | Edition 0815_e1 assessment UX | 测评步倒计时、MathVisualizer、专注模式 SocraticPanel；`HintInteraction` 每题≤3；草稿见 `doc/deepseek_edition/0815_e1/` | **356** |
+| PDF dual export | 做题复盘 + 学习报告 PDF；复用 `report.txt` 数据结构；`/export/assessment.pdf` `/export/report.pdf` | **363** |
 
 ---
 

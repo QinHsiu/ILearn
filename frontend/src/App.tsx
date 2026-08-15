@@ -73,6 +73,7 @@ export default function App() {
   const [historyNickname, setHistoryNickname] = useState('')
   const [focusItemId, setFocusItemId] = useState<string | null>(null)
   const [currentItemIndex, setCurrentItemIndex] = useState(0)
+  const [exporting, setExporting] = useState<'assessment' | 'report' | null>(null)
 
   const [profile, setProfile] = useState<StudentProfile>({
     region: 'beijing',
@@ -237,6 +238,25 @@ export default function App() {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function onExportPdf(kind: 'assessment' | 'report') {
+    if (!sessionId) return
+    setExporting(kind)
+    setError(null)
+    try {
+      const nick = (profile.nickname || '').trim() || '未命名'
+      const day = new Date().toISOString().slice(0, 10)
+      const filename =
+        kind === 'assessment'
+          ? `ILearn-做题复盘-${nick}-${day}.pdf`
+          : `ILearn-学习报告-${nick}-${day}.pdf`
+      await api.downloadExport(sessionId, kind, filename)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setExporting(null)
     }
   }
 
@@ -656,6 +676,22 @@ export default function App() {
           <div className="actions">
             <button className="btn secondary" type="button" onClick={() => setStep(2)}>
               返回学情
+            </button>
+            <button
+              className="btn secondary"
+              type="button"
+              onClick={() => void onExportPdf('assessment')}
+              disabled={busy || exporting !== null}
+            >
+              {exporting === 'assessment' ? '生成中…' : '导出做题复盘 PDF'}
+            </button>
+            <button
+              className="btn secondary"
+              type="button"
+              onClick={() => void onExportPdf('report')}
+              disabled={busy || exporting !== null}
+            >
+              {exporting === 'report' ? '生成中…' : '导出学习报告 PDF'}
             </button>
             <button className="btn" type="button" onClick={() => void onReplan()} disabled={busy}>
               {busy ? '规划中…' : '重新规划'}
