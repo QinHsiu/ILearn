@@ -7,12 +7,17 @@ export function useCountdown(initialSeconds = 3600, onTimeout?: () => void) {
   const onTimeoutRef = useRef(onTimeout)
   onTimeoutRef.current = onTimeout
   const firedRef = useRef(false)
+  // Tracks the previous tick value so we only fire onTimeout on a genuine
+  // countdown-to-zero, not on the render where the timer first activates
+  // (when `seconds` state still lags at its stale value).
+  const prevSecondsRef = useRef(active ? initialSeconds : 0)
 
   useEffect(() => {
     if (!active) {
       setSeconds(0)
       setIsFinished(false)
       firedRef.current = false
+      prevSecondsRef.current = 0
       return
     }
     setSeconds(initialSeconds)
@@ -23,15 +28,20 @@ export function useCountdown(initialSeconds = 3600, onTimeout?: () => void) {
   useEffect(() => {
     if (!active) return undefined
     if (seconds > 0) {
+      prevSecondsRef.current = seconds
       const timer = window.setInterval(() => {
         setSeconds((prev) => prev - 1)
       }, 1000)
       return () => window.clearInterval(timer)
     }
-    setIsFinished(true)
-    if (!firedRef.current) {
-      firedRef.current = true
-      onTimeoutRef.current?.()
+    // seconds === 0: only a timeout if we actually counted down from a
+    // positive value. On activation prevSecondsRef is still 0, so we skip.
+    if (prevSecondsRef.current > 0) {
+      setIsFinished(true)
+      if (!firedRef.current) {
+        firedRef.current = true
+        onTimeoutRef.current?.()
+      }
     }
     return undefined
   }, [active, seconds])
@@ -45,6 +55,7 @@ export function useCountdown(initialSeconds = 3600, onTimeout?: () => void) {
   const reset = useCallback(() => {
     if (!active) return
     firedRef.current = false
+    prevSecondsRef.current = initialSeconds
     setSeconds(initialSeconds)
     setIsFinished(false)
   }, [active, initialSeconds])
