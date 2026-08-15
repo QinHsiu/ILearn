@@ -454,7 +454,7 @@ class MultiAgentOrchestrator:
         self, session: SessionState, item, turn: TutorTurn
     ) -> TutorTurn:
         verdict = self._guard.check(turn.message, item.answer_key)
-        if verdict.is_leak and verdict.confidence > 0.8:
+        if verdict.is_leak and verdict.confidence > 0.7:
             self._record_decision(
                 session,
                 "guard",

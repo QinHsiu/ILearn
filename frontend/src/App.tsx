@@ -11,7 +11,7 @@ import type {
 } from './api/client'
 import MarkdownView from './MarkdownView'
 import HistoryList from './components/HistoryList'
-import SourceAccordion from './components/SourceAccordion'
+import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
 import { applyTheme } from './theme'
 import './styles.css'
@@ -487,13 +487,12 @@ export default function App() {
 
           {wrongItems.length > 0 && (
             <>
-              <h3>错题参考来源</h3>
-              {wrongItems.map((entry) => (
-                <div key={entry.itemId}>
-                  <SourceAccordion stem={entry.stem} sourceRefs={entry.sourceRefs} />
-                  {sessionId ? <TutorPanel sessionId={sessionId} itemId={entry.itemId} /> : null}
-                </div>
-              ))}
+              <CitationPanel items={wrongItems} />
+              {wrongItems.map((entry) =>
+                sessionId ? (
+                  <TutorPanel key={entry.itemId} sessionId={sessionId} itemId={entry.itemId} />
+                ) : null,
+              )}
             </>
           )}
 

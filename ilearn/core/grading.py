@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from ilearn.agents.math_verify_adapter import MathVerifyAdapter
 from ilearn.core.schemas import (
     ERROR_TAGS,
     AssessmentItem,
@@ -43,20 +44,31 @@ def normalize_answer(text: str) -> str:
     return " ".join(text.strip().split()).casefold()
 
 
-def answers_match(student: str, key: str) -> bool:
-    """Compare student answer to key with whitespace/case normalization and numeric tolerance."""
+def match_answer_detailed(student: str, key: str) -> tuple[bool, dict[str, Any] | None]:
+    """Return (matched, math_verify_payload_or_None)."""
     s_norm = normalize_answer(student)
     k_norm = normalize_answer(key)
     if s_norm == k_norm:
-        return True
+        return True, None
     try:
         s_val = float(s_norm.replace(",", ""))
         k_val = float(k_norm.replace(",", ""))
         if abs(s_val - k_val) < 1e-9:
-            return True
-        return abs(s_val - k_val) / max(abs(k_val), 1e-9) < 1e-6
+            return True, None
+        if abs(s_val - k_val) / max(abs(k_val), 1e-9) < 1e-6:
+            return True, None
     except ValueError:
-        return False
+        pass
+
+    verify = MathVerifyAdapter.is_equivalent(student, key)
+    if verify.get("equivalent") and float(verify.get("confidence", 0.0)) > 0.9:
+        return True, verify
+    return False, verify
+
+
+def answers_match(student: str, key: str) -> bool:
+    matched, _ = match_answer_detailed(student, key)
+    return matched
 
 
 def _offline_constructed_answer_matches(answer: str, key: str) -> bool:

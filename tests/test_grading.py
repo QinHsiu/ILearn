@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ilearn.core.grading import StepGrader, answers_match, normalize_answer
+from ilearn.core.grading import StepGrader, answers_match, match_answer_detailed, normalize_answer
 from ilearn.core.schemas import AssessmentItem, AssessmentPaper, StudentAnswer, StudentProfile
 from ilearn.providers.llm import LLMClient
 
@@ -111,6 +111,23 @@ def test_normalize_answer_strips_and_casefolds():
 def test_answers_match_numeric():
     assert answers_match("3.0", "3")
     assert not answers_match("3.1", "3")
+
+
+def test_answers_match_fraction_equivalence():
+    assert answers_match("2/4", "1/2")
+    assert answers_match("½", "0.5")
+
+
+def test_match_answer_detailed_exposes_math_verify_payload():
+    ok, payload = match_answer_detailed("2/4", "1/2")
+    assert ok is True
+    assert payload is not None
+    assert payload["equivalent"] is True
+    assert payload["confidence"] > 0.9
+
+
+def test_answers_match_rejects_unrelated_text():
+    assert not answers_match("香蕉", "1/2")
 
 
 def test_grade_paper():
