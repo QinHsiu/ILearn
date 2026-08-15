@@ -17,10 +17,13 @@ import ProgressDots from './components/ProgressDots'
 import MathVisualizer from './components/MathVisualizer'
 import FocusedHintLayout from './components/FocusedHintLayout'
 import SocraticPanel from './components/SocraticPanel'
+import ParentDashboard from './pages/ParentDashboard'
+import TeacherDashboard from './pages/TeacherDashboard'
 import { useCountdown } from './hooks/useCountdown'
 import { inferVisualization } from './lib/inferVisualization'
 import { applyTheme } from './theme'
 import './styles.css'
+import './dashboard.css'
 
 const STEPS = ['建档', '测评作答', '批改与学情', '学习计划'] as const
 
@@ -60,6 +63,25 @@ function wrongItemEntries(session: SessionState) {
 }
 
 export default function App() {
+  const params = new URLSearchParams(window.location.search)
+  const role = params.get('role')
+  const userId = params.get('user') || ''
+  if (role === 'parent' && userId) {
+    return <ParentDashboard userId={userId} studentId={params.get('student_id') || undefined} />
+  }
+  if (role === 'teacher' && userId) {
+    return (
+      <TeacherDashboard
+        userId={userId}
+        classId={params.get('class_id') || undefined}
+        studentId={params.get('student_id') || undefined}
+      />
+    )
+  }
+  return <StudentApp />
+}
+
+function StudentApp() {
   const [step, setStep] = useState(0)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -272,6 +294,10 @@ export default function App() {
             <p className="brand-sub">你好，{(profile.nickname || '').trim()}</p>
           ) : null}
           <p className="brand-sub">课标在环的个性化学习向导</p>
+          <p className="role-links">
+            <a href="?role=parent&user=p1">家长端</a>
+            <a href="?role=teacher&user=t1">老师端</a>
+          </p>
         </div>
       </header>
 

@@ -17,6 +17,7 @@ from ilearn.core.export_markdown import (
 )
 from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.pdf_export import markdown_to_pdf
+from ilearn.api.dashboard import create_dashboard_router
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
@@ -31,6 +32,7 @@ from ilearn.core.schemas import (
 from ilearn.providers.curriculum import CurriculumError, PilotBeijingRenjiaoProvider
 from ilearn.providers.llm import LLMClient
 from ilearn.storage.sessions import SessionStore
+from ilearn.storage.relationships import RelationshipStore
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _DEFAULT_SESSIONS_DIR = _PROJECT_ROOT / "data" / "sessions"
@@ -80,6 +82,7 @@ def create_app(
     *,
     sessions_dir: Path | str | None = None,
     pilot_data_dir: Path | str | None = None,
+    relationships_path: Path | str | None = None,
     llm: LLMClient | None = None,
 ) -> FastAPI:
     """Build a FastAPI app wired to the ILearn orchestrator."""
@@ -89,10 +92,15 @@ def create_app(
     if not llm.available():
         llm = None
     store = SessionStore(sessions_dir or _DEFAULT_SESSIONS_DIR)
+    relationships = RelationshipStore(
+        relationships_path or _PROJECT_ROOT / "data" / "relationships.json",
+        store,
+    )
     curriculum = PilotBeijingRenjiaoProvider(pilot_data_dir or _DEFAULT_PILOT_DATA)
     orchestrator = Orchestrator(store=store, curriculum=curriculum, llm=llm)
 
     app = FastAPI(title="ILearn", version="0.1.0")
+    app.include_router(create_dashboard_router(store, relationships))
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(_WEB_ORIGINS),
