@@ -25,7 +25,7 @@ def _to_metadata(state: SessionState, path: Path) -> SessionMetadata:
             for row in rows
             if row.score_rate < _WEAK_SKILL_THRESHOLD
         ]
-        overall_mastery = round(sum(row.score_rate for row in rows) / len(rows), 10)
+        overall_mastery = sum(row.score_rate for row in rows) / len(rows)
 
     updated_at = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
 

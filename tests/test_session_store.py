@@ -1,5 +1,7 @@
 from datetime import timezone
 
+import pytest
+
 from ilearn.core.schemas import (
     DiagnosisReport,
     KnowledgeMastery,
@@ -72,7 +74,7 @@ def test_list_all_metadata_projects_diagnosis(tmp_path):
     assert row.nickname == "Alice"
     assert row.grade == 5
     assert row.region == "北京"
-    assert row.overall_mastery == 0.6
+    assert row.overall_mastery == pytest.approx(0.6)  # float mean, not exact 0.6
     assert row.weak_skills == ["fraction"]
     assert row.skill_mastery == {"fraction": 0.4, "decimal": 0.8}
     assert row.phase == state.phase
