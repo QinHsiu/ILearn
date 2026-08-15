@@ -39,6 +39,19 @@ def test_grading_objective_allows_lite():
     assert decision.model_config.tier in (ModelTier.LITE, ModelTier.STANDARD, ModelTier.PREMIUM)
 
 
+def test_required_capabilities_filter_candidates():
+    router = _router(overrides={})
+    decision = router.route(
+        RoutingContext(
+            task_type=TaskType.GRADING_OBJECTIVE,
+            input_text="1+1",
+            required_capabilities=[ModelCapability.REASONING],
+        )
+    )
+    assert ModelCapability.REASONING in decision.model_config.capabilities
+    assert decision.model_name != "gpt-4o-mini"
+
+
 def test_fallback_when_registry_filtered_empty():
     tiny = {
         "tiny": ModelConfig(

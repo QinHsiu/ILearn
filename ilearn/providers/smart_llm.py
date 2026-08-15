@@ -57,9 +57,15 @@ class SmartLLMClient:
     def _call_with_model(
         self, model_name: str, system: str, user: str
     ) -> dict[str, Any]:
-        previous = self.llm.model
-        self.llm.model = model_name
+        llm = self.llm
+        if hasattr(llm, "base_url") and hasattr(llm, "api_key"):
+            local = LLMClient(
+                base_url=llm.base_url, api_key=llm.api_key, model=model_name
+            )
+            return local.chat_json(system, user)
+        previous = getattr(llm, "model", None)
+        llm.model = model_name
         try:
-            return self.llm.chat_json(system, user)
+            return llm.chat_json(system, user)
         finally:
-            self.llm.model = previous
+            llm.model = previous

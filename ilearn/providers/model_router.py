@@ -153,6 +153,7 @@ class ModelRouter:
 
         min_tier = rule["min_tier"]
         need_caps: list[ModelCapability] = rule.get("need_capabilities", [])
+        required_caps = context.required_capabilities or []
         max_latency, max_cost = self._effective_limits(context)
         input_tokens = estimate_token_count(context.input_text)
         output_tokens = self._default_output_tokens(context)
@@ -162,6 +163,10 @@ class ModelRouter:
             if _TIER_ORDER.index(config.tier) < _TIER_ORDER.index(min_tier):
                 continue
             if need_caps and not all(c in config.capabilities for c in need_caps):
+                continue
+            if required_caps and not all(
+                c in config.capabilities for c in required_caps
+            ):
                 continue
             if input_tokens > config.context_window * 0.8:
                 continue
