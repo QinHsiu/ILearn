@@ -100,6 +100,25 @@ export type SessionSummary = {
   phase: string
 }
 
+export type DashboardStudentSummary = {
+  session_id: string
+  nickname: string
+  grade: number
+  region: string
+  overall_mastery: number
+  weak_skills: string[]
+  skill_mastery: Record<string, number>
+  updated_at?: string | null
+  phase: string
+}
+
+export type DashboardClassSummary = {
+  class_id: string
+  students: DashboardStudentSummary[]
+}
+
+export type DashboardStudentDetail = SessionState
+
 const MIME_BY_EXT: Record<string, ImageMime> = {
   png: 'image/png',
   jpg: 'image/jpeg',
@@ -236,5 +255,39 @@ export const api = {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
+  },
+}
+
+export const dashboardApi = {
+  bindParent(parentId: string, sessionId: string) {
+    return request<void>('/dashboard/parent/bind', {
+      method: 'POST',
+      body: JSON.stringify({ parent_id: parentId, session_id: sessionId }),
+    })
+  },
+  bindTeacher(teacherId: string, classId: string, sessionId: string) {
+    return request<void>('/dashboard/teacher/bind', {
+      method: 'POST',
+      body: JSON.stringify({ teacher_id: teacherId, class_id: classId, session_id: sessionId }),
+    })
+  },
+  parentChildren(parentId: string) {
+    return request<DashboardStudentSummary[]>(`/dashboard/parent/${parentId}/children`)
+  },
+  parentChild(parentId: string, sessionId: string) {
+    return request<DashboardStudentDetail>(`/dashboard/parent/${parentId}/child/${sessionId}`)
+  },
+  teacherClasses(teacherId: string) {
+    return request<DashboardClassSummary[]>(`/dashboard/teacher/${teacherId}/classes`)
+  },
+  teacherStudents(teacherId: string, classId: string) {
+    return request<DashboardStudentSummary[]>(
+      `/dashboard/teacher/${teacherId}/class/${classId}/students`,
+    )
+  },
+  teacherStudent(teacherId: string, classId: string, sessionId: string) {
+    return request<DashboardStudentDetail>(
+      `/dashboard/teacher/${teacherId}/class/${classId}/student/${sessionId}`,
+    )
   },
 }
