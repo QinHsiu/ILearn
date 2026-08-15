@@ -16,3 +16,6 @@ docs/
 # Runtime session artifacts
 data/sessions/*
 !data/sessions/.gitkeep
+
+# Git worktrees
+.worktrees/
