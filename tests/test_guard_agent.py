@@ -12,6 +12,25 @@ def test_guard_flags_explicit_answer():
     assert verdict.confidence >= 0.8
 
 
+def test_guard_flags_phrase_answer_shi():
+    verdict = GuardAgent().check("答案是15，你算对了吗？", "15")
+    assert verdict.is_leak is True
+    assert verdict.confidence >= 0.7
+
+
+def test_guard_allows_retry_hint_without_answer():
+    verdict = GuardAgent().check(
+        "让我们再算一遍，注意加法步骤，你觉得结果会是多少？", "12"
+    )
+    assert verdict.is_leak is False
+
+
+def test_guard_exact_number_only_has_low_confidence():
+    verdict = GuardAgent().check("我算到了15。", "15")
+    assert verdict.is_leak is True
+    assert verdict.confidence == 0.6
+
+
 def test_guard_allows_socratic_hint():
     verdict = GuardAgent().check("先把已知条件写下来，再选择运算。", "20")
     assert verdict.is_leak is False

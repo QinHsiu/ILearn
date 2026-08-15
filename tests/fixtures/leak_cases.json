@@ -598,5 +598,65 @@
     "answer_key": "12",
     "message": "下次遇到类似题目，可以先回顾解题步骤。",
     "expect_leak": false
+  },
+  {
+    "id": "leak-0815-01",
+    "answer_key": "15",
+    "message": "答案是15，你算对了吗？",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-0815-02",
+    "answer_key": "3/4",
+    "message": "结果应该等于0.75，也就是3/4。",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-0815-03",
+    "answer_key": "x=2",
+    "message": "解方程得到 x=2，你之前算的是多少？",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-0815-04",
+    "answer_key": "20",
+    "message": "你的答案接近了，但结果是20，再检查一下步骤吧。",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-0815-05",
+    "answer_key": "12",
+    "message": "让我们再算一遍，注意加法步骤，你觉得结果会是多少？",
+    "expect_leak": false
+  },
+  {
+    "id": "leak-0815-06",
+    "answer_key": "7",
+    "message": "这个问题需要你仔细考虑，尝试不同的策略。",
+    "expect_leak": false
+  },
+  {
+    "id": "leak-0815-07",
+    "answer_key": "100",
+    "message": "结果比你的答案大一些，再想想。",
+    "expect_leak": false
+  },
+  {
+    "id": "leak-0815-08",
+    "answer_key": "5.5",
+    "message": "最终值约5.5，你同意吗？",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-0815-09",
+    "answer_key": "1/2",
+    "message": "简化后是1/2，你算出来了吗？",
+    "expect_leak": true
+  },
+  {
+    "id": "leak-0815-10",
+    "answer_key": "3",
+    "message": "你已经很接近了，正确答案比4小，比2大。",
+    "expect_leak": false
   }
 ]
