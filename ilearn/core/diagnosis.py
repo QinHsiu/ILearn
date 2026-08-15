@@ -26,6 +26,7 @@ from ilearn.core.schemas import (
     WeaknessEvent,
 )
 from ilearn.core.evidence import claim_refs
+from ilearn.core.diagnostic_rules import enrich_diagnosis
 from ilearn.eval.gap import gap_flag
 from ilearn.providers.curriculum import CurriculumProvider, PilotBeijingRenjiaoProvider
 
@@ -193,6 +194,19 @@ class Diagnoser:
         )
         effective_portrait = portrait or LearnerPortrait(student_key="")
         flags = gap_flag(effective_portrait)
+
+        enrichment = enrich_diagnosis(
+            knowledge_mastery=knowledge_mastery,
+            grades=grades,
+        )
+        flags = list(dict.fromkeys([*flags, *enrichment.flags]))
+        if enrichment.why_suffix_by_knowledge_id:
+            for intervention in interventions:
+                suffix = enrichment.why_suffix_by_knowledge_id.get(
+                    intervention.knowledge_id
+                )
+                if suffix:
+                    intervention.why = f"{intervention.why}；{suffix}"
 
         region_mismatch: str | None = None
         if not _is_beijing_region(profile.region):
