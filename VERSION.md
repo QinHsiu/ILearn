@@ -45,7 +45,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Phase 2c 课标 / 多科 | A-03、OPT-041/042、OPT-003、D-04、E-05 → 合入 `master` 并 push | **258** |
 | Phase 2d 编排质量 | OPT-050…052、OPT-015、OPT-016 | **283** |
 | Edition 0813 P0+P1 | 建档主题、source_refs、四维验证器、情境兴趣、learning_difficulty | **316** |
-| Edition 0815 integration | Math-Verify、Guard tiers、CitationPanel、theme tokens；example bank / validators unchanged | **349** |
+| Edition 0815 integration | Math-Verify、Guard tiers、CitationPanel、theme tokens；example bank / validators unchanged；0815 drafts remain under `doc/deepseek_edition/0815/` | **349** |
 
 ---
 

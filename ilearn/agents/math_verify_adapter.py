@@ -11,8 +11,8 @@ class MathVerifyAdapter:
     @staticmethod
     def normalize_expression(expr: str) -> str:
         """标准化数学表达式"""
-        # 移除空白
-        expr = expr.replace(" ", "").replace("\n", "")
+        # Preserve the separator in mixed numbers such as "1 1/2".
+        expr = expr.strip().replace("\n", " ")
         # Unicode 分数转换: ½ -> 1/2
         fraction_map = {
             "½": "1/2", "⅓": "1/3", "⅔": "2/3",
@@ -23,6 +23,9 @@ class MathVerifyAdapter:
         }
         for u, a in fraction_map.items():
             expr = expr.replace(u, a)
+        if re.fullmatch(r"[+-]?\d+\s+\d+/\d+", expr):
+            return re.sub(r"\s+", " ", expr)
+        expr = re.sub(r"\s+", "", expr)
         return expr
 
     @staticmethod
