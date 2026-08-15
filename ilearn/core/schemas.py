@@ -415,6 +415,20 @@ class SessionSummary(BaseModel):
     phase: str
 
 
+class SessionMetadata(BaseModel):
+    """Lightweight session projection for dashboards and listing."""
+
+    session_id: str
+    nickname: str
+    grade: GradeLevel
+    region: str
+    overall_mastery: float = 0.0
+    weak_skills: list[str] = Field(default_factory=list)
+    skill_mastery: dict[str, float] = Field(default_factory=dict)
+    updated_at: datetime | None = None
+    phase: SessionPhase
+
+
 from ilearn.core.review import ReviewState  # noqa: E402
 
 LearnerPortrait.model_rebuild()
