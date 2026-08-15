@@ -1,0 +1,62 @@
+.role-links {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0.35rem 0 0;
+}
+
+.role-links a {
+  color: var(--accent, #2563eb);
+}
+
+.dashboard-content {
+  display: grid;
+  gap: 1rem;
+}
+
+.student-list,
+.class-list,
+.dashboard-skills {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.student-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line, #d8dee9);
+  border-radius: 0.75rem;
+  background: var(--panel, #fff);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.student-card.selected,
+.student-card:hover {
+  border-color: var(--accent, #2563eb);
+}
+
+.dashboard-skill {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line, #d8dee9);
+}
+
+.dashboard-empty {
+  color: var(--muted, #64748b);
+}
+
+.dashboard-bind {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+  margin-top: 1rem;
+}
+
+.dashboard-bind label {
+  width: 100%;
+}
