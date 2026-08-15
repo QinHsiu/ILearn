@@ -53,10 +53,13 @@ def create_dashboard_router(
         response_model=list[SessionMetadata],
     )
     def parent_children(parent_id: str) -> list[SessionMetadata]:
+        session_ids = relationships.children_for_parent(parent_id)
+        if not session_ids:
+            return []
         index = metadata_index()
         return [
             index[session_id]
-            for session_id in relationships.children_for_parent(parent_id)
+            for session_id in session_ids
             if session_id in index
         ]
 
@@ -113,5 +116,17 @@ def create_dashboard_router(
         if session_id not in relationships.students_for_class(teacher_id, class_id):
             raise HTTPException(status_code=404, detail="student not found")
         return sessions.load(session_id)
+
+    @router.get(
+        "/teacher/{teacher_id}/student/{session_id}",
+        response_model=SessionState,
+    )
+    def teacher_student_any_class(
+        teacher_id: str, session_id: str
+    ) -> SessionState:
+        for class_id in relationships.classes_for_teacher(teacher_id):
+            if session_id in relationships.students_for_class(teacher_id, class_id):
+                return sessions.load(session_id)
+        raise HTTPException(status_code=404, detail="student not found")
 
     return router

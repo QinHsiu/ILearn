@@ -13,6 +13,7 @@ def _client(tmp_path):
         create_app(
             sessions_dir=tmp_path / "sessions",
             pilot_data_dir=PILOT_DATA,
+            relationships_path=tmp_path / "relationships.json",
             llm=None,
         )
     )
@@ -44,6 +45,8 @@ def test_dashboard_filters_parent_and_teacher_relationships(tmp_path):
     assert children.json()[0]["session_id"] == session_id
     assert client.get("/dashboard/parent/p2/children").json() == []
     assert client.get(f"/dashboard/parent/p1/child/{other_id}").status_code == 404
+    mismatch = client.get(f"/dashboard/teacher/t2/student/{session_id}")
+    assert mismatch.status_code == 404
 
     classes = client.get("/dashboard/teacher/t1/classes")
     assert classes.status_code == 200
@@ -58,6 +61,7 @@ def test_dashboard_returns_empty_valid_lists_and_rejects_wrong_teacher(tmp_path)
     assert client.get(
         "/dashboard/teacher/t-empty/class/c-empty/students"
     ).json() == []
-    assert client.get(
+    empty_students = client.get(
         "/dashboard/teacher/t-empty/class/c-empty/students"
-    ).status_code == 200
+    )
+    assert empty_students.status_code == 200

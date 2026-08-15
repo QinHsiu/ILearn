@@ -82,6 +82,7 @@ def create_app(
     *,
     sessions_dir: Path | str | None = None,
     pilot_data_dir: Path | str | None = None,
+    relationships_path: Path | str | None = None,
     llm: LLMClient | None = None,
 ) -> FastAPI:
     """Build a FastAPI app wired to the ILearn orchestrator."""
@@ -91,7 +92,10 @@ def create_app(
     if not llm.available():
         llm = None
     store = SessionStore(sessions_dir or _DEFAULT_SESSIONS_DIR)
-    relationships = RelationshipStore(_PROJECT_ROOT / "data" / "relationships.json", store)
+    relationships = RelationshipStore(
+        relationships_path or _PROJECT_ROOT / "data" / "relationships.json",
+        store,
+    )
     curriculum = PilotBeijingRenjiaoProvider(pilot_data_dir or _DEFAULT_PILOT_DATA)
     orchestrator = Orchestrator(store=store, curriculum=curriculum, llm=llm)
 
