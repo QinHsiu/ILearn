@@ -508,6 +508,186 @@ html[data-band='senior'] .brand {
   letter-spacing: 0;
 }
 
+.assess-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.countdown {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, white);
+}
+
+.progress-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  margin: 0.5rem 0 1rem;
+}
+
+.progress-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 35%, white);
+  cursor: pointer;
+}
+
+.progress-dot.answered {
+  background: var(--ok);
+}
+
+.progress-dot.current {
+  outline: 2px solid var(--accent);
+  background: var(--accent);
+}
+
+.question-card.current-question {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+}
+
+.math-visual {
+  margin: 0.75rem 0;
+  color: var(--ink);
+}
+
+.math-visual-fraction {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.math-visual-arc {
+  stroke: var(--accent);
+  transition: stroke-dashoffset 0.8s ease-in-out;
+}
+
+.math-visual-caption {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.math-visual-bars {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1.25rem;
+  min-height: 8rem;
+  padding: 0.5rem 0;
+}
+
+.math-visual-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.math-visual-bar-fill {
+  width: 2.2rem;
+  border-radius: 8px 8px 0 0;
+  background: var(--accent);
+}
+
+.math-visual-line {
+  max-width: 20rem;
+  display: block;
+  margin: 0.4rem auto;
+}
+
+.focused-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.focused-hint-top {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.focused-hint-label {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.focused-hint-body {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1rem;
+}
+
+.focused-hint-question,
+.focused-hint-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  padding: 0.85rem;
+  background: var(--card);
+}
+
+.socratic-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 16rem;
+}
+
+.socratic-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.socratic-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 14rem;
+  overflow: auto;
+}
+
+.socratic-msg {
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+.socratic-msg.assistant {
+  background: color-mix(in srgb, var(--accent) 8%, white);
+}
+
+.socratic-msg.user {
+  background: color-mix(in srgb, var(--ink) 6%, white);
+  align-self: flex-end;
+}
+
+.socratic-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.socratic-actions input {
+  flex: 1;
+  min-width: 8rem;
+}
+
 @media (max-width: 720px) {
   .form-grid {
     grid-template-columns: 1fr;
@@ -515,5 +695,13 @@ html[data-band='senior'] .brand {
 
   .stepper {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .assess-head {
+    flex-direction: column;
+  }
+
+  .focused-hint-body {
+    grid-template-columns: 1fr;
   }
 }

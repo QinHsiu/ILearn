@@ -305,6 +305,21 @@ class TutorTurn(BaseModel):
     error_tag: ErrorTag | None = None
 
 
+MAX_HINTS_PER_ITEM = 3
+
+
+class HintInteraction(BaseModel):
+    """One assessment/practice hint turn (tutor_hint), capped per item."""
+
+    item_id: str
+    turn: int
+    user_input: str
+    ai_hint: str
+    has_image: bool = False
+    timestamp: datetime = Field(default_factory=utc_now)
+    solved_after_hint: bool | None = None
+
+
 class WeaknessEntry(BaseModel):
     knowledge_id: str
     topic: str
@@ -389,6 +404,7 @@ class SessionState(BaseModel):
     decision_log: list[AgentDecision] = Field(default_factory=list)
     pending_questions: list[PendingQuestion] = Field(default_factory=list)
     tutor_by_item: dict[str, TutorTurn] = Field(default_factory=dict)
+    hint_interactions: dict[str, list[HintInteraction]] = Field(default_factory=dict)
     metadata: dict[str, object] = Field(default_factory=dict)
 
 

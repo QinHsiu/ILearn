@@ -28,10 +28,12 @@ from ilearn.core.quality_gate import (
 )
 from ilearn.core.report import render_full_report
 from ilearn.core.schemas import (
+    MAX_HINTS_PER_ITEM,
     AgentDecision,
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
+    HintInteraction,
     LearningPlanReport,
     PendingQuestion,
     SessionPhase,
@@ -402,7 +404,7 @@ class MultiAgentOrchestrator:
         return session.plan
 
     def tutor_start(self, session_id: str, item_id: str) -> TutorTurn:
-        """Begin Socratic tutoring for a graded item."""
+        """Begin Socratic tutoring for an assessment/practice item (grades optional)."""
         session = self._store.load(session_id)
         paper = self._require_paper(session)
         item = next((i for i in paper.items if i.id == item_id), None)
@@ -416,7 +418,7 @@ class MultiAgentOrchestrator:
         self._record_decision(
             session,
             self._tutor.name,
-            SessionPhase.PRACTICE,
+            session.phase,
             "tutoring started",
         )
         self._store.save(session)
@@ -433,6 +435,9 @@ class MultiAgentOrchestrator:
         previous = session.tutor_by_item.get(item_id)
         if previous is None:
             raise ValueError("tutoring has not started for this item")
+        used = session.hint_interactions.get(item_id, [])
+        if len(used) >= MAX_HINTS_PER_ITEM:
+            raise ValueError("hints exhausted for this item")
         turn = self._tutor.step(
             previous.phase,
             user_message,
@@ -441,10 +446,18 @@ class MultiAgentOrchestrator:
         )
         turn = self._guard_turn(session, item, turn)
         session.tutor_by_item[item_id] = turn
+        session.hint_interactions.setdefault(item_id, []).append(
+            HintInteraction(
+                item_id=item_id,
+                turn=len(used) + 1,
+                user_input=user_message,
+                ai_hint=turn.message,
+            )
+        )
         self._record_decision(
             session,
             self._tutor.name,
-            SessionPhase.PRACTICE,
+            session.phase,
             "tutoring hint",
         )
         self._store.save(session)

@@ -79,7 +79,7 @@ def test_replan_and_tutor_start_append_persisted_decisions(tmp_path):
     assert [decision.agent for decision in decisions[-2:]] == ["planning", "tutor"]
     assert [decision.phase for decision in decisions[-2:]] == [
         SessionPhase.PLAN,
-        SessionPhase.PRACTICE,
+        SessionPhase.PLAN,
     ]
 
 

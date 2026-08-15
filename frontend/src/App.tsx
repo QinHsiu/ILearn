@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api, fileToImageAnswer } from './api/client'
 import type {
@@ -13,6 +13,12 @@ import MarkdownView from './MarkdownView'
 import HistoryList from './components/HistoryList'
 import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
+import ProgressDots from './components/ProgressDots'
+import MathVisualizer from './components/MathVisualizer'
+import FocusedHintLayout from './components/FocusedHintLayout'
+import SocraticPanel from './components/SocraticPanel'
+import { useCountdown } from './hooks/useCountdown'
+import { inferVisualization } from './lib/inferVisualization'
 import { applyTheme } from './theme'
 import './styles.css'
 
@@ -62,6 +68,8 @@ export default function App() {
   >({})
   const [report, setReport] = useState<ReportResponse | null>(null)
   const [historyNickname, setHistoryNickname] = useState('')
+  const [focusItemId, setFocusItemId] = useState<string | null>(null)
+  const [currentItemIndex, setCurrentItemIndex] = useState(0)
 
   const [profile, setProfile] = useState<StudentProfile>({
     region: 'beijing',
@@ -78,9 +86,27 @@ export default function App() {
     [session],
   )
 
+  const submitAnswersRef = useRef<() => void>(() => {})
+  const { format: formatCountdown, reset: resetCountdown } = useCountdown(
+    step === 1 && paper ? 3600 : 0,
+    () => {
+      if (step === 1 && paper && sessionId && !busy) {
+        submitAnswersRef.current()
+      }
+    },
+  )
+
   useEffect(() => {
     applyTheme(profile.grade, profile.gender || 'unspecified')
   }, [profile.grade, profile.gender])
+
+  useEffect(() => {
+    if (step === 1 && paper) {
+      resetCountdown()
+      setCurrentItemIndex(0)
+      setFocusItemId(null)
+    }
+  }, [step, sessionId, paper, resetCountdown])
 
   async function onResume(id: string) {
     const nextReport = await api.getReport(id)
@@ -183,12 +209,17 @@ export default function App() {
       await api.run(sessionId)
       const nextReport = await api.getReport(sessionId)
       setReport(nextReport)
+      setFocusItemId(null)
       setStep(2)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
       setBusy(false)
     }
+  }
+
+  submitAnswersRef.current = () => {
+    void onSubmitAnswers()
   }
 
   async function onReplan() {
@@ -335,115 +366,217 @@ export default function App() {
         </section>
       )}
 
-      {step === 1 && paper && (
+      {step === 1 && paper && sessionId && (
         <section className="panel">
-          <h2>测评作答</h2>
-          <p className="lede">
-            {paper.curriculum_label} · 共 {paper.items.length} 题 · 可文本作答，也可上传手写照片
-          </p>
-          {paper.items.map((item, index) => (
-            <article className="question-card" key={item.id}>
-              <div className="item-meta">
-                <span className="pill">第 {index + 1} 题</span>
-                <span className="pill">{item.difficulty}</span>
-                <span className="pill">{item.type}</span>
-                {item.situation_tag ? (
-                  <span className="pill">{item.situation_tag}</span>
-                ) : null}
-              </div>
-              <div>{item.stem}</div>
-              {item.choices?.length ? (
-                <div className="choices">
-                  {item.choices.map((choice) => (
-                    <label className="choice" key={choice}>
-                      <input
-                        type="radio"
-                        name={item.id}
-                        checked={answers[item.id] === choice}
-                        onChange={() =>
-                          setAnswers({ ...answers, [item.id]: choice })
-                        }
-                      />
-                      <span>{choice}</span>
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <div className="field" style={{ marginTop: '0.65rem' }}>
-                  <label htmlFor={`ans-${item.id}`}>作答</label>
-                  <textarea
-                    id={`ans-${item.id}`}
-                    value={answers[item.id] || ''}
-                    onChange={(e) =>
-                      setAnswers({ ...answers, [item.id]: e.target.value })
-                    }
-                    placeholder="输入答案或解题过程"
-                  />
-                </div>
-              )}
-              <div className="field upload-field">
-                <label htmlFor={`img-${item.id}`}>手写作答照片（可选）</label>
-                <input
-                  id={`img-${item.id}`}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
-                  disabled={busy}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    void onPickImage(item.id, file)
-                    e.target.value = ''
-                  }}
-                />
-                {imageUploads[item.id] ? (
-                  <div className="upload-preview">
-                    <div className="upload-frame">
-                      <img
-                        src={imageUploads[item.id].preview}
-                        alt={`${item.id} 手写作答预览`}
-                      />
-                    </div>
-                    <div className="upload-meta">
-                      <span className="upload-name">{imageUploads[item.id].name}</span>
-                      <button
-                        className="btn secondary"
-                        type="button"
-                        onClick={() => onClearImage(item.id)}
-                      >
-                        移除图片
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <span className="upload-hint">支持 PNG / JPG / WebP，将随提交送去 OCR 批改</span>
-                )}
-              </div>
-            </article>
-          ))}
-          <div className="actions">
-            <button
-              className="btn secondary"
-              type="button"
-              onClick={() => {
-                setStep(0)
-                setSessionId(null)
-                setPaper(null)
-                setReport(null)
-                setAnswers({})
-                setImageUploads({})
-              }}
-              disabled={busy}
-            >
-              返回建档
-            </button>
-            <button
-              className="btn"
-              type="button"
-              onClick={onSubmitAnswers}
-              disabled={busy}
-            >
-              {busy ? '批改中…' : '提交并诊断'}
-            </button>
+          <div className="assess-head">
+            <div>
+              <h2>测评作答</h2>
+              <p className="lede">
+                {paper.curriculum_label} · 共 {paper.items.length} 题 · 可文本作答，也可上传手写照片
+              </p>
+            </div>
+            <div className="countdown" aria-live="polite">
+              剩余 {formatCountdown()}
+            </div>
           </div>
+
+          <ProgressDots
+            total={paper.items.length}
+            current={currentItemIndex}
+            answered={answers}
+            questionIds={paper.items.map((item) => item.id)}
+            onSelect={setCurrentItemIndex}
+          />
+
+          {focusItemId ? (
+            (() => {
+              const focusItem =
+                paper.items.find((item) => item.id === focusItemId) || paper.items[0]
+              const visual = inferVisualization(focusItem.stem)
+              return (
+                <FocusedHintLayout
+                  onExit={() => setFocusItemId(null)}
+                  questionSlot={
+                    <>
+                      <div className="item-meta">
+                        <span className="pill">{focusItem.difficulty}</span>
+                        <span className="pill">{focusItem.type}</span>
+                      </div>
+                      <div>{focusItem.stem}</div>
+                      <MathVisualizer spec={visual} />
+                      {focusItem.choices?.length ? (
+                        <div className="choices">
+                          {focusItem.choices.map((choice) => (
+                            <label className="choice" key={choice}>
+                              <input
+                                type="radio"
+                                name={`focus-${focusItem.id}`}
+                                checked={answers[focusItem.id] === choice}
+                                onChange={() =>
+                                  setAnswers({ ...answers, [focusItem.id]: choice })
+                                }
+                              />
+                              <span>{choice}</span>
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="field" style={{ marginTop: '0.65rem' }}>
+                          <label htmlFor={`focus-ans-${focusItem.id}`}>作答</label>
+                          <textarea
+                            id={`focus-ans-${focusItem.id}`}
+                            value={answers[focusItem.id] || ''}
+                            onChange={(e) =>
+                              setAnswers({
+                                ...answers,
+                                [focusItem.id]: e.target.value,
+                              })
+                            }
+                            placeholder="输入答案或解题过程"
+                          />
+                        </div>
+                      )}
+                    </>
+                  }
+                  panelSlot={
+                    <SocraticPanel sessionId={sessionId} itemId={focusItem.id} />
+                  }
+                />
+              )
+            })()
+          ) : (
+            paper.items.map((item, index) => {
+              const visual = inferVisualization(item.stem)
+              return (
+                <article
+                  className={`question-card${index === currentItemIndex ? ' current-question' : ''}`}
+                  key={item.id}
+                  id={`item-${item.id}`}
+                >
+                  <div className="item-meta">
+                    <span className="pill">第 {index + 1} 题</span>
+                    <span className="pill">{item.difficulty}</span>
+                    <span className="pill">{item.type}</span>
+                    {item.situation_tag ? (
+                      <span className="pill">{item.situation_tag}</span>
+                    ) : null}
+                  </div>
+                  <div>{item.stem}</div>
+                  <MathVisualizer spec={visual} />
+                  {item.choices?.length ? (
+                    <div className="choices">
+                      {item.choices.map((choice) => (
+                        <label className="choice" key={choice}>
+                          <input
+                            type="radio"
+                            name={item.id}
+                            checked={answers[item.id] === choice}
+                            onChange={() => {
+                              setAnswers({ ...answers, [item.id]: choice })
+                              setCurrentItemIndex(index)
+                            }}
+                          />
+                          <span>{choice}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="field" style={{ marginTop: '0.65rem' }}>
+                      <label htmlFor={`ans-${item.id}`}>作答</label>
+                      <textarea
+                        id={`ans-${item.id}`}
+                        value={answers[item.id] || ''}
+                        onChange={(e) => {
+                          setAnswers({ ...answers, [item.id]: e.target.value })
+                          setCurrentItemIndex(index)
+                        }}
+                        placeholder="输入答案或解题过程"
+                      />
+                    </div>
+                  )}
+                  <div className="field upload-field">
+                    <label htmlFor={`img-${item.id}`}>手写作答照片（可选）</label>
+                    <input
+                      id={`img-${item.id}`}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+                      disabled={busy}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        void onPickImage(item.id, file)
+                        e.target.value = ''
+                      }}
+                    />
+                    {imageUploads[item.id] ? (
+                      <div className="upload-preview">
+                        <div className="upload-frame">
+                          <img
+                            src={imageUploads[item.id].preview}
+                            alt={`${item.id} 手写作答预览`}
+                          />
+                        </div>
+                        <div className="upload-meta">
+                          <span className="upload-name">{imageUploads[item.id].name}</span>
+                          <button
+                            className="btn secondary"
+                            type="button"
+                            onClick={() => onClearImage(item.id)}
+                          >
+                            移除图片
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="upload-hint">
+                        支持 PNG / JPG / WebP，将随提交送去 OCR 批改
+                      </span>
+                    )}
+                  </div>
+                  <div className="actions">
+                    <button
+                      className="btn secondary"
+                      type="button"
+                      onClick={() => {
+                        setCurrentItemIndex(index)
+                        setFocusItemId(item.id)
+                      }}
+                    >
+                      求助苏格拉底
+                    </button>
+                  </div>
+                </article>
+              )
+            })
+          )}
+
+          {!focusItemId ? (
+            <div className="actions">
+              <button
+                className="btn secondary"
+                type="button"
+                onClick={() => {
+                  setStep(0)
+                  setSessionId(null)
+                  setPaper(null)
+                  setReport(null)
+                  setAnswers({})
+                  setImageUploads({})
+                  setFocusItemId(null)
+                }}
+                disabled={busy}
+              >
+                返回建档
+              </button>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => void onSubmitAnswers()}
+                disabled={busy}
+              >
+                {busy ? '批改中…' : '提交并诊断'}
+              </button>
+            </div>
+          ) : null}
         </section>
       )}
 
