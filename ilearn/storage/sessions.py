@@ -2,10 +2,44 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from ilearn.core.schemas import SessionState, StudentProfile
+from ilearn.core.schemas import SessionMetadata, SessionState, StudentProfile
+
+_WEAK_SKILL_THRESHOLD = 0.6
+
+
+def _to_metadata(state: SessionState, path: Path) -> SessionMetadata:
+    nickname = (state.profile.nickname or "").strip() or "未命名"
+    skill_mastery: dict[str, float] = {}
+    weak_skills: list[str] = []
+    overall_mastery = 0.0
+
+    if state.diagnosis and state.diagnosis.knowledge_mastery:
+        rows = state.diagnosis.knowledge_mastery
+        skill_mastery = {row.knowledge_id: row.score_rate for row in rows}
+        weak_skills = [
+            row.knowledge_id
+            for row in rows
+            if row.score_rate < _WEAK_SKILL_THRESHOLD
+        ]
+        overall_mastery = round(sum(row.score_rate for row in rows) / len(rows), 10)
+
+    updated_at = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+
+    return SessionMetadata(
+        session_id=state.session_id,
+        nickname=nickname,
+        grade=state.profile.grade,
+        region=state.profile.region,
+        overall_mastery=overall_mastery,
+        weak_skills=weak_skills,
+        skill_mastery=skill_mastery,
+        updated_at=updated_at,
+        phase=state.phase,
+    )
 
 
 class SessionStore:
@@ -34,6 +68,13 @@ class SessionStore:
         rows: list[SessionState] = []
         for path in sorted(self.root.glob("*.json")):
             rows.append(SessionState.model_validate_json(path.read_text(encoding="utf-8")))
+        return rows
+
+    def list_all_metadata(self) -> list[SessionMetadata]:
+        rows: list[SessionMetadata] = []
+        for path in sorted(self.root.glob("*.json")):
+            state = SessionState.model_validate_json(path.read_text(encoding="utf-8"))
+            rows.append(_to_metadata(state, path))
         return rows
 
     def list_by_nickname(self, nickname: str) -> list[SessionState]:
