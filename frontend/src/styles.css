@@ -30,6 +30,7 @@ body,
 body {
   margin: 0;
   font-family: var(--font-body);
+  font-size: var(--font-size-body, 16px);
   color: var(--ink);
   background:
     radial-gradient(circle at 88% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 28rem),
