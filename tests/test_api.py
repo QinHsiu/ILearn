@@ -261,3 +261,26 @@ def test_tutor_and_replan_endpoints(tmp_path):
     replan = c.post(f"/sessions/{sid}/replan")
     assert replan.status_code == 200
     assert "markdown" in replan.json()
+
+
+def test_assessment_tutor_hints_exhausted_returns_400(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post("/sessions", json={"region": "北京", "grade": 5, "age": 11}).json()[
+        "session_id"
+    ]
+    paper = c.post(f"/sessions/{sid}/assessment").json()
+    item_id = paper["items"][0]["id"]
+
+    assert c.post(f"/sessions/{sid}/tutor", json={"item_id": item_id}).status_code == 200
+    for i in range(3):
+        resp = c.post(
+            f"/sessions/{sid}/tutor/hint",
+            json={"item_id": item_id, "user_message": f"困惑{i}"},
+        )
+        assert resp.status_code == 200, resp.text
+    fourth = c.post(
+        f"/sessions/{sid}/tutor/hint",
+        json={"item_id": item_id, "user_message": "第四次"},
+    )
+    assert fourth.status_code == 400
+    assert "exhausted" in fourth.json()["detail"].lower()
