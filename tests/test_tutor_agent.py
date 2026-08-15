@@ -92,8 +92,8 @@ def test_tutor_step_uses_explicit_error_tag_without_shared_state():
     calc_turn = agent.step("locate_gap", "请提示", _ITEM, "calc_error")
     concept_turn = agent.step("locate_gap", "请提示", _ITEM, "concept_gap")
 
-    assert "进位/通分" in calc_turn.message
-    assert "定义与例题结构" in concept_turn.message
+    assert "运算步骤" in calc_turn.message
+    assert "相关定义" in concept_turn.message
     assert calc_turn.error_tag == "calc_error"
     assert concept_turn.error_tag == "concept_gap"
 
@@ -111,4 +111,4 @@ def test_tutor_step_restores_persisted_error_tag_after_restart():
     )
 
     assert turn.error_tag == "calc_error"
-    assert "进位/通分" in turn.message
+    assert "运算步骤" in turn.message
