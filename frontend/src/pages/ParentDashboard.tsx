@@ -30,6 +30,10 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
     if (target) selectStudent(target)
   }, [studentId, students])
 
+  const summaryStudent = selected
+    ? students?.find((student) => student.session_id === selected.session_id)
+    : students?.[0]
+
   function selectStudent(student: DashboardStudentSummary) {
     setSessionId(student.session_id)
     setSelectedSessionId(student.session_id)
@@ -59,6 +63,25 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
           <h1>孩子最近学得怎么样，下一步怎么支持？</h1>
           <p>从当前掌握度、薄弱知识点和学习阶段开始，给出具体支持。</p>
         </section>
+        {summaryStudent ? (
+          <section className="parent-summary" aria-labelledby="parent-summary-title">
+            <h2 id="parent-summary-title">事实摘要</h2>
+            <div className="summary-grid">
+              <article className="summary-block">
+                <span>当前掌握度</span>
+                <strong>{Math.round(summaryStudent.overall_mastery * 100)}%</strong>
+              </article>
+              <article className="summary-block">
+                <span>薄弱知识点</span>
+                <strong>{summaryStudent.weak_skills.length ? summaryStudent.weak_skills.join('、') : '暂无'}</strong>
+              </article>
+              <article className="summary-block">
+                <span>学习阶段</span>
+                <strong>{summaryStudent.phase}</strong>
+              </article>
+            </div>
+          </section>
+        ) : null}
         <section className="panel dashboard-panel parent-operations">
           <h2>孩子学习概览</h2>
           {students === null ? <p>加载中…</p> : (

@@ -311,10 +311,7 @@ function StudentApp() {
             <p className="brand-sub">你好，{(profile.nickname || '').trim()}</p>
           ) : null}
           <p className="brand-sub">课标在环的个性化学习向导</p>
-          <p className="role-links">
-            <a href="?login=1&role=parent">家长端</a>
-            <a href="?login=1&role=teacher">老师端</a>
-          </p>
+          <h2 className="student-mode">学生学习 / NEXT STEP</h2>
         </div>
       </header>
 

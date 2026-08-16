@@ -80,7 +80,11 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
               {classes.map((item) => (
                 <button className="btn secondary dashboard-entry-card" key={item.class_id} type="button" onClick={() => selectClass(item.class_id)}>
                   <span>班级 {item.class_id}</span>
-                  <small>{item.students.length} 名学生 · 已绑定</small>
+                  <small>
+                    <span>{item.students.length} 名学生</span>
+                    <span aria-hidden="true"> · </span>
+                    <span>状态：{item.students.length ? '已绑定' : '暂无学生'}</span>
+                  </small>
                 </button>
               ))}
             </div>
