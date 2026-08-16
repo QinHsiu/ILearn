@@ -1,6 +1,6 @@
 # ILearn Landing Page Design System
 
-**Status:** Approved direction, pending implementation review  
+**Status:** Approved direction, pending implementation review
 **Source templates:** HTML Anything `deck-swiss-international`, `dashboard`, `article-magazine`
 
 ## 1. Design intent
