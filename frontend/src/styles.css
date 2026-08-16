@@ -1,20 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap');
-
 :root {
-  --ink: #16343a;
-  --accent: #176b67;
-  --paper: #f4f1e8;
-  --card: #fffdf8;
-  --line: #d9d5ca;
-  --muted: #5c6670;
-  --danger: #b42318;
+  --il-blue: #002FA7;
+  --il-paper: #FAFAF8;
+  --il-ink: #0A0A0A;
+  --il-muted: #5F6368;
+  --il-line: #C9CCD2;
+  --il-soft: #EEF1F7;
+  --il-danger: #B42318;
+  --ink: var(--il-ink);
+  --accent: var(--il-blue);
+  --paper: var(--il-paper);
+  --card: var(--il-paper);
+  --line: var(--il-line);
+  --muted: var(--il-muted);
+  --danger: var(--il-danger);
   --ok: #0f7a4c;
-  --radius: 14px;
+  --radius: 0;
   --btn-radius: var(--radius);
   --card-radius: var(--radius);
   --theme-scale: 1;
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Inter Tight', 'Arial Narrow', sans-serif;
+  --font-body: Inter, 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
 }
 
 * {
@@ -32,9 +37,7 @@ body {
   font-family: var(--font-body);
   font-size: var(--font-size-body, 16px);
   color: var(--ink);
-  background:
-    radial-gradient(circle at 88% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 28rem),
-    linear-gradient(180deg, #faf7f0 0%, var(--paper) 40%, #efe9dc 100%);
+  background: var(--il-paper);
 }
 
 button,
@@ -96,12 +99,12 @@ textarea {
   background: var(--card);
   color: var(--ink);
   text-decoration: none;
-  box-shadow: 0 10px 30px rgba(22, 52, 58, 0.04);
 }
 
 .role-card:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
+  background: var(--accent);
+  color: #fff;
 }
 
 .role-card-title {
@@ -182,7 +185,6 @@ textarea {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 1.25rem 1.35rem 1.4rem;
-  box-shadow: 0 10px 30px rgba(22, 52, 58, 0.04);
 }
 
 .panel h2 {
@@ -255,12 +257,11 @@ textarea {
   color: #fff;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
 }
 
 .btn:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(22, 52, 58, 0.12);
+  background: var(--il-ink);
 }
 
 .btn:disabled {
@@ -834,4 +835,184 @@ html[data-band='senior'] .brand {
   .focused-hint-body {
     grid-template-columns: 1fr;
   }
+}
+
+/* Approved ILearn role-surface system */
+.landing-page,
+.login-page {
+  width: min(1440px, calc(100% - 4rem));
+  padding: 2rem 0 4rem;
+  color: var(--il-ink);
+}
+
+.landing-header,
+.login-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--il-ink);
+  padding-bottom: 1rem;
+}
+
+.landing-kicker,
+.landing-meta,
+.form-caption,
+.form-index,
+.landing-index,
+.dashboard-section-label {
+  margin: 0;
+  color: var(--il-muted);
+  font: 0.7rem/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing-grid,
+.login-grid {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 2rem;
+  padding: 5rem 0;
+}
+
+.landing-hero,
+.login-intro {
+  grid-column: 1 / 11;
+}
+
+.landing-hero h1,
+.login-intro h1,
+.dashboard-role-intro h1 {
+  margin: 1.25rem 0 1.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 7vw, 8rem);
+  line-height: 0.92;
+  letter-spacing: -0.065em;
+}
+
+.landing-lede {
+  max-width: 34rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.role-cards {
+  grid-column: 11 / -1;
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.role-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  gap: 0.25rem 0.75rem;
+  min-height: 8rem;
+  padding: 1rem;
+  border: 1px solid var(--il-ink);
+  background: var(--il-paper);
+  color: var(--il-ink);
+  text-decoration: none;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.role-card-marker {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--il-blue);
+  color: #fff;
+  font: 0.75rem 'JetBrains Mono', monospace;
+}
+
+.role-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.role-card-description {
+  grid-column: 2 / 3;
+  color: var(--il-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.role-card-arrow {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  align-self: center;
+  font-size: 1.5rem;
+}
+
+.role-card:hover,
+.role-card:focus-visible {
+  background: var(--il-blue);
+  color: #fff;
+}
+
+.role-card:hover .role-card-description,
+.role-card:focus-visible .role-card-description {
+  color: #fff;
+}
+
+.workflow-strip {
+  border-top: 1px solid var(--il-ink);
+  border-bottom: 1px solid var(--il-ink);
+  padding: 1rem 0;
+}
+
+.workflow-strip h2 {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.workflow-strip ol {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workflow-strip li {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0 1rem;
+  border-left: 1px solid var(--il-line);
+  line-height: 1.5;
+}
+
+.workflow-strip li:first-child { padding-left: 0; border-left: 0; }
+.workflow-strip li span { font: 0.7rem 'JetBrains Mono', monospace; color: var(--il-blue); }
+
+.login-grid { padding-top: 4rem; }
+.login-form { grid-column: 11 / -1; align-self: start; padding: 1.5rem; border-color: var(--il-ink); }
+.login-form h2 { margin: 0.75rem 0 1.5rem; font-size: 1.5rem; }
+.login-header .back-link { color: var(--il-blue); }
+
+*:focus-visible {
+  outline: 2px solid var(--il-blue);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .landing-page, .login-page { width: min(100% - 2.5rem, 760px); }
+  .landing-grid, .login-grid { grid-template-columns: 1fr; padding: 3rem 0; }
+  .landing-hero, .login-intro, .role-cards, .login-form { grid-column: 1; }
+}
+
+@media (max-width: 640px) {
+  .landing-page, .login-page { width: calc(100% - 2.5rem); }
+  .landing-hero h1, .login-intro h1 { font-size: 3rem; }
+  .workflow-strip ol { grid-template-columns: 1fr; gap: 1rem; }
+  .workflow-strip li, .workflow-strip li:first-child { padding: 0; border-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }

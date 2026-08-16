@@ -12,6 +12,19 @@ const roleLabels: Record<AuthRole, string> = {
   teacher: '老师',
 }
 
+const roleCopy: Record<AuthRole, { eyebrow: string; title: string; description: string }> = {
+  parent: {
+    eyebrow: 'CHILD GROWTH',
+    title: '进入孩子成长空间',
+    description: '查看孩子的诊断、学习阶段与下一步支持建议。',
+  },
+  teacher: {
+    eyebrow: 'CLASS STUDIO',
+    title: '进入班级工作台',
+    description: '扫描班级状态，定位需要优先干预的学生。',
+  },
+}
+
 export default function LoginPage({ role }: LoginPageProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -34,14 +47,21 @@ export default function LoginPage({ role }: LoginPageProps) {
   }
 
   return (
-    <main className="login-page">
-      <a className="back-link" href="?login=1">
+    <main className={`login-page login-${role}`}>
+      <header className="login-header">
+        <a className="back-link" href="?login=1">
         ← 返回角色选择
-      </a>
-      <p className="eyebrow">ILearn · {roleLabels[role]}端</p>
-      <h1>{roleLabels[role]}登录</h1>
-      <p className="landing-lede">登录后查看专属学习数据。</p>
-      <form className="panel login-form" onSubmit={onSubmit}>
+        </a>
+        <p className="landing-meta">ILearn / {roleCopy[role].eyebrow}</p>
+      </header>
+      <div className="login-grid">
+        <section className="login-intro" aria-labelledby="login-title">
+          <p className="eyebrow">ILearn · {roleLabels[role]}端</p>
+          <h1 id="login-title">{roleCopy[role].title}</h1>
+          <p className="landing-lede">{roleCopy[role].description}</p>
+        </section>
+        <form className="panel login-form" onSubmit={onSubmit}>
+          <p className="form-caption">身份验证 / SIGN IN</p>
         <div className="field">
           <label htmlFor="username">用户名</label>
           <input
@@ -69,7 +89,8 @@ export default function LoginPage({ role }: LoginPageProps) {
           </button>
         </div>
         {error ? <p className="error" role="alert">{error}</p> : null}
-      </form>
+        </form>
+      </div>
     </main>
   )
 }

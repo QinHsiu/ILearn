@@ -55,9 +55,10 @@ describe('dashboard role views', () => {
 
   it('shows role entry labels on the default landing page', () => {
     render(<App />)
-    expect(screen.getByRole('link', { name: /^家长登录/ })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /^老师登录/ })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '学生学习' })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: '把学习看清楚，再决定下一步' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /家长端.*孩子成长/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /老师端.*班级运营/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /学生端.*下一步学习/ })).toHaveAttribute(
       'href',
       '?student=1',
     )
@@ -69,15 +70,17 @@ describe('dashboard role views', () => {
     vi.mocked(dashboardApi.parentChild).mockResolvedValue(detail)
 
     render(<App />)
-    expect(screen.getByText('家长端')).toHaveClass('dashboard-role-badge')
-    expect(screen.getByRole('link', { name: '返回学生端' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('heading', { name: '孩子最近学得怎么样，下一步怎么支持？' })).toBeInTheDocument()
+    expect(screen.getByText('家长端 / CHILD GROWTH')).toHaveClass('dashboard-role-badge')
+    expect(screen.getByRole('main')).toHaveClass('dashboard-content', 'parent-content')
+    expect(screen.getByRole('link', { name: '返回角色选择' })).toHaveAttribute('href', '/')
     expect(screen.getByText('加载中…')).toBeInTheDocument()
     expect(await screen.findByText('小明')).toBeInTheDocument()
 
     await waitFor(() => expect(dashboardApi.parentChildren).toHaveBeenCalledWith('p1'))
     screen.getByRole('button', { name: /小明/ }).click()
     expect(window.location.search).toContain('student_id=s1')
-    expect(await screen.findByText('学习计划')).toBeInTheDocument()
+    expect(await screen.findByText('支持建议')).toBeInTheDocument()
   })
 
   it('renders teacher class, student, and detail states', async () => {
@@ -90,8 +93,10 @@ describe('dashboard role views', () => {
 
     render(<App />)
     expect(screen.getByText('加载中…')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '班级整体哪里需要干预，应该先看谁？' })).toBeInTheDocument()
+    expect(screen.getByRole('main')).toHaveClass('dashboard-content', 'teacher-content')
     expect(await screen.findByText('班级 c1')).toBeInTheDocument()
-    screen.getByRole('button', { name: '班级 c1' }).click()
+    screen.getByText('班级 c1').closest('button')!.click()
     expect(window.location.search).toContain('class_id=c1')
     expect(await screen.findByRole('button', { name: /小明/ })).toBeInTheDocument()
     screen.getByRole('button', { name: /小明/ }).click()
@@ -120,8 +125,8 @@ describe('dashboard role views', () => {
     render(<App />)
     await screen.findByText('班级 c1')
     fireEvent.change(screen.getByLabelText('绑定学生会话'), { target: { value: 's1' } })
-    expect(screen.getByRole('heading', { name: '班级概览' }).closest('section')).toHaveClass('dashboard-panel')
-    expect(screen.getByText('班级 c1')).toHaveClass('dashboard-entry-card')
+    expect(screen.getByRole('heading', { name: '班级扫描' }).closest('section')).toHaveClass('dashboard-panel')
+    expect(screen.getByText('班级 c1').closest('button')).toHaveClass('dashboard-entry-card')
     fireEvent.submit(screen.getByRole('button', { name: '绑定学生并刷新' }).closest('form')!)
     expect(await screen.findByText('教师绑定失败')).toBeInTheDocument()
   })

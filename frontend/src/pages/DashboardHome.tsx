@@ -25,7 +25,7 @@ export default function DashboardHome({ title, children }: DashboardHomeProps) {
           <div className="dashboard-header-meta">
             <span className="dashboard-role-badge">{title}</span>
             <a className="back-link dashboard-back-link" href="/">
-              返回学生端
+              返回角色选择
             </a>
           </div>
         </div>

@@ -66,15 +66,21 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   }
 
   return (
-    <DashboardHome title="老师端">
-      <main className="dashboard-content">
-        <section className="panel dashboard-panel">
-          <h2>班级概览</h2>
+    <DashboardHome title="老师端 / CLASS STUDIO">
+      <main className="dashboard-content teacher-content">
+        <section className="dashboard-role-intro teacher-surface">
+          <p className="dashboard-section-label">02 / CLASS STUDIO</p>
+          <h1>班级整体哪里需要干预，应该先看谁？</h1>
+          <p>先扫描班级，再定位学生；用掌握度、薄弱知识点和阶段信息安排行动。</p>
+        </section>
+        <section className="panel dashboard-panel teacher-operations">
+          <h2>班级扫描</h2>
           {classes === null ? <p>加载中…</p> : classes.length ? (
             <div className="class-list">
               {classes.map((item) => (
                 <button className="btn secondary dashboard-entry-card" key={item.class_id} type="button" onClick={() => selectClass(item.class_id)}>
-                  班级 {item.class_id}
+                  <span>班级 {item.class_id}</span>
+                  <small>{item.students.length} 名学生 · 已绑定</small>
                 </button>
               ))}
             </div>
@@ -86,7 +92,7 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
               onSelect={(student) => selectStudent(classId, student)}
             />
           ) : null}
-          {error ? <p className="error dashboard-error">{error}</p> : null}
+          {error ? <p className="error dashboard-error" role="alert" aria-live="polite">{error}</p> : null}
           <form className="dashboard-bind" onSubmit={(e) => void bind(e)}>
             <label htmlFor="teacher-session">绑定学生会话</label>
             <input id="teacher-session" value={bindSessionId} onChange={(e) => setBindSessionId(e.target.value)} />

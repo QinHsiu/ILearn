@@ -3,9 +3,10 @@ import MarkdownView from '../MarkdownView'
 
 type DashboardDetailProps = {
   detail: DashboardStudentDetail
+  surface?: 'parent' | 'teacher'
 }
 
-export default function DashboardDetail({ detail }: DashboardDetailProps) {
+export default function DashboardDetail({ detail, surface = 'teacher' }: DashboardDetailProps) {
   const mastery = detail.diagnosis?.knowledge_mastery || []
   return (
     <section className="dashboard-detail panel">
@@ -28,7 +29,7 @@ export default function DashboardDetail({ detail }: DashboardDetailProps) {
         <p className="dashboard-empty">暂无掌握度数据</p>
       )}
       <div className="dashboard-report">
-        <h3>学习报告</h3>
+        <h3>{surface === 'parent' ? '支持建议' : '学习报告'}</h3>
         <p>计划状态：{detail.plan?.status || '暂无'}</p>
         {detail.plan?.markdown ? <MarkdownView source={detail.plan.markdown} /> : <p>暂无报告内容</p>}
       </div>
