@@ -53,7 +53,7 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
 
   return (
     <DashboardHome title="家长端 / CHILD GROWTH">
-      <main className="dashboard-content">
+      <main className="dashboard-content parent-content">
         <section className="dashboard-role-intro parent-surface">
           <p className="dashboard-section-label">01 / CHILD GROWTH</p>
           <h1>孩子最近学得怎么样，下一步怎么支持？</h1>

@@ -38,6 +38,9 @@ describe('landing and login routes', () => {
     expect(screen.getByRole('heading', { name: '把学习看清楚，再决定下一步' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /家长端.*孩子成长/ })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /老师端.*班级运营/ })).toBeInTheDocument()
+    expect(screen.getByText('诊断 — 识别知识点掌握情况')).toBeInTheDocument()
+    expect(screen.getByText('计划 — 生成下一步学习路径')).toBeInTheDocument()
+    expect(screen.getByText('反馈 — 根据练习结果持续调整')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /学生端.*下一步学习/ })).toHaveAttribute(
       'href',
       '?student=1',
@@ -76,6 +79,15 @@ describe('landing and login routes', () => {
     fireEvent.submit(screen.getByRole('button', { name: '登录' }).closest('form')!)
 
     expect(await screen.findByText('invalid credentials')).toBeInTheDocument()
+  })
+
+  it('uses role-specific login copy and preserves the landing route', () => {
+    setSearch('/?login=1&role=parent')
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: '进入孩子成长空间' })).toBeInTheDocument()
+    expect(screen.getByText('ILearn · 家长端')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '← 返回角色选择' })).toHaveAttribute('href', '?login=1')
   })
 
   it('renders the existing dashboard immediately after login', async () => {

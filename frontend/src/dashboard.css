@@ -61,6 +61,36 @@
 .parent-operations { border-top: 3px solid var(--il-blue, #002fa7); }
 .teacher-operations { border-top: 3px solid var(--il-ink, #0a0a0a); }
 
+.parent-content .dashboard-role-intro {
+  max-width: 56rem;
+}
+
+.parent-content .dashboard-panel {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.parent-content .student-list {
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.teacher-content .dashboard-role-intro {
+  border-left-width: 8px;
+}
+
+.teacher-content .dashboard-panel {
+  grid-template-columns: 1fr;
+}
+
+.teacher-content .class-list {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.teacher-content .student-list {
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  border-top: 1px solid var(--il-line);
+  padding-top: 0.75rem;
+}
+
 .dashboard-panel {
   display: grid;
   gap: 0.75rem;
@@ -154,6 +184,20 @@
 .dashboard-shell .student-card,
 .dashboard-shell .dashboard-entry-card {
   border-radius: 0;
+}
+
+.dashboard-shell .student-card:hover,
+.dashboard-shell .student-card:focus-visible,
+.dashboard-shell .dashboard-entry-card:hover,
+.dashboard-shell .dashboard-entry-card:focus-visible {
+  background: var(--il-blue);
+  border-color: var(--il-blue);
+  color: #fff;
+}
+
+.dashboard-shell .student-card:hover span,
+.dashboard-shell .student-card:focus-visible span {
+  color: #fff;
 }
 
 @media (prefers-reduced-motion: reduce) {

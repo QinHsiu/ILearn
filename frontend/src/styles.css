@@ -99,7 +99,6 @@ textarea {
   background: var(--card);
   color: var(--ink);
   text-decoration: none;
-  box-shadow: 0 10px 30px rgba(22, 52, 58, 0.04);
 }
 
 .role-card:hover {
@@ -185,7 +184,6 @@ textarea {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 1.25rem 1.35rem 1.4rem;
-  box-shadow: 0 10px 30px rgba(22, 52, 58, 0.04);
 }
 
 .panel h2 {
@@ -258,12 +256,11 @@ textarea {
   color: #fff;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
 }
 
 .btn:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(22, 52, 58, 0.12);
+  background: var(--il-ink);
 }
 
 .btn:disabled {

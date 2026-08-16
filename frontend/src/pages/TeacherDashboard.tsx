@@ -67,7 +67,7 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
 
   return (
     <DashboardHome title="老师端 / CLASS STUDIO">
-      <main className="dashboard-content">
+      <main className="dashboard-content teacher-content">
         <section className="dashboard-role-intro teacher-surface">
           <p className="dashboard-section-label">02 / CLASS STUDIO</p>
           <h1>班级整体哪里需要干预，应该先看谁？</h1>

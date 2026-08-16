@@ -67,9 +67,9 @@ export default function LandingPage() {
       <section className="workflow-strip" aria-labelledby="workflow-title">
         <h2 id="workflow-title">学习如何向前</h2>
         <ol>
-          <li><span>01 / 诊断</span>识别知识点掌握情况</li>
-          <li><span>02 / 计划</span>生成下一步学习路径</li>
-          <li><span>03 / 反馈</span>根据练习结果持续调整</li>
+          <li><span>诊断 — 识别知识点掌握情况</span></li>
+          <li><span>计划 — 生成下一步学习路径</span></li>
+          <li><span>反馈 — 根据练习结果持续调整</span></li>
         </ol>
       </section>
     </main>

@@ -47,7 +47,7 @@ export default function LoginPage({ role }: LoginPageProps) {
   }
 
   return (
-    <main className="login-page">
+    <main className={`login-page login-${role}`}>
       <header className="login-header">
         <a className="back-link" href="?login=1">
         ← 返回角色选择
@@ -55,7 +55,7 @@ export default function LoginPage({ role }: LoginPageProps) {
         <p className="landing-meta">ILearn / {roleCopy[role].eyebrow}</p>
       </header>
       <div className="login-grid">
-        <section aria-labelledby="login-title">
+        <section className="login-intro" aria-labelledby="login-title">
           <p className="eyebrow">ILearn · {roleLabels[role]}端</p>
           <h1 id="login-title">{roleCopy[role].title}</h1>
           <p className="landing-lede">{roleCopy[role].description}</p>
