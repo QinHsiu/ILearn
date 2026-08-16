@@ -103,7 +103,8 @@ textarea {
 
 .role-card:hover {
   border-color: var(--accent);
-  transform: translateY(-2px);
+  background: var(--accent);
+  color: #fff;
 }
 
 .role-card-title {

@@ -75,7 +75,7 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
               ) : null}
             </>
           )}
-          {error ? <p className="error dashboard-error">{error}</p> : null}
+          {error ? <p className="error dashboard-error" role="alert" aria-live="polite">{error}</p> : null}
           <form className="dashboard-bind" onSubmit={(e) => void bind(e)}>
             <label htmlFor="parent-session">绑定学习会话</label>
             <input id="parent-session" value={sessionId} onChange={(e) => setSessionId(e.target.value)} />

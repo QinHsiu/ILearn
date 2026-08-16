@@ -79,7 +79,8 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
             <div className="class-list">
               {classes.map((item) => (
                 <button className="btn secondary dashboard-entry-card" key={item.class_id} type="button" onClick={() => selectClass(item.class_id)}>
-                  班级 {item.class_id}
+                  <span>班级 {item.class_id}</span>
+                  <small>{item.students.length} 名学生 · 已绑定</small>
                 </button>
               ))}
             </div>
@@ -91,7 +92,7 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
               onSelect={(student) => selectStudent(classId, student)}
             />
           ) : null}
-          {error ? <p className="error dashboard-error">{error}</p> : null}
+          {error ? <p className="error dashboard-error" role="alert" aria-live="polite">{error}</p> : null}
           <form className="dashboard-bind" onSubmit={(e) => void bind(e)}>
             <label htmlFor="teacher-session">绑定学生会话</label>
             <input id="teacher-session" value={bindSessionId} onChange={(e) => setBindSessionId(e.target.value)} />
