@@ -13,6 +13,14 @@ export default defineConfig({
         target: apiTarget,
         changeOrigin: true,
       },
+      '/auth': {
+        target: apiTarget,
+        changeOrigin: true,
+      },
+      '/dashboard': {
+        target: apiTarget,
+        changeOrigin: true,
+      },
       '/docs': {
         target: apiTarget,
         changeOrigin: true,

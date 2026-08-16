@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -17,6 +18,7 @@ from ilearn.core.export_markdown import (
 )
 from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.pdf_export import markdown_to_pdf
+from ilearn.api.auth import create_auth_router
 from ilearn.api.dashboard import create_dashboard_router
 from ilearn.core.schemas import (
     AssessmentPaper,
@@ -44,6 +46,18 @@ _WEB_ORIGINS = (
     "http://127.0.0.1:8501",
 )
 _FRONTEND_DIST = _PROJECT_ROOT / "frontend" / "dist"
+_DEFAULT_AUTH_CREDENTIALS = {
+    "parent": {
+        "username": "parent-demo",
+        "password": "parent-demo-password",
+        "user_id": "parent-demo",
+    },
+    "teacher": {
+        "username": "teacher-demo",
+        "password": "teacher-demo-password",
+        "user_id": "teacher-demo",
+    },
+}
 
 
 class CreateSessionResponse(BaseModel):
@@ -84,9 +98,40 @@ def create_app(
     pilot_data_dir: Path | str | None = None,
     relationships_path: Path | str | None = None,
     llm: LLMClient | None = None,
+    credentials: dict[str, dict[str, str]] | None = None,
 ) -> FastAPI:
     """Build a FastAPI app wired to the ILearn orchestrator."""
     load_dotenv()
+    auth_credentials = credentials or {
+        "parent": {
+            "username": os.getenv(
+                "ILEARN_PARENT_USERNAME",
+                _DEFAULT_AUTH_CREDENTIALS["parent"]["username"],
+            ),
+            "password": os.getenv(
+                "ILEARN_PARENT_PASSWORD",
+                _DEFAULT_AUTH_CREDENTIALS["parent"]["password"],
+            ),
+            "user_id": os.getenv(
+                "ILEARN_PARENT_USER_ID",
+                _DEFAULT_AUTH_CREDENTIALS["parent"]["user_id"],
+            ),
+        },
+        "teacher": {
+            "username": os.getenv(
+                "ILEARN_TEACHER_USERNAME",
+                _DEFAULT_AUTH_CREDENTIALS["teacher"]["username"],
+            ),
+            "password": os.getenv(
+                "ILEARN_TEACHER_PASSWORD",
+                _DEFAULT_AUTH_CREDENTIALS["teacher"]["password"],
+            ),
+            "user_id": os.getenv(
+                "ILEARN_TEACHER_USER_ID",
+                _DEFAULT_AUTH_CREDENTIALS["teacher"]["user_id"],
+            ),
+        },
+    }
     if llm is None:
         llm = LLMClient.from_env()
     if not llm.available():
@@ -100,6 +145,7 @@ def create_app(
     orchestrator = Orchestrator(store=store, curriculum=curriculum, llm=llm)
 
     app = FastAPI(title="ILearn", version="0.1.0")
+    app.include_router(create_auth_router(auth_credentials))
     app.include_router(create_dashboard_router(store, relationships))
     app.add_middleware(
         CORSMiddleware,
