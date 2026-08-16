@@ -1,13 +1,3 @@
-.role-links {
-  display: flex;
-  gap: 0.75rem;
-  margin: 0.35rem 0 0;
-}
-
-.role-links a {
-  color: var(--accent, #2563eb);
-}
-
 .dashboard-header-meta {
   display: flex;
   align-items: center;
@@ -21,7 +11,7 @@
   align-items: center;
   min-height: 1.8rem;
   padding: 0.2rem 0.7rem;
-  border-radius: 999px;
+  border-radius: 0;
   background: color-mix(in srgb, var(--accent) 12%, white);
   color: var(--accent);
   font-size: 0.82rem;
@@ -56,6 +46,14 @@
   line-height: 1.55;
 }
 
+.student-mode {
+  margin: 0.45rem 0 0;
+  color: var(--il-blue, #002fa7);
+  font: 0.72rem/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .parent-surface { border-left-color: var(--il-blue, #002fa7); }
 .teacher-surface { border-left-color: var(--il-blue, #002fa7); }
 .parent-operations { border-top: 3px solid var(--il-blue, #002fa7); }
@@ -71,6 +69,44 @@
 
 .parent-content .student-list {
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.parent-summary {
+  border-top: 1px solid var(--il-ink, #0a0a0a);
+  border-bottom: 1px solid var(--il-line, #c9ccd2);
+  padding: 1rem 0;
+}
+
+.parent-summary h2 {
+  margin: 0 0 0.75rem;
+  font: 0.72rem/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.summary-block {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--il-blue, #002fa7);
+}
+
+.summary-block span {
+  color: var(--il-muted, #5f6368);
+  font-size: 0.78rem;
+}
+
+.summary-block strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  overflow-wrap: anywhere;
 }
 
 .teacher-content .dashboard-role-intro {
@@ -115,7 +151,7 @@
   gap: 0.2rem;
   padding: 0.85rem;
   border: 1px solid var(--line, #d8dee9);
-  border-radius: 0.75rem;
+  border-radius: 0;
   background: var(--panel, #fff);
   color: inherit;
   text-align: left;
@@ -143,7 +179,7 @@
   margin: 0.1rem 0;
   padding: 0.85rem 1rem;
   border: 1px dashed var(--line);
-  border-radius: 0.75rem;
+  border-radius: 0;
   background: color-mix(in srgb, var(--accent) 5%, white);
   color: var(--muted);
   line-height: 1.5;
@@ -222,5 +258,9 @@
   .student-card,
   .dashboard-entry-card {
     min-height: 4rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
   }
 }

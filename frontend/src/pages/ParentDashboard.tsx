@@ -8,6 +8,14 @@ import DashboardHome, { updateDashboardQuery } from './DashboardHome'
 
 type ParentDashboardProps = { userId: string; studentId?: string }
 
+const phaseLabels: Record<string, string> = {
+  profile: '资料待完成',
+  assessing: '诊断进行中',
+  diagnosed: '已完成诊断',
+  planning: '学习计划生成中',
+  planned: '学习计划已生成',
+}
+
 export default function ParentDashboard({ userId, studentId }: ParentDashboardProps) {
   const [students, setStudents] = useState<DashboardStudentSummary[] | null>(null)
   const [selected, setSelected] = useState<DashboardStudentDetail | null>(null)
@@ -30,9 +38,13 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
     if (target) selectStudent(target)
   }, [studentId, students])
 
+  const summaryStudent = students?.find((student) => student.session_id === selectedSessionId)
+    || students?.[0]
+
   function selectStudent(student: DashboardStudentSummary) {
     setSessionId(student.session_id)
     setSelectedSessionId(student.session_id)
+    setSelected(null)
     updateDashboardQuery({ student_id: student.session_id })
     void dashboardApi.parentChild(userId, student.session_id).then(setSelected).catch((err) => {
       setError(err instanceof Error ? err.message : String(err))
@@ -59,6 +71,25 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
           <h1>孩子最近学得怎么样，下一步怎么支持？</h1>
           <p>从当前掌握度、薄弱知识点和学习阶段开始，给出具体支持。</p>
         </section>
+        {summaryStudent ? (
+          <section className="parent-summary" aria-labelledby="parent-summary-title">
+            <h2 id="parent-summary-title">事实摘要</h2>
+            <div className="summary-grid">
+              <article className="summary-block">
+                <span>当前掌握度</span>
+                <strong>{Math.round(summaryStudent.overall_mastery * 100)}%</strong>
+              </article>
+              <article className="summary-block">
+                <span>薄弱知识点</span>
+                <strong>{summaryStudent.weak_skills.length ? summaryStudent.weak_skills.join('、') : '暂无'}</strong>
+              </article>
+              <article className="summary-block">
+                <span>学习阶段</span>
+                <strong>{phaseLabels[summaryStudent.phase] || summaryStudent.phase}</strong>
+              </article>
+            </div>
+          </section>
+        ) : null}
         <section className="panel dashboard-panel parent-operations">
           <h2>孩子学习概览</h2>
           {students === null ? <p>加载中…</p> : (

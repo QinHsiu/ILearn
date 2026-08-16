@@ -52,6 +52,10 @@ describe('landing and login routes', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { name: '建档' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '学生学习 / NEXT STEP' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '家长端' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '老师端' })).not.toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: '向导步骤' })).toBeInTheDocument()
   })
 
   it('renders parent and teacher role cards on the login entry', () => {
