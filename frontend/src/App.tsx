@@ -66,9 +66,17 @@ function wrongItemEntries(session: SessionState) {
 }
 
 export default function App() {
+  const [, refreshRoute] = useState(0)
   const params = new URLSearchParams(window.location.search)
   const role = params.get('role')
   const userId = params.get('user') || ''
+
+  useEffect(() => {
+    const onPopState = () => refreshRoute((version) => version + 1)
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
   if (role === 'parent' && userId) {
     return <ParentDashboard userId={userId} studentId={params.get('student_id') || undefined} />
   }

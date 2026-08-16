@@ -25,6 +25,7 @@ export default function LoginPage({ role }: LoginPageProps) {
     try {
       const result = await authApi.login(role, username, password)
       window.history.pushState({}, '', `?role=${result.role}&user=${encodeURIComponent(result.user_id)}`)
+      window.dispatchEvent(new PopStateEvent('popstate'))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {

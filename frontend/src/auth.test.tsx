@@ -10,6 +10,15 @@ vi.mock('./api/client', async () => {
     authApi: {
       login: vi.fn(),
     },
+    dashboardApi: {
+      parentChildren: vi.fn(),
+      parentChild: vi.fn(),
+      teacherClasses: vi.fn(),
+      teacherStudents: vi.fn(),
+      teacherStudent: vi.fn(),
+      bindParent: vi.fn(),
+      bindTeacher: vi.fn(),
+    },
   }
 })
 
@@ -56,9 +65,11 @@ describe('landing and login routes', () => {
     expect(await screen.findByText('invalid credentials')).toBeInTheDocument()
   })
 
-  it('redirects to the existing dashboard query after login', async () => {
+  it('renders the existing dashboard immediately after login', async () => {
     setSearch('/?login=1&role=teacher')
     vi.mocked(authApi.login).mockResolvedValue({ role: 'teacher', user_id: 'teacher-42' })
+    const { dashboardApi } = await import('./api/client')
+    vi.mocked(dashboardApi.teacherClasses).mockResolvedValue([])
     render(<App />)
 
     fireEvent.change(screen.getByLabelText('用户名'), { target: { value: 'someone' } })
@@ -68,6 +79,7 @@ describe('landing and login routes', () => {
     await waitFor(() =>
       expect(window.location.search).toBe('?role=teacher&user=teacher-42'),
     )
-    await waitFor(() => expect(screen.getByRole('button', { name: '登录' })).toBeEnabled())
+    expect(await screen.findByRole('heading', { name: '班级概览' })).toBeInTheDocument()
+    expect(dashboardApi.teacherClasses).toHaveBeenCalledWith('teacher-42')
   })
 })
