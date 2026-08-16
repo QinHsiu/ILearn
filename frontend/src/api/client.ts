@@ -119,6 +119,13 @@ export type DashboardClassSummary = {
 
 export type DashboardStudentDetail = SessionState
 
+export type AuthRole = 'parent' | 'teacher'
+
+export type LoginResponse = {
+  role: AuthRole
+  user_id: string
+}
+
 const MIME_BY_EXT: Record<string, ImageMime> = {
   png: 'image/png',
   jpg: 'image/jpeg',
@@ -255,6 +262,15 @@ export const api = {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
+  },
+}
+
+export const authApi = {
+  login(role: AuthRole, username: string, password: string) {
+    return request<LoginResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ role, username, password }),
+    })
   },
 }
 

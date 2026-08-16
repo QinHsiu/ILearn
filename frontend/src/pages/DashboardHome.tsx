@@ -22,7 +22,12 @@ export default function DashboardHome({ title, children }: DashboardHomeProps) {
         <h1 className="brand">ILearn</h1>
         <div className="brand-copy">
           <p className="brand-sub">课标在环的个性化学习向导</p>
-          <p className="brand-sub">{title}</p>
+          <div className="dashboard-header-meta">
+            <span className="dashboard-role-badge">{title}</span>
+            <a className="back-link dashboard-back-link" href="/">
+              返回学生端
+            </a>
+          </div>
         </div>
       </header>
       {children}

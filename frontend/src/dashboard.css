@@ -8,9 +8,39 @@
   color: var(--accent, #2563eb);
 }
 
+.dashboard-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-top: 0.45rem;
+}
+
+.dashboard-role-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, white);
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.dashboard-back-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .dashboard-content {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
+}
+
+.dashboard-panel {
+  display: grid;
+  gap: 0.75rem;
 }
 
 .student-list,
@@ -18,6 +48,13 @@
 .dashboard-skills {
   display: grid;
   gap: 0.65rem;
+}
+
+.dashboard-entry-card {
+  width: 100%;
+  min-height: 3.4rem;
+  justify-content: flex-start;
+  text-align: left;
 }
 
 .student-card {
@@ -49,6 +86,23 @@
   color: var(--muted, #64748b);
 }
 
+.dashboard-empty-state {
+  margin: 0.1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--accent) 5%, white);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.dashboard-error {
+  margin-top: 0.1rem;
+  padding: 0.7rem 0.85rem;
+  border-left: 3px solid var(--danger);
+  background: color-mix(in srgb, var(--danger) 7%, white);
+}
+
 .dashboard-bind {
   display: flex;
   flex-wrap: wrap;
@@ -59,4 +113,22 @@
 
 .dashboard-bind label {
   width: 100%;
+}
+
+@media (max-width: 560px) {
+  .dashboard-header-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .dashboard-bind input,
+  .dashboard-bind .btn {
+    width: 100%;
+  }
+
+  .student-card,
+  .dashboard-entry-card {
+    min-height: 4rem;
+  }
 }

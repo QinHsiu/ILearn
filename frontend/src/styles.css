@@ -50,11 +50,90 @@ textarea {
   padding: 1.5rem 0 3rem;
 }
 
+.landing-page,
+.login-page {
+  width: min(760px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+
+.landing-page h1,
+.login-page h1 {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  letter-spacing: -0.04em;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.landing-lede {
+  margin: 0.75rem 0 2rem;
+  color: var(--muted);
+}
+
+.role-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 9rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(22, 52, 58, 0.04);
+}
+
+.role-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.role-card-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.role-card-description {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.back-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.login-form {
+  max-width: 30rem;
+}
+
 .brand-row {
   display: flex;
   align-items: baseline;
   gap: 1rem;
   margin-bottom: 1.25rem;
+}
+
+.dashboard-shell .brand-row {
+  align-items: flex-start;
+  margin-bottom: 1.75rem;
 }
 
 .brand {
@@ -176,6 +255,12 @@ textarea {
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(22, 52, 58, 0.12);
 }
 
 .btn:disabled {
@@ -725,6 +810,15 @@ html[data-band='senior'] .brand {
 }
 
 @media (max-width: 720px) {
+  .app-shell {
+    width: min(100% - 1.25rem, 920px);
+    padding-top: 1rem;
+  }
+
+  .dashboard-shell .brand-row {
+    margin-bottom: 1.25rem;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }

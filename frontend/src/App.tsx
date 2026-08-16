@@ -19,6 +19,9 @@ import FocusedHintLayout from './components/FocusedHintLayout'
 import SocraticPanel from './components/SocraticPanel'
 import ParentDashboard from './pages/ParentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
+import LandingPage from './pages/LandingPage'
+import LoginPage from './pages/LoginPage'
+import type { AuthRole } from './api/client'
 import { useCountdown } from './hooks/useCountdown'
 import { inferVisualization } from './lib/inferVisualization'
 import { applyTheme } from './theme'
@@ -63,9 +66,17 @@ function wrongItemEntries(session: SessionState) {
 }
 
 export default function App() {
+  const [, refreshRoute] = useState(0)
   const params = new URLSearchParams(window.location.search)
   const role = params.get('role')
   const userId = params.get('user') || ''
+
+  useEffect(() => {
+    const onPopState = () => refreshRoute((version) => version + 1)
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
   if (role === 'parent' && userId) {
     return <ParentDashboard userId={userId} studentId={params.get('student_id') || undefined} />
   }
@@ -77,6 +88,12 @@ export default function App() {
         studentId={params.get('student_id') || undefined}
       />
     )
+  }
+  if (params.get('login') === '1') {
+    if (role === 'parent' || role === 'teacher') {
+      return <LoginPage role={role as AuthRole} />
+    }
+    return <LandingPage />
   }
   return <StudentApp />
 }
@@ -295,8 +312,8 @@ function StudentApp() {
           ) : null}
           <p className="brand-sub">课标在环的个性化学习向导</p>
           <p className="role-links">
-            <a href="?role=parent&user=p1">家长端</a>
-            <a href="?role=teacher&user=t1">老师端</a>
+            <a href="?login=1&role=parent">家长端</a>
+            <a href="?login=1&role=teacher">老师端</a>
           </p>
         </div>
       </header>
