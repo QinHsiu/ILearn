@@ -8,6 +8,14 @@ import DashboardHome, { updateDashboardQuery } from './DashboardHome'
 
 type ParentDashboardProps = { userId: string; studentId?: string }
 
+const phaseLabels: Record<string, string> = {
+  profile: '资料待完成',
+  assessing: '诊断进行中',
+  diagnosed: '已完成诊断',
+  planning: '学习计划生成中',
+  planned: '学习计划已生成',
+}
+
 export default function ParentDashboard({ userId, studentId }: ParentDashboardProps) {
   const [students, setStudents] = useState<DashboardStudentSummary[] | null>(null)
   const [selected, setSelected] = useState<DashboardStudentDetail | null>(null)
@@ -30,13 +38,13 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
     if (target) selectStudent(target)
   }, [studentId, students])
 
-  const summaryStudent = selected
-    ? students?.find((student) => student.session_id === selected.session_id)
-    : students?.[0]
+  const summaryStudent = students?.find((student) => student.session_id === selectedSessionId)
+    || students?.[0]
 
   function selectStudent(student: DashboardStudentSummary) {
     setSessionId(student.session_id)
     setSelectedSessionId(student.session_id)
+    setSelected(null)
     updateDashboardQuery({ student_id: student.session_id })
     void dashboardApi.parentChild(userId, student.session_id).then(setSelected).catch((err) => {
       setError(err instanceof Error ? err.message : String(err))
@@ -77,7 +85,7 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
               </article>
               <article className="summary-block">
                 <span>学习阶段</span>
-                <strong>{summaryStudent.phase}</strong>
+                <strong>{phaseLabels[summaryStudent.phase] || summaryStudent.phase}</strong>
               </article>
             </div>
           </section>

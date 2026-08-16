@@ -82,7 +82,7 @@ describe('dashboard role views', () => {
     expect(screen.getByText('薄弱知识点')).toBeInTheDocument()
     expect(screen.getByText('分数')).toBeInTheDocument()
     expect(screen.getByText('学习阶段')).toBeInTheDocument()
-    expect(screen.getByText('diagnosed')).toBeInTheDocument()
+    expect(screen.getByText('已完成诊断')).toBeInTheDocument()
 
     await waitFor(() => expect(dashboardApi.parentChildren).toHaveBeenCalledWith('p1'))
     screen.getByRole('button', { name: /小明/ }).click()

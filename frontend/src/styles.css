@@ -163,6 +163,7 @@ textarea {
 .field input,
 .field select,
 .field textarea {
+  min-height: 44px;
   border: 1px solid var(--line);
   border-radius: 0;
   padding: 0.65rem 0.75rem;
@@ -190,6 +191,7 @@ textarea {
 
 .btn {
   appearance: none;
+  min-height: 44px;
   border: none;
   border-radius: var(--radius);
   padding: 0.7rem 1.2rem;
