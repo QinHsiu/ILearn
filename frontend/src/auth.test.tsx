@@ -32,7 +32,20 @@ describe('landing and login routes', () => {
     setSearch('/')
   })
 
-  it('keeps the existing student app for an empty query', () => {
+  it('shows role selection at the root path', () => {
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: '欢迎来到 ILearn' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /家长登录/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /老师登录/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '学生学习' })).toHaveAttribute(
+      'href',
+      '?student=1',
+    )
+  })
+
+  it('opens the existing student app from the student entry', () => {
+    setSearch('/?student=1')
     render(<App />)
 
     expect(screen.getByRole('heading', { name: '建档' })).toBeInTheDocument()
