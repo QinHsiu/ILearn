@@ -35,10 +35,10 @@ describe('landing and login routes', () => {
   it('shows role selection at the root path', () => {
     render(<App />)
 
-    expect(screen.getByRole('heading', { name: '欢迎来到 ILearn' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /家长登录/ })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /老师登录/ })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '学生学习' })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: '把学习看清楚，再决定下一步' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /家长端.*孩子成长/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /老师端.*班级运营/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /学生端.*下一步学习/ })).toHaveAttribute(
       'href',
       '?student=1',
     )
@@ -55,12 +55,12 @@ describe('landing and login routes', () => {
     setSearch('/?login=1')
     render(<App />)
 
-    expect(screen.getByRole('heading', { name: '欢迎来到 ILearn' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /家长登录/ })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: '把学习看清楚，再决定下一步' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /家长端.*孩子成长/ })).toHaveAttribute(
       'href',
       '?login=1&role=parent',
     )
-    expect(screen.getByRole('link', { name: /老师登录/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /老师端.*班级运营/ })).toHaveAttribute(
       'href',
       '?login=1&role=teacher',
     )
@@ -92,7 +92,7 @@ describe('landing and login routes', () => {
     await waitFor(() =>
       expect(window.location.search).toBe('?role=teacher&user=teacher-42'),
     )
-    expect(await screen.findByRole('heading', { name: '班级概览' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '班级扫描' })).toBeInTheDocument()
     expect(dashboardApi.teacherClasses).toHaveBeenCalledWith('teacher-42')
   })
 })

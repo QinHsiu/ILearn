@@ -1,31 +1,77 @@
 import type { AuthRole } from '../api/client'
 
-const roleCards: Array<{ role: AuthRole; title: string; description: string }> = [
-  { role: 'parent', title: '家长登录', description: '查看孩子的学习诊断与计划' },
-  { role: 'teacher', title: '老师登录', description: '查看班级与学生学习情况' },
+const roleCards: Array<{
+  role: AuthRole | 'student'
+  index: string
+  title: string
+  description: string
+  href: string
+}> = [
+  {
+    role: 'parent',
+    index: '01',
+    title: '家长端 · 孩子成长',
+    description: '看懂孩子当前掌握情况，找到下一步支持方式',
+    href: '?login=1&role=parent',
+  },
+  {
+    role: 'teacher',
+    index: '02',
+    title: '老师端 · 班级运营',
+    description: '扫描班级整体状态，优先查看需要干预的学生',
+    href: '?login=1&role=teacher',
+  },
+  {
+    role: 'student',
+    index: '03',
+    title: '学生端 · 下一步学习',
+    description: '完成诊断，获得清晰可执行的学习路径',
+    href: '?student=1',
+  },
 ]
 
 export default function LandingPage() {
   return (
     <main className="landing-page">
-      <p className="eyebrow">ILearn</p>
-      <h1>欢迎来到 ILearn</h1>
-      <p className="landing-lede">课标在环的个性化学习向导</p>
-      <div className="role-cards">
+      <header className="landing-header">
+        <div>
+          <p className="eyebrow">ILearn / ROLE SURFACES</p>
+          <p className="landing-kicker">课标在环的个性化学习向导</p>
+        </div>
+        <p className="landing-meta">PRECISION LEARNING<br />EDITION 01</p>
+      </header>
+      <div className="landing-grid">
+        <section className="landing-hero" aria-labelledby="landing-title">
+          <p className="landing-index">/ 00 · START HERE</p>
+          <h1 id="landing-title">把学习看清楚，<br />再决定下一步</h1>
+          <p className="landing-lede">
+            ILearn 将诊断、计划与反馈连成一条可追踪的学习路径。
+            请选择最适合你的入口。
+          </p>
+        </section>
+        <nav className="role-cards" aria-label="选择学习角色">
         {roleCards.map((card) => (
           <a
-            className="role-card"
-            href={`?login=1&role=${card.role}`}
+            className={`role-card role-card-${card.role}`}
+            href={card.href}
             key={card.role}
           >
+            <span className="role-card-marker">{card.index}</span>
             <span className="role-card-title">{card.title}</span>
             <span className="role-card-description">{card.description}</span>
+            <span className="role-card-arrow" aria-hidden="true">↗</span>
           </a>
         ))}
+        </nav>
       </div>
-      <a className="student-entry" href="?student=1">
-        学生学习
-      </a>
+      <section className="workflow-strip" aria-labelledby="workflow-title">
+        <h2 id="workflow-title">学习如何向前</h2>
+        <ol>
+          <li><span>01 / 诊断</span>识别知识点掌握情况</li>
+          <li><span>02 / 计划</span>生成下一步学习路径</li>
+          <li><span>03 / 反馈</span>根据练习结果持续调整</li>
+        </ol>
+      </section>
     </main>
   )
 }

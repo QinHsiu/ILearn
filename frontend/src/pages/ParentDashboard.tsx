@@ -52,9 +52,14 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
   }
 
   return (
-    <DashboardHome title="家长端">
+    <DashboardHome title="家长端 / CHILD GROWTH">
       <main className="dashboard-content">
-        <section className="panel dashboard-panel">
+        <section className="dashboard-role-intro parent-surface">
+          <p className="dashboard-section-label">01 / CHILD GROWTH</p>
+          <h1>孩子最近学得怎么样，下一步怎么支持？</h1>
+          <p>从当前掌握度、薄弱知识点和学习阶段开始，给出具体支持。</p>
+        </section>
+        <section className="panel dashboard-panel parent-operations">
           <h2>孩子学习概览</h2>
           {students === null ? <p>加载中…</p> : (
             <>
@@ -77,7 +82,7 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
             <button className="btn" type="submit">绑定学生并刷新</button>
           </form>
         </section>
-        {selected ? <DashboardDetail detail={selected} /> : null}
+        {selected ? <DashboardDetail detail={selected} surface="parent" /> : null}
       </main>
     </DashboardHome>
   )

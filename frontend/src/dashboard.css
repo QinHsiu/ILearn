@@ -38,6 +38,29 @@
   gap: 1.25rem;
 }
 
+.dashboard-role-intro {
+  border-left: 4px solid var(--il-blue, #002fa7);
+  padding: 0.25rem 0 0.5rem 1rem;
+}
+
+.dashboard-role-intro h1 {
+  max-width: 52rem;
+  margin: 0.65rem 0 0.5rem;
+  font-size: clamp(2.2rem, 5vw, 4.8rem);
+}
+
+.dashboard-role-intro p:last-child {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--il-muted, #5f6368);
+  line-height: 1.55;
+}
+
+.parent-surface { border-left-color: var(--il-blue, #002fa7); }
+.teacher-surface { border-left-color: var(--il-blue, #002fa7); }
+.parent-operations { border-top: 3px solid var(--il-blue, #002fa7); }
+.teacher-operations { border-top: 3px solid var(--il-ink, #0a0a0a); }
+
 .dashboard-panel {
   display: grid;
   gap: 0.75rem;
@@ -113,6 +136,31 @@
 
 .dashboard-bind label {
   width: 100%;
+}
+
+.dashboard-shell .brand {
+  color: var(--il-blue, #002fa7);
+}
+
+.dashboard-shell .dashboard-role-badge {
+  border: 1px solid var(--il-blue, #002fa7);
+  border-radius: 0;
+  background: var(--il-paper, #fafaf8);
+  color: var(--il-blue, #002fa7);
+  font: 0.7rem 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.dashboard-shell .student-card,
+.dashboard-shell .dashboard-entry-card {
+  border-radius: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-shell *, .dashboard-shell *::before, .dashboard-shell *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 @media (max-width: 560px) {

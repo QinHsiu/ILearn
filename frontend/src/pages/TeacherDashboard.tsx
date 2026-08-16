@@ -66,10 +66,15 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   }
 
   return (
-    <DashboardHome title="老师端">
+    <DashboardHome title="老师端 / CLASS STUDIO">
       <main className="dashboard-content">
-        <section className="panel dashboard-panel">
-          <h2>班级概览</h2>
+        <section className="dashboard-role-intro teacher-surface">
+          <p className="dashboard-section-label">02 / CLASS STUDIO</p>
+          <h1>班级整体哪里需要干预，应该先看谁？</h1>
+          <p>先扫描班级，再定位学生；用掌握度、薄弱知识点和阶段信息安排行动。</p>
+        </section>
+        <section className="panel dashboard-panel teacher-operations">
+          <h2>班级扫描</h2>
           {classes === null ? <p>加载中…</p> : classes.length ? (
             <div className="class-list">
               {classes.map((item) => (
