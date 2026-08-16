@@ -89,7 +89,7 @@ export default function App() {
       />
     )
   }
-  if (params.get('login') === '1') {
+  if (params.get('login') === '1' || !params.get('student')) {
     if (role === 'parent' || role === 'teacher') {
       return <LoginPage role={role as AuthRole} />
     }

@@ -53,11 +53,14 @@ describe('dashboard role views', () => {
     setSearch('/')
   })
 
-  it('shows both role entry labels while preserving student mode by default', () => {
+  it('shows role entry labels on the default landing page', () => {
     render(<App />)
-    expect(screen.getByText('家长端')).toBeInTheDocument()
-    expect(screen.getByText('老师端')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '建档' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^家长登录/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^老师登录/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '学生学习' })).toHaveAttribute(
+      'href',
+      '?student=1',
+    )
   })
 
   it('renders parent loading, empty, list, and detail states', async () => {

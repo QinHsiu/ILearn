@@ -23,6 +23,9 @@ export default function LandingPage() {
           </a>
         ))}
       </div>
+      <a className="student-entry" href="?student=1">
+        学生学习
+      </a>
     </main>
   )
 }
