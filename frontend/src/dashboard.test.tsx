@@ -66,6 +66,8 @@ describe('dashboard role views', () => {
     vi.mocked(dashboardApi.parentChild).mockResolvedValue(detail)
 
     render(<App />)
+    expect(screen.getByText('家长端')).toHaveClass('dashboard-role-badge')
+    expect(screen.getByRole('link', { name: '返回学生端' })).toHaveAttribute('href', '/')
     expect(screen.getByText('加载中…')).toBeInTheDocument()
     expect(await screen.findByText('小明')).toBeInTheDocument()
 
@@ -102,7 +104,8 @@ describe('dashboard role views', () => {
     render(<App />)
     await screen.findByText('暂无学生数据')
     fireEvent.change(screen.getByLabelText('绑定学习会话'), { target: { value: 's1' } })
-    fireEvent.submit(screen.getByRole('button', { name: '绑定并刷新' }).closest('form')!)
+    expect(screen.getByText(/还没有绑定学生/)).toHaveClass('dashboard-empty-state')
+    fireEvent.submit(screen.getByRole('button', { name: '绑定学生并刷新' }).closest('form')!)
     expect(await screen.findByText('绑定失败')).toBeInTheDocument()
   })
 
@@ -114,7 +117,9 @@ describe('dashboard role views', () => {
     render(<App />)
     await screen.findByText('班级 c1')
     fireEvent.change(screen.getByLabelText('绑定学生会话'), { target: { value: 's1' } })
-    fireEvent.submit(screen.getByRole('button', { name: '绑定并刷新' }).closest('form')!)
+    expect(screen.getByRole('heading', { name: '班级概览' }).closest('section')).toHaveClass('dashboard-panel')
+    expect(screen.getByText('班级 c1')).toHaveClass('dashboard-entry-card')
+    fireEvent.submit(screen.getByRole('button', { name: '绑定学生并刷新' }).closest('form')!)
     expect(await screen.findByText('教师绑定失败')).toBeInTheDocument()
   })
 })

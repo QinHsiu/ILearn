@@ -54,20 +54,27 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
   return (
     <DashboardHome title="家长端">
       <main className="dashboard-content">
-        <section className="panel">
+        <section className="panel dashboard-panel">
           <h2>孩子学习概览</h2>
           {students === null ? <p>加载中…</p> : (
-            <StudentList
-              students={students}
-              selectedId={selectedSessionId}
-              onSelect={selectStudent}
-            />
+            <>
+              <StudentList
+                students={students}
+                selectedId={selectedSessionId}
+                onSelect={selectStudent}
+              />
+              {!students.length ? (
+                <p className="dashboard-empty-state">
+                  还没有绑定学生，绑定学习会话后即可查看学习进度。
+                </p>
+              ) : null}
+            </>
           )}
-          {error ? <p className="error">{error}</p> : null}
+          {error ? <p className="error dashboard-error">{error}</p> : null}
           <form className="dashboard-bind" onSubmit={(e) => void bind(e)}>
             <label htmlFor="parent-session">绑定学习会话</label>
             <input id="parent-session" value={sessionId} onChange={(e) => setSessionId(e.target.value)} />
-            <button className="btn" type="submit">绑定并刷新</button>
+            <button className="btn" type="submit">绑定学生并刷新</button>
           </form>
         </section>
         {selected ? <DashboardDetail detail={selected} /> : null}

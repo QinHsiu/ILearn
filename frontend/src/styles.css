@@ -131,6 +131,11 @@ textarea {
   margin-bottom: 1.25rem;
 }
 
+.dashboard-shell .brand-row {
+  align-items: flex-start;
+  margin-bottom: 1.75rem;
+}
+
 .brand {
   margin: 0;
   font-family: var(--font-display);
@@ -250,6 +255,12 @@ textarea {
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(22, 52, 58, 0.12);
 }
 
 .btn:disabled {
@@ -799,6 +810,15 @@ html[data-band='senior'] .brand {
 }
 
 @media (max-width: 720px) {
+  .app-shell {
+    width: min(100% - 1.25rem, 920px);
+    padding-top: 1rem;
+  }
+
+  .dashboard-shell .brand-row {
+    margin-bottom: 1.25rem;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }
