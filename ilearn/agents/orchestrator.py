@@ -65,7 +65,7 @@ class MultiAgentOrchestrator:
             Path(__file__).resolve().parents[2] / "data" / "pilot",
         )
         self._curriculum_agent = CurriculumAgent(pilot_dir=Path(pilot_dir))
-        self._assessment = AssessmentAgent(curriculum)
+        self._assessment = AssessmentAgent(curriculum, llm=llm)
         self._practice = PracticeAgent(llm)
         self._diagnosis = DiagnosisAgent(curriculum)
         self._planning = PlanningAgent(curriculum)
@@ -238,6 +238,105 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return session.paper
 
+    @staticmethod
+    def _adaptive_paper_dump(paper: AssessmentPaper) -> dict:
+        return paper.model_dump(mode="json")
+
+    def start_adaptive_assessment(
+        self,
+        session_id: str,
+        semester: str | None = None,
+    ) -> dict:
+        """Generate anchor paper for cold-start; does not replace session.paper."""
+        session = self._store.load(session_id)
+        payload = self._assessment.generate_adaptive_assessment(
+            session.profile,
+            is_first_time=True,
+            semester=semester,
+            portrait=session.portrait,
+        )
+        paper: AssessmentPaper = payload["paper"]
+        adaptive = {
+            "anchor_paper": self._adaptive_paper_dump(paper),
+            "inferred_chapter": payload.get("inferred_chapter"),
+            "inferred_kps": payload.get("inferred_kps"),
+            "anchor_kps": payload.get("anchor_kps"),
+            "semester": payload.get("semester"),
+            "requested": payload.get("requested"),
+            "delivered": payload.get("delivered"),
+            "shortfall": payload.get("shortfall"),
+        }
+        session.metadata["adaptive"] = adaptive
+        self._record_decision(
+            session,
+            self._assessment.name,
+            SessionPhase.ASSESS,
+            "adaptive anchor assessment generated",
+            ok=True,
+        )
+        self._store.save(session)
+        return payload
+
+    def continue_adaptive_assessment(
+        self,
+        session_id: str,
+        anchor_results: list[dict],
+    ) -> dict:
+        """Build full 20-item paper from anchor results and set session.paper."""
+        session = self._store.load(session_id)
+        adaptive_meta = dict(session.metadata.get("adaptive") or {})
+        semester = adaptive_meta.get("semester")
+        payload = self._assessment.generate_adaptive_assessment(
+            session.profile,
+            is_first_time=False,
+            anchor_results=anchor_results,
+            semester=semester if isinstance(semester, str) else None,
+            portrait=session.portrait,
+        )
+        paper: AssessmentPaper = payload["paper"]
+        paper, validator_summary = self._validate_and_revise_paper(session, paper)
+        payload["paper"] = paper
+
+        adaptive_meta.update(
+            {
+                "anchor_results": anchor_results,
+                "full_paper": self._adaptive_paper_dump(paper),
+                "diagnosis": payload.get("diagnosis"),
+                "inferred_chapter": payload.get("inferred_chapter"),
+                "inferred_kps": payload.get("inferred_kps"),
+                "target_kps": payload.get("target_kps"),
+                "requested": payload.get("requested"),
+                "delivered": payload.get("delivered"),
+                "shortfall": payload.get("shortfall"),
+            }
+        )
+        session.metadata["adaptive"] = adaptive_meta
+        session.paper = paper
+        self._bind_pending_questions(session, paper)
+        session.answers = []
+        session.image_answers = []
+        session.grades = []
+        session.diagnosis = None
+        session.plan = None
+        session.phase = SessionPhase.PRACTICE
+        self._record_decision(
+            session,
+            self._assessment.name,
+            SessionPhase.ASSESS,
+            "adaptive full assessment generated",
+            ok=True,
+        )
+        if validator_summary is not None:
+            self._record_decision(
+                session,
+                "item_validators",
+                SessionPhase.ASSESS,
+                validator_summary,
+                ok=True,
+            )
+        self._store.save(session)
+        return payload
+
     def submit(
         self,
         session_id: str,
@@ -326,6 +425,10 @@ class MultiAgentOrchestrator:
         )
         session.diagnosis = result.payload["diagnosis"]
         session.portrait = result.payload["portrait"]
+        if result.payload.get("diagnosis_enrichment") is not None:
+            session.metadata["diagnosis_enrichment"] = result.payload[
+                "diagnosis_enrichment"
+            ]
         session.plan = None
         session.phase = result.phase
         self._record_decision(
@@ -348,7 +451,13 @@ class MultiAgentOrchestrator:
                 self._ctx(
                     session,
                     phase=SessionPhase.PLAN,
-                    metadata={"citations": list(session.curriculum_citations)},
+                    metadata={
+                        "citations": list(session.curriculum_citations),
+                        "diagnosis_enrichment": session.metadata.get(
+                            "diagnosis_enrichment"
+                        )
+                        or {},
+                    },
                 )
             ),
             valid_plan_result,
@@ -360,6 +469,8 @@ class MultiAgentOrchestrator:
             set(result.payload) & {"plan", "plan_history_append"},
         )
         session.plan = result.payload["plan"]
+        if result.payload.get("scientific_plan") is not None:
+            session.metadata["scientific_plan"] = result.payload["scientific_plan"]
         for entry in result.payload.get("plan_history_append", []):
             session.plan_history.append(entry)
         session.phase = result.phase
@@ -383,7 +494,13 @@ class MultiAgentOrchestrator:
             self._ctx(
                 session,
                 phase=SessionPhase.PLAN,
-                metadata={"citations": list(session.curriculum_citations)},
+                metadata={
+                    "citations": list(session.curriculum_citations),
+                    "diagnosis_enrichment": session.metadata.get(
+                        "diagnosis_enrichment"
+                    )
+                    or {},
+                },
             )
         )
         assert_writes_allowed(
@@ -391,6 +508,8 @@ class MultiAgentOrchestrator:
             set(result.payload) & {"plan", "plan_history_append"},
         )
         session.plan = result.payload["plan"]
+        if result.payload.get("scientific_plan") is not None:
+            session.metadata["scientific_plan"] = result.payload["scientific_plan"]
         for entry in result.payload.get("plan_history_append", []):
             session.plan_history.append(entry)
         session.phase = result.phase
@@ -438,12 +557,25 @@ class MultiAgentOrchestrator:
         used = session.hint_interactions.get(item_id, [])
         if len(used) >= MAX_HINTS_PER_ITEM:
             raise ValueError("hints exhausted for this item")
-        turn = self._tutor.step(
-            previous.phase,
-            user_message,
-            item,
-            previous.error_tag,
+        enrichment = session.metadata.get("diagnosis_enrichment")
+        diagnosis_ctx = (
+            enrichment if isinstance(enrichment, dict) else None
         )
+        if previous.error_tag or diagnosis_ctx:
+            turn = self._tutor.get_socratic_hint_with_diagnosis(
+                item,
+                user_message,
+                diagnosis_ctx,
+                phase=previous.phase,
+                error_tag=previous.error_tag,
+            )
+        else:
+            turn = self._tutor.step(
+                previous.phase,
+                user_message,
+                item,
+                previous.error_tag,
+            )
         turn = self._guard_turn(session, item, turn)
         session.tutor_by_item[item_id] = turn
         session.hint_interactions.setdefault(item_id, []).append(

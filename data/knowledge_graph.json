@@ -1,0 +1,67 @@
+{
+  "mult_3digit": {
+    "prerequisites": [],
+    "related": ["rect_area"],
+    "grade": 4
+  },
+  "rect_area": {
+    "prerequisites": ["mult_3digit"],
+    "related": ["parallel_perp"],
+    "grade": 4
+  },
+  "angle_measure": {
+    "prerequisites": [],
+    "related": ["parallel_perp"],
+    "grade": 4
+  },
+  "parallel_perp": {
+    "prerequisites": ["angle_measure"],
+    "related": ["rect_area"],
+    "grade": 4
+  },
+  "dec_mult": {
+    "prerequisites": ["mult_3digit"],
+    "related": ["frac_mult"],
+    "grade": 5
+  },
+  "frac_add_same": {
+    "prerequisites": [],
+    "related": ["frac_mult", "frac_div"],
+    "grade": 5
+  },
+  "frac_mult": {
+    "prerequisites": ["frac_add_same"],
+    "related": ["frac_div", "dec_mult"],
+    "grade": 5
+  },
+  "simple_eq": {
+    "prerequisites": ["dec_mult"],
+    "related": ["frac_mult"],
+    "grade": 5
+  },
+  "frac_div": {
+    "prerequisites": ["frac_mult"],
+    "related": ["ratio"],
+    "grade": 6
+  },
+  "ratio": {
+    "prerequisites": ["frac_div"],
+    "related": ["percent"],
+    "grade": 6
+  },
+  "circle_area": {
+    "prerequisites": ["rect_area"],
+    "related": ["percent"],
+    "grade": 6
+  },
+  "percent": {
+    "prerequisites": ["ratio"],
+    "related": ["frac_div"],
+    "grade": 6
+  },
+  "factors": {
+    "prerequisites": ["mult_3digit"],
+    "related": ["frac_div"],
+    "grade": 6
+  }
+}

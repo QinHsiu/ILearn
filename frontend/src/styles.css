@@ -138,6 +138,39 @@ textarea {
   color: var(--muted);
 }
 
+.assessment-layout--mobile .item-grid,
+.assessment-layout--mobile .assess-body {
+  display: block;
+}
+
+.assessment-layout--desktop {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .assessment-layout--desktop .assess-head {
+    grid-column: 1 / -1;
+  }
+}
+
+.scientific-plan-summary {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--card) 88%, var(--accent) 6%);
+}
+
+.scientific-plan-summary summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.scientific-plan-summary .lede {
+  margin: 0.55rem 0 0;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

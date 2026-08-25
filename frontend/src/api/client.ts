@@ -26,6 +26,7 @@ export type AssessmentItem = {
   type: string
   difficulty: string
   knowledge_ids: string[]
+  answer_key?: string | null
   choices?: string[] | null
   source_refs?: SourceRef[]
   situation_tag?: string | null
@@ -72,6 +73,19 @@ export type SessionState = {
     markdown?: string
     items?: Array<{ title?: string; detail?: string; curriculum_basis?: string }>
   } | null
+  metadata?: {
+    diagnosis_enrichment?: {
+      weak_skills?: string[]
+      prerequisite_gaps?: string[]
+      learning_advice?: string
+    }
+    scientific_plan?: {
+      tasks?: Array<{ type?: string; skill?: string; instruction?: string }>
+      review_schedule?: Array<{ skill?: string; scheduled_date?: string; session?: number }>
+      estimated_total_hours?: number
+    }
+    [key: string]: unknown
+  }
 }
 
 export type ImageMime = 'image/png' | 'image/jpeg' | 'image/webp'
@@ -179,6 +193,28 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
+export type AdaptiveAssessmentResponse = {
+  is_anchor: boolean
+  paper: AssessmentPaper
+  inferred_chapter?: string | null
+  inferred_kps?: string[]
+  anchor_kps?: string[]
+  target_kps?: string[]
+  semester?: string | null
+  diagnosis?: Record<string, unknown> | null
+  requested?: number
+  delivered?: number
+  shortfall?: number
+  layer2_used?: boolean
+  layer2_source?: string
+}
+
+export type AdaptiveAnchorResult = {
+  item_id: string
+  is_correct: boolean
+  knowledge_ids?: string[]
+}
+
 export const api = {
   createSession(profile: StudentProfile) {
     return request<{ session_id: string }>('/sessions', {
@@ -190,6 +226,24 @@ export const api = {
     return request<AssessmentPaper>(`/sessions/${sessionId}/assessment`, {
       method: 'POST',
     })
+  },
+  adaptiveStart(sessionId: string, semester?: string) {
+    return request<AdaptiveAssessmentResponse>(
+      `/sessions/${sessionId}/assessment/adaptive/start`,
+      {
+        method: 'POST',
+        body: JSON.stringify(semester ? { semester } : {}),
+      },
+    )
+  },
+  adaptiveContinue(sessionId: string, anchorResults: AdaptiveAnchorResult[]) {
+    return request<AdaptiveAssessmentResponse>(
+      `/sessions/${sessionId}/assessment/adaptive/continue`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ anchor_results: anchorResults }),
+      },
+    )
   },
   submit(sessionId: string, answers: Record<string, string>, itemMeta: Record<string, object> = {}) {
     return request<SessionState>(`/sessions/${sessionId}/submit`, {

@@ -269,19 +269,45 @@ class AssessmentBuilder:
         portrait: LearnerPortrait | None = None,
     ) -> AssessmentPaper:
         """Build a smaller practice paper targeting weak knowledge nodes."""
+        return self.build_by_knowledge_ids(
+            profile,
+            weak_knowledge_ids,
+            size=size,
+            portrait=portrait,
+            require_nonempty=True,
+        )
+
+    def build_by_knowledge_ids(
+        self,
+        profile: StudentProfile,
+        knowledge_ids: list[str],
+        size: int = 8,
+        *,
+        portrait: LearnerPortrait | None = None,
+        require_nonempty: bool = False,
+        difficulty_targets: dict[str, float] | None = None,
+    ) -> AssessmentPaper:
+        """Build a variable-size paper targeting knowledge ids (no fixed-20 gate)."""
         templates = [
             template
             for template in self._provider.list_templates(profile.grade)
-            if any(kid in weak_knowledge_ids for kid in template.knowledge_ids)
+            if any(kid in knowledge_ids for kid in template.knowledge_ids)
         ]
         if not templates:
-            raise AssessmentBuildError("no templates for weak knowledge ids")
+            if require_nonempty:
+                raise AssessmentBuildError("no templates for weak knowledge ids")
+            return AssessmentPaper(
+                items=[],
+                grade=require_pilot_grade(profile.grade),  # type: ignore[arg-type]
+                curriculum_label=self._provider.label,
+            )
         if portrait and portrait.situation_interest:
             best = max(portrait.situation_interest.values())
             preferred = [
                 template
                 for template in templates
-                if template.situation_tag in {
+                if template.situation_tag
+                in {
                     tag
                     for tag, score in portrait.situation_interest.items()
                     if score == best and score > 0.5
@@ -289,8 +315,10 @@ class AssessmentBuilder:
             ]
             if preferred:
                 templates = preferred
-        self._rng.shuffle(templates)
-        picked = templates[: min(size, len(templates))]
+
+        picked = self._pick_with_difficulty(
+            templates, size=size, difficulty_targets=difficulty_targets
+        )
         items = [
             self._instantiate(template, index)
             for index, template in enumerate(picked)
@@ -300,6 +328,64 @@ class AssessmentBuilder:
             grade=require_pilot_grade(profile.grade),  # type: ignore[arg-type]
             curriculum_label=self._provider.label,
         )
+
+    def _pick_with_difficulty(
+        self,
+        templates: list[ItemTemplate],
+        *,
+        size: int,
+        difficulty_targets: dict[str, float] | None,
+    ) -> list[ItemTemplate]:
+        pool = list(templates)
+        self._rng.shuffle(pool)
+        if not difficulty_targets or size <= 0:
+            return pool[: min(size, len(pool))]
+
+        targets = {
+            "easy": max(0, int(round(size * difficulty_targets.get("easy", 0)))),
+            "medium": max(0, int(round(size * difficulty_targets.get("medium", 0)))),
+            "hard": max(0, int(round(size * difficulty_targets.get("hard", 0)))),
+        }
+        # Adjust rounding so quotas sum to size.
+        while sum(targets.values()) > size:
+            for key in ("hard", "medium", "easy"):
+                if targets[key] > 0:
+                    targets[key] -= 1
+                    break
+        while sum(targets.values()) < size:
+            for key in ("easy", "medium", "hard"):
+                targets[key] += 1
+                if sum(targets.values()) >= size:
+                    break
+
+        by_diff: dict[str, list[ItemTemplate]] = {
+            "easy": [],
+            "medium": [],
+            "hard": [],
+        }
+        for template in pool:
+            by_diff.setdefault(template.difficulty, []).append(template)
+
+        picked: list[ItemTemplate] = []
+        used: set[str] = set()
+        for difficulty, quota in targets.items():
+            for template in by_diff.get(difficulty, []):
+                if len([p for p in picked if p.difficulty == difficulty]) >= quota:
+                    break
+                if template.id in used:
+                    continue
+                picked.append(template)
+                used.add(template.id)
+
+        if len(picked) < size:
+            for template in pool:
+                if template.id in used:
+                    continue
+                picked.append(template)
+                used.add(template.id)
+                if len(picked) >= size:
+                    break
+        return picked[:size]
 
     def _instantiate(self, template: ItemTemplate, index: int) -> AssessmentItem:
         record = self._provider.get_template_record(template.id)

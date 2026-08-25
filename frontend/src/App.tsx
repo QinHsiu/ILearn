@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { api, fileToImageAnswer } from './api/client'
+import { api } from './api/client'
 import type {
   AssessmentPaper,
   Gender,
@@ -13,17 +13,13 @@ import MarkdownView from './MarkdownView'
 import HistoryList from './components/HistoryList'
 import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
-import ProgressDots from './components/ProgressDots'
-import MathVisualizer from './components/MathVisualizer'
-import FocusedHintLayout from './components/FocusedHintLayout'
-import SocraticPanel from './components/SocraticPanel'
 import ParentDashboard from './pages/ParentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
+import Assessment from './pages/Assessment'
 import type { AuthRole } from './api/client'
-import { useCountdown } from './hooks/useCountdown'
-import { inferVisualization } from './lib/inferVisualization'
+import { useRole } from './hooks/useRole'
 import { applyTheme } from './theme'
 import './styles.css'
 import './dashboard.css'
@@ -67,9 +63,8 @@ function wrongItemEntries(session: SessionState) {
 
 export default function App() {
   const [, refreshRoute] = useState(0)
+  const { role, userId, isParent, isTeacher } = useRole()
   const params = new URLSearchParams(window.location.search)
-  const role = params.get('role')
-  const userId = params.get('user') || ''
 
   useEffect(() => {
     const onPopState = () => refreshRoute((version) => version + 1)
@@ -77,10 +72,10 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
-  if (role === 'parent' && userId) {
+  if (isParent && userId) {
     return <ParentDashboard userId={userId} studentId={params.get('student_id') || undefined} />
   }
-  if (role === 'teacher' && userId) {
+  if (isTeacher && userId) {
     return (
       <TeacherDashboard
         userId={userId}
@@ -111,7 +106,6 @@ function StudentApp() {
   const [report, setReport] = useState<ReportResponse | null>(null)
   const [historyNickname, setHistoryNickname] = useState('')
   const [focusItemId, setFocusItemId] = useState<string | null>(null)
-  const [currentItemIndex, setCurrentItemIndex] = useState(0)
   const [exporting, setExporting] = useState<'assessment' | 'report' | null>(null)
 
   const [profile, setProfile] = useState<StudentProfile>({
@@ -129,27 +123,9 @@ function StudentApp() {
     [session],
   )
 
-  const submitAnswersRef = useRef<() => void>(() => {})
-  const { format: formatCountdown, reset: resetCountdown } = useCountdown(
-    step === 1 && paper ? 3600 : 0,
-    () => {
-      if (step === 1 && paper && sessionId && !busy) {
-        submitAnswersRef.current()
-      }
-    },
-  )
-
   useEffect(() => {
     applyTheme(profile.grade, profile.gender || 'unspecified')
   }, [profile.grade, profile.gender])
-
-  useEffect(() => {
-    if (step === 1 && paper) {
-      resetCountdown()
-      setCurrentItemIndex(0)
-      setFocusItemId(null)
-    }
-  }, [step, sessionId, paper, resetCountdown])
 
   async function onResume(id: string) {
     const nextReport = await api.getReport(id)
@@ -190,9 +166,8 @@ function StudentApp() {
       const nick = (profile.nickname || '').trim()
       if (nick) payload.nickname = nick
       const created = await api.createSession(payload)
-      const nextPaper = await api.generateAssessment(created.session_id)
       setSessionId(created.session_id)
-      setPaper(nextPaper)
+      setPaper(null)
       setAnswers({})
       setImageUploads({})
       setReport(null)
@@ -204,51 +179,21 @@ function StudentApp() {
     }
   }
 
-  async function onPickImage(itemId: string, file: File | undefined) {
-    if (!file) return
-    setError(null)
-    try {
-      const payload = await fileToImageAnswer(itemId, file)
-      const preview = URL.createObjectURL(file)
-      setImageUploads((prev) => {
-        const old = prev[itemId]
-        if (old?.preview) URL.revokeObjectURL(old.preview)
-        return { ...prev, [itemId]: { ...payload, preview, name: file.name } }
-      })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    }
-  }
-
-  function onClearImage(itemId: string) {
-    setImageUploads((prev) => {
-      const next = { ...prev }
-      if (next[itemId]?.preview) URL.revokeObjectURL(next[itemId].preview)
-      delete next[itemId]
-      return next
-    })
-  }
-
-  async function onSubmitAnswers() {
-    if (!sessionId || !paper) return
+  async function onAdaptiveComplete(payload: {
+    paper: AssessmentPaper
+    answers: Record<string, string>
+  }) {
+    if (!sessionId) return
     setBusy(true)
     setError(null)
     try {
-      const payload: Record<string, string> = {}
-      for (const item of paper.items) {
-        payload[item.id] = (answers[item.id] || '').trim()
+      setPaper(payload.paper)
+      setAnswers(payload.answers)
+      const submitPayload: Record<string, string> = {}
+      for (const item of payload.paper.items) {
+        submitPayload[item.id] = (payload.answers[item.id] || '').trim()
       }
-      await api.submit(sessionId, payload)
-      const images = Object.values(imageUploads).map(
-        ({ item_id, image_base64, mime_type }) => ({
-          item_id,
-          image_base64,
-          mime_type,
-        }),
-      )
-      if (images.length) {
-        await api.submitImages(sessionId, images)
-      }
+      await api.submit(sessionId, submitPayload)
       await api.run(sessionId)
       const nextReport = await api.getReport(sessionId)
       setReport(nextReport)
@@ -256,13 +201,10 @@ function StudentApp() {
       setStep(2)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
+      throw err
     } finally {
       setBusy(false)
     }
-  }
-
-  submitAnswersRef.current = () => {
-    void onSubmitAnswers()
   }
 
   async function onReplan() {
@@ -430,219 +372,23 @@ function StudentApp() {
         </section>
       )}
 
-      {step === 1 && paper && sessionId && (
-        <section className="panel">
-          <div className="assess-head">
-            <div>
-              <h2>测评作答</h2>
-              <p className="lede">
-                {paper.curriculum_label} · 共 {paper.items.length} 题 · 可文本作答，也可上传手写照片
-              </p>
-            </div>
-            <div className="countdown" aria-live="polite">
-              剩余 {formatCountdown()}
-            </div>
-          </div>
-
-          <ProgressDots
-            total={paper.items.length}
-            current={currentItemIndex}
-            answered={answers}
-            questionIds={paper.items.map((item) => item.id)}
-            onSelect={setCurrentItemIndex}
-          />
-
-          {focusItemId ? (
-            (() => {
-              const focusItem =
-                paper.items.find((item) => item.id === focusItemId) || paper.items[0]
-              const visual = inferVisualization(focusItem.stem)
-              return (
-                <FocusedHintLayout
-                  onExit={() => setFocusItemId(null)}
-                  questionSlot={
-                    <>
-                      <div className="item-meta">
-                        <span className="pill">{focusItem.difficulty}</span>
-                        <span className="pill">{focusItem.type}</span>
-                      </div>
-                      <div>{focusItem.stem}</div>
-                      <MathVisualizer spec={visual} />
-                      {focusItem.choices?.length ? (
-                        <div className="choices">
-                          {focusItem.choices.map((choice) => (
-                            <label className="choice" key={choice}>
-                              <input
-                                type="radio"
-                                name={`focus-${focusItem.id}`}
-                                checked={answers[focusItem.id] === choice}
-                                onChange={() =>
-                                  setAnswers({ ...answers, [focusItem.id]: choice })
-                                }
-                              />
-                              <span>{choice}</span>
-                            </label>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="field" style={{ marginTop: '0.65rem' }}>
-                          <label htmlFor={`focus-ans-${focusItem.id}`}>作答</label>
-                          <textarea
-                            id={`focus-ans-${focusItem.id}`}
-                            value={answers[focusItem.id] || ''}
-                            onChange={(e) =>
-                              setAnswers({
-                                ...answers,
-                                [focusItem.id]: e.target.value,
-                              })
-                            }
-                            placeholder="输入答案或解题过程"
-                          />
-                        </div>
-                      )}
-                    </>
-                  }
-                  panelSlot={
-                    <SocraticPanel sessionId={sessionId} itemId={focusItem.id} />
-                  }
-                />
-              )
-            })()
-          ) : (
-            paper.items.map((item, index) => {
-              const visual = inferVisualization(item.stem)
-              return (
-                <article
-                  className={`question-card${index === currentItemIndex ? ' current-question' : ''}`}
-                  key={item.id}
-                  id={`item-${item.id}`}
-                >
-                  <div className="item-meta">
-                    <span className="pill">第 {index + 1} 题</span>
-                    <span className="pill">{item.difficulty}</span>
-                    <span className="pill">{item.type}</span>
-                    {item.situation_tag ? (
-                      <span className="pill">{item.situation_tag}</span>
-                    ) : null}
-                  </div>
-                  <div>{item.stem}</div>
-                  <MathVisualizer spec={visual} />
-                  {item.choices?.length ? (
-                    <div className="choices">
-                      {item.choices.map((choice) => (
-                        <label className="choice" key={choice}>
-                          <input
-                            type="radio"
-                            name={item.id}
-                            checked={answers[item.id] === choice}
-                            onChange={() => {
-                              setAnswers({ ...answers, [item.id]: choice })
-                              setCurrentItemIndex(index)
-                            }}
-                          />
-                          <span>{choice}</span>
-                        </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="field" style={{ marginTop: '0.65rem' }}>
-                      <label htmlFor={`ans-${item.id}`}>作答</label>
-                      <textarea
-                        id={`ans-${item.id}`}
-                        value={answers[item.id] || ''}
-                        onChange={(e) => {
-                          setAnswers({ ...answers, [item.id]: e.target.value })
-                          setCurrentItemIndex(index)
-                        }}
-                        placeholder="输入答案或解题过程"
-                      />
-                    </div>
-                  )}
-                  <div className="field upload-field">
-                    <label htmlFor={`img-${item.id}`}>手写作答照片（可选）</label>
-                    <input
-                      id={`img-${item.id}`}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
-                      disabled={busy}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        void onPickImage(item.id, file)
-                        e.target.value = ''
-                      }}
-                    />
-                    {imageUploads[item.id] ? (
-                      <div className="upload-preview">
-                        <div className="upload-frame">
-                          <img
-                            src={imageUploads[item.id].preview}
-                            alt={`${item.id} 手写作答预览`}
-                          />
-                        </div>
-                        <div className="upload-meta">
-                          <span className="upload-name">{imageUploads[item.id].name}</span>
-                          <button
-                            className="btn secondary"
-                            type="button"
-                            onClick={() => onClearImage(item.id)}
-                          >
-                            移除图片
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="upload-hint">
-                        支持 PNG / JPG / WebP，将随提交送去 OCR 批改
-                      </span>
-                    )}
-                  </div>
-                  <div className="actions">
-                    <button
-                      className="btn secondary"
-                      type="button"
-                      onClick={() => {
-                        setCurrentItemIndex(index)
-                        setFocusItemId(item.id)
-                      }}
-                    >
-                      求助苏格拉底
-                    </button>
-                  </div>
-                </article>
-              )
-            })
-          )}
-
-          {!focusItemId ? (
-            <div className="actions">
-              <button
-                className="btn secondary"
-                type="button"
-                onClick={() => {
-                  setStep(0)
-                  setSessionId(null)
-                  setPaper(null)
-                  setReport(null)
-                  setAnswers({})
-                  setImageUploads({})
-                  setFocusItemId(null)
-                }}
-                disabled={busy}
-              >
-                返回建档
-              </button>
-              <button
-                className="btn"
-                type="button"
-                onClick={() => void onSubmitAnswers()}
-                disabled={busy}
-              >
-                {busy ? '批改中…' : '提交并诊断'}
-              </button>
-            </div>
-          ) : null}
-        </section>
-      )}
+      {step === 1 && sessionId ? (
+        <Assessment
+          sessionId={sessionId}
+          profile={profile}
+          onComplete={onAdaptiveComplete}
+          onError={(message) => setError(message)}
+          onBack={() => {
+            setStep(0)
+            setSessionId(null)
+            setPaper(null)
+            setReport(null)
+            setAnswers({})
+            setImageUploads({})
+            setFocusItemId(null)
+          }}
+        />
+      ) : null}
 
       {step === 2 && session && (
         <section className="panel">
@@ -708,6 +454,20 @@ function StudentApp() {
             状态：{session.plan?.status || 'draft'}
             {profile.nickname ? ` · ${profile.nickname}` : ''}
           </p>
+          {session.metadata?.scientific_plan ? (
+            <details className="scientific-plan-summary">
+              <summary>科学学习方法摘要</summary>
+              <p className="lede">
+                任务 {(session.metadata.scientific_plan.tasks || []).length} 项
+                {typeof session.metadata.scientific_plan.estimated_total_hours === 'number'
+                  ? ` · 约 ${session.metadata.scientific_plan.estimated_total_hours.toFixed(1)} 小时`
+                  : ''}
+                {(session.metadata.scientific_plan.review_schedule || []).length
+                  ? ` · 间隔复习 ${(session.metadata.scientific_plan.review_schedule || []).length} 个节点`
+                  : ''}
+              </p>
+            </details>
+          ) : null}
           <div className="plan-body">
             <MarkdownView
               source={report?.markdown || session.plan?.markdown || '暂无计划内容'}
