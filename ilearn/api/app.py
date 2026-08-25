@@ -92,6 +92,36 @@ class TutorHintRequest(BaseModel):
     user_message: str
 
 
+class AdaptiveStartRequest(BaseModel):
+    semester: str | None = None
+
+
+class AdaptiveAnchorResult(BaseModel):
+    item_id: str
+    is_correct: bool
+    knowledge_ids: list[str] = Field(default_factory=list)
+
+
+class AdaptiveContinueRequest(BaseModel):
+    anchor_results: list[AdaptiveAnchorResult]
+
+
+class AdaptiveAssessmentResponse(BaseModel):
+    is_anchor: bool
+    paper: AssessmentPaper
+    inferred_chapter: str | None = None
+    inferred_kps: list[str] = Field(default_factory=list)
+    anchor_kps: list[str] = Field(default_factory=list)
+    target_kps: list[str] = Field(default_factory=list)
+    semester: str | None = None
+    diagnosis: dict | None = None
+    requested: int = 0
+    delivered: int = 0
+    shortfall: int = 0
+    layer2_used: bool = False
+    layer2_source: str = "none"
+
+
 def create_app(
     *,
     sessions_dir: Path | str | None = None,
@@ -195,6 +225,56 @@ def create_app(
     @app.post("/sessions/{session_id}/assessment", response_model=AssessmentPaper)
     def generate_assessment(session_id: str) -> AssessmentPaper:
         return orchestrator.generate_assessment(session_id)
+
+    @app.post(
+        "/sessions/{session_id}/assessment/adaptive/start",
+        response_model=AdaptiveAssessmentResponse,
+    )
+    def adaptive_assessment_start(
+        session_id: str, body: AdaptiveStartRequest | None = None
+    ) -> AdaptiveAssessmentResponse:
+        payload = orchestrator.start_adaptive_assessment(
+            session_id, semester=(body.semester if body else None)
+        )
+        return AdaptiveAssessmentResponse(
+            is_anchor=bool(payload.get("is_anchor")),
+            paper=payload["paper"],
+            inferred_chapter=payload.get("inferred_chapter"),
+            inferred_kps=list(payload.get("inferred_kps") or []),
+            anchor_kps=list(payload.get("anchor_kps") or []),
+            semester=payload.get("semester"),
+            requested=int(payload.get("requested") or 0),
+            delivered=int(payload.get("delivered") or 0),
+            shortfall=int(payload.get("shortfall") or 0),
+            layer2_used=bool(payload.get("layer2_used")),
+            layer2_source=str(payload.get("layer2_source") or "none"),
+        )
+
+    @app.post(
+        "/sessions/{session_id}/assessment/adaptive/continue",
+        response_model=AdaptiveAssessmentResponse,
+    )
+    def adaptive_assessment_continue(
+        session_id: str, body: AdaptiveContinueRequest
+    ) -> AdaptiveAssessmentResponse:
+        payload = orchestrator.continue_adaptive_assessment(
+            session_id,
+            [row.model_dump() for row in body.anchor_results],
+        )
+        return AdaptiveAssessmentResponse(
+            is_anchor=bool(payload.get("is_anchor")),
+            paper=payload["paper"],
+            inferred_chapter=payload.get("inferred_chapter"),
+            inferred_kps=list(payload.get("inferred_kps") or []),
+            target_kps=list(payload.get("target_kps") or []),
+            semester=payload.get("semester"),
+            diagnosis=payload.get("diagnosis"),
+            requested=int(payload.get("requested") or 0),
+            delivered=int(payload.get("delivered") or 0),
+            shortfall=int(payload.get("shortfall") or 0),
+            layer2_used=bool(payload.get("layer2_used")),
+            layer2_source=str(payload.get("layer2_source") or "none"),
+        )
 
     @app.post("/sessions/{session_id}/submit", response_model=SessionState)
     def submit(session_id: str, body: SubmitRequest) -> SessionState:

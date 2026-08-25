@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ilearn.core.hints import hint_for_error
 from ilearn.core.schemas import AssessmentItem, ErrorTag, TutorPhase, TutorTurn
 
 _WRONG_KEYWORDS = ("不对", "不会", "还是错", "错了", "不知道", "不懂", "还是不对")
+
+_ERROR_STRATEGIES: dict[str, str] = {
+    "concept_gap": "概念澄清：请先回顾这个概念的准确定义。",
+    "calc_error": "步骤引导：请检查你的计算步骤，看看哪一步可能出了问题。",
+    "misread": "元认知检查：请再仔细检查一遍题目和你的答案。",
+    "method_wrong": "方法提示：请想想这道题更合适用哪种解题方法。",
+    "incomplete": "过程补全：请把解题步骤写完整，再检查结论。",
+}
 
 
 class TutorAgent:
@@ -56,6 +66,35 @@ class TutorAgent:
 
         message = "辅导已结束。如有疑问可以继续提问。"
         return TutorTurn(phase="done", message=message, error_tag=tag)
+
+    def get_socratic_hint_with_diagnosis(
+        self,
+        item: AssessmentItem,
+        student_input: str,
+        diagnosis: dict[str, Any] | None,
+        *,
+        phase: TutorPhase = "locate_gap",
+        error_tag: str | None = None,
+        max_hint_level: int = 2,
+    ) -> TutorTurn:
+        """Prefix strategy from diagnosis/error type, then run normal Socratic step."""
+        del max_hint_level
+        tag = error_tag
+        if not tag and diagnosis:
+            error_types = list(diagnosis.get("error_types") or [])
+            if error_types:
+                tag = str(error_types[0])
+        strategy = self._strategy_for_error(tag)
+        turn = self.step(phase, student_input, item, tag)
+        if strategy:
+            turn = turn.model_copy(update={"message": f"{strategy}\n\n{turn.message}"})
+        return turn
+
+    @staticmethod
+    def _strategy_for_error(error_tag: str | None) -> str:
+        if not error_tag:
+            return "请重新审题，找出关键信息。"
+        return _ERROR_STRATEGIES.get(error_tag, "请重新审题，找出关键信息。")
 
     @staticmethod
     def _retry_failed(user_message: str) -> bool:

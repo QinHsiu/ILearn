@@ -50,6 +50,16 @@ class Orchestrator:
     def generate_assessment(self, session_id: str) -> AssessmentPaper:
         return self._inner.generate_assessment(session_id)
 
+    def start_adaptive_assessment(
+        self, session_id: str, semester: str | None = None
+    ) -> dict:
+        return self._inner.start_adaptive_assessment(session_id, semester=semester)
+
+    def continue_adaptive_assessment(
+        self, session_id: str, anchor_results: list[dict]
+    ) -> dict:
+        return self._inner.continue_adaptive_assessment(session_id, anchor_results)
+
     def submit(
         self,
         session_id: str,

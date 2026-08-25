@@ -5,9 +5,9 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | PDF 双导出（做题复盘 / 学习报告） |
-| **基线** | 363 tests（离线可跑） |
-| **日期** | 2026-08-15 |
+| **标签** | Edition 0825 冷启动双层检索 + Assessment 页 |
+| **基线** | 418 tests（离线可跑） |
+| **日期** | 2026-08-26 |
 
 ---
 
@@ -34,6 +34,9 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0815：** Math-Verify、Guard 多级检测、CitationPanel、主题 token 增强
 - **Edition 0815_e1：** 测评步 60 分钟倒计时、题干启发式可视化、专注模式文本辅导（复用 tutor API，每题≤3 次 HintInteraction）
 - **PDF 导出：** 学习计划页一键导出做题复盘 / 学习报告 PDF（后端 MD→PDF；WeasyPrint 优先、fpdf2 回退；章节结构对齐 `doc/deepseek_edition/report.txt`）
+- **Edition 0825（冷启动 · 后端）：** 进度映射 `ProgressMapper` + `data/curriculum/progress_mapping.json`；知识图谱 `KnowledgeGraph` + `data/knowledge_graph.json`；锚点卷（可变长）→ 完整诊断卷（仍为 **20** 题，配额不变）；API `POST /sessions/{id}/assessment/adaptive/start|continue`；Orchestrator 钩子；本地题库优先，Layer2 可 LLM/stub 补题
+- **Edition 0825（规划 + 前端）：** 诊断默认写入 `metadata.diagnosis_enrichment`（前置缺口 + 学习建议）；规划追加「科学学习方法」至 `plan.markdown` + `metadata.scientific_plan`（费曼 / 间隔复习 / 苏格拉底任务，**不改 PlanDay**）；Tutor hint 按错误类型加策略前缀；前端 `useRole` / `useResponsive`，测评布局断点 class，计划页科学方法摘要
+- **Edition 0825（双层检索 + Assessment 页）：** 锚点本地不足时 Layer2（LLM 或确定性 stub）；`frontend/src/pages/Assessment.tsx` 替换学生向导第 2 步（锚点→完整 20 题）；完整卷配额不变
 
 ---
 
@@ -51,6 +54,9 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0815 integration | Math-Verify、Guard tiers、CitationPanel、theme tokens；example bank / validators unchanged；0815 drafts remain under `doc/deepseek_edition/0815/` | **349** |
 | Edition 0815_e1 assessment UX | 测评步倒计时、MathVisualizer、专注模式 SocraticPanel；`HintInteraction` 每题≤3；草稿见 `doc/deepseek_edition/0815_e1/` | **356** |
 | PDF dual export | 做题复盘 + 学习报告 PDF；复用 `report.txt` 数据结构；`/export/assessment.pdf` `/export/report.pdf` | **363** |
+| Edition 0825 adaptive cold-start | 进度映射、知识图谱、锚点→完整卷（20 题）、`/assessment/adaptive/*`；默认测评路径不变 | **412** |
+| Edition 0825 planning + frontend | 诊断 enrichment、科学规划 markdown/metadata、Tutor 策略前缀、useRole/useResponsive | **416** |
+| Edition 0825 dual-layer + Assessment page | 锚点 Layer2（llm/stub）、学生向导接入 `Assessment.tsx` | **418** |
 
 ---
 
