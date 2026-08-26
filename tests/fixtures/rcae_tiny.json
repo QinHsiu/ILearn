@@ -1,0 +1,17 @@
+{
+  "nodes": [
+    {"id": "n_mult", "label": "三位数乘两位数", "grade": 4},
+    {"id": "n_dec", "name": "小数乘法", "grade": 5},
+    {"id": "n_frac_add", "label": "同分母分数加法", "grade": 5},
+    {"id": "n_frac_mult", "label": "分数乘法", "grade": 5},
+    {"id": "n_frac_div", "name": "分数除法", "grade": 6},
+    {"id": "ch_grade5", "label": "五年级章节", "grade": 5}
+  ],
+  "edges": [
+    {"source": "n_frac_add", "target": "n_frac_mult", "type": "Prerequisite"},
+    {"source": "n_mult", "target": "n_dec", "type": "Prerequisite"},
+    {"source": "n_frac_mult", "target": "n_frac_div", "type": "RelatedTo"},
+    {"source": "n_dec", "target": "n_frac_mult", "type": "ComplementaryTo"},
+    {"source": "ch_grade5", "target": "n_frac_add", "type": "Includes"}
+  ]
+}
