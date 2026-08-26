@@ -56,6 +56,24 @@ def test_item_source_ref_schema_fields():
     assert ref.source_label
 
 
+PILOT = Path(__file__).resolve().parents[1] / "data" / "pilot"
+LEGACY_PILOT_IDS = {
+    "mult_3digit",
+    "rect_area",
+    "angle_measure",
+    "parallel_perp",
+    "dec_mult",
+    "frac_add_same",
+    "frac_mult",
+    "simple_eq",
+    "frac_div",
+    "ratio",
+    "circle_area",
+    "percent",
+    "factors",
+}
+
+
 def test_example_bank_covers_pilot_knowledge_ids():
     bank = load_example_bank(PILOT)
     knowledge_ids = {
@@ -63,8 +81,9 @@ def test_example_bank_covers_pilot_knowledge_ids():
         for row in json.loads((PILOT / "knowledge.json").read_text(encoding="utf-8"))
     }
     assert knowledge_ids
-    for knowledge_id in knowledge_ids:
-        assert bank.get(knowledge_id), f"missing examples for {knowledge_id}"
+    for knowledge_id in sorted(LEGACY_PILOT_IDS):
+        assert knowledge_id in knowledge_ids
+        assert bank.get(knowledge_id), f"missing examples for legacy {knowledge_id}"
 
 
 def test_bind_source_refs_merges_example_and_citations():

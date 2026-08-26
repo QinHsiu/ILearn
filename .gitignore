@@ -17,5 +17,10 @@ docs/
 data/sessions/*
 !data/sessions/.gitkeep
 
+# External curriculum dumps (Edition 0826)
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.md
+
 # Git worktrees
 .worktrees/

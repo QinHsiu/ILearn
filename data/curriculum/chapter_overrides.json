@@ -1,0 +1,131 @@
+{
+  "北京": {
+    "人教版": {
+      "4年级": {
+        "上学期": {
+          "chapters": [
+            {
+              "chapter": "三位数乘两位数",
+              "weeks": [1, 2, 3, 4, 5, 6, 7, 8],
+              "knowledge_ids": ["mult_3digit"]
+            },
+            {
+              "chapter": "角的度量",
+              "weeks": [9, 10, 11, 12],
+              "knowledge_ids": ["angle_measure"]
+            },
+            {
+              "chapter": "平行四边形和梯形",
+              "weeks": [13, 14, 15, 16],
+              "knowledge_ids": ["parallel_perp"]
+            },
+            {
+              "chapter": "长方形面积",
+              "weeks": [17, 18, 19, 20],
+              "knowledge_ids": ["rect_area"]
+            }
+          ]
+        },
+        "下学期": {
+          "chapters": [
+            {
+              "chapter": "四则运算巩固",
+              "weeks": [1, 2, 3, 4, 5, 6, 7, 8],
+              "knowledge_ids": ["mult_3digit"]
+            },
+            {
+              "chapter": "图形与几何",
+              "weeks": [9, 10, 11, 12, 13, 14, 15, 16],
+              "knowledge_ids": ["rect_area", "parallel_perp"]
+            },
+            {
+              "chapter": "角的复习",
+              "weeks": [17, 18, 19, 20],
+              "knowledge_ids": ["angle_measure"]
+            }
+          ]
+        }
+      },
+      "5年级": {
+        "上学期": {
+          "chapters": [
+            {
+              "chapter": "小数乘法",
+              "weeks": [1, 2, 3, 4, 5, 6, 7, 8],
+              "knowledge_ids": ["dec_mult"]
+            },
+            {
+              "chapter": "简易方程",
+              "weeks": [9, 10, 11, 12, 13, 14],
+              "knowledge_ids": ["simple_eq"]
+            },
+            {
+              "chapter": "同分母分数加法",
+              "weeks": [15, 16, 17, 18, 19, 20],
+              "knowledge_ids": ["frac_add_same"]
+            }
+          ]
+        },
+        "下学期": {
+          "chapters": [
+            {
+              "chapter": "同分母分数加法",
+              "weeks": [1, 2, 3, 4, 5, 6],
+              "knowledge_ids": ["frac_add_same"]
+            },
+            {
+              "chapter": "分数乘法",
+              "weeks": [7, 8, 9, 10, 11, 12, 13],
+              "knowledge_ids": ["frac_mult"]
+            },
+            {
+              "chapter": "简易方程巩固",
+              "weeks": [14, 15, 16, 17, 18, 19, 20],
+              "knowledge_ids": ["simple_eq"]
+            }
+          ]
+        }
+      },
+      "6年级": {
+        "上学期": {
+          "chapters": [
+            {
+              "chapter": "分数除法",
+              "weeks": [1, 2, 3, 4, 5, 6, 7],
+              "knowledge_ids": ["frac_div"]
+            },
+            {
+              "chapter": "比和比例",
+              "weeks": [8, 9, 10, 11, 12, 13],
+              "knowledge_ids": ["ratio"]
+            },
+            {
+              "chapter": "圆的面积",
+              "weeks": [14, 15, 16, 17, 18, 19, 20],
+              "knowledge_ids": ["circle_area"]
+            }
+          ]
+        },
+        "下学期": {
+          "chapters": [
+            {
+              "chapter": "百分数应用",
+              "weeks": [1, 2, 3, 4, 5, 6, 7],
+              "knowledge_ids": ["percent"]
+            },
+            {
+              "chapter": "因数与倍数",
+              "weeks": [8, 9, 10, 11, 12, 13],
+              "knowledge_ids": ["factors"]
+            },
+            {
+              "chapter": "比例与圆复习",
+              "weeks": [14, 15, 16, 17, 18, 19, 20],
+              "knowledge_ids": ["ratio", "circle_area"]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

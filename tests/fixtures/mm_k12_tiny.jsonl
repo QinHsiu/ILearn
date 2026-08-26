@@ -1,0 +1,6 @@
+{"id": "0001", "question": "【三位数乘两位数】计算 125 × 36 = ?", "answer": "4500", "grade": 4, "difficulty": "easy"}
+{"id": "0002", "question": "学校图书馆有 48 排书架，每排 125 本，共有多少本书？", "answer": "6000", "grade": 4, "difficulty": 3, "topic": "三位数乘两位数"}
+{"id": "0003", "question": "用竖式计算 308 × 24。", "answer": "7392", "grade": 4, "topic": "三位数乘两位数"}
+{"id": "0004", "question": "【分数乘法】计算 2/3 × 3/4 = ?", "answer": "1/2", "grade": 5, "difficulty": "easy"}
+{"id": "0005", "question": "一根绳子长 3/5 米，用去 2/3，用去多少米？", "answer": "0.4", "grade": 5, "topic": "分数乘法"}
+{"id": "0006", "question": "计算 1/2 × 4 = ?（分数乘法）", "answer": "2", "grade": 5, "difficulty": "medium"}

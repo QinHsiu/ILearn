@@ -1,10 +1,2414 @@
 [
   {
+    "id": "0_0",
+    "grade": 4,
+    "name": "一个数和0相乘，仍得0",
+    "ability_tags": []
+  },
+  {
+    "id": "0_0_0",
+    "grade": 4,
+    "name": "0除以任何非0的数，还得0",
+    "ability_tags": []
+  },
+  {
+    "id": "10_100_1000",
+    "grade": 4,
+    "name": "分母是10、100、1000……的小数",
+    "ability_tags": []
+  },
+  {
+    "id": "angle_measure",
+    "grade": 4,
+    "name": "角的度量",
+    "ability_tags": [
+      "spatial"
+    ]
+  },
+  {
+    "id": "kp_004a3436ac",
+    "grade": 4,
+    "name": "三角形的拼组实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_004f0ae334",
+    "grade": 4,
+    "name": "长方形和正方形的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0115f43fc5",
+    "grade": 4,
+    "name": "判断商的位数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_01c0f5c9e1",
+    "grade": 4,
+    "name": "理解负数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_02c2d73d94",
+    "grade": 4,
+    "name": "按边分类的三角形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_031a745128",
+    "grade": 4,
+    "name": "从不同位置观察所见一致性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_03ecd12f7d",
+    "grade": 4,
+    "name": "认识东北方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_04e6e9caba",
+    "grade": 4,
+    "name": "自然数的具体实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0555281ba2",
+    "grade": 4,
+    "name": "量角步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_06c550059a",
+    "grade": 4,
+    "name": "钝角的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_082af7f202",
+    "grade": 4,
+    "name": "含有加、减、乘、除法的算式运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_08f60a7e70",
+    "grade": 4,
+    "name": "四舍五入法的精度",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_09dcf47eb3",
+    "grade": 4,
+    "name": "画角的步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0a98f38835",
+    "grade": 4,
+    "name": "数的比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0aa57a639d",
+    "grade": 4,
+    "name": "加、减法各部分之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0c19870112",
+    "grade": 4,
+    "name": "三角形的高和底",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0c45b7d462",
+    "grade": 4,
+    "name": "除法的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0e6568838c",
+    "grade": 4,
+    "name": "直角三角形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0ed7e24b1a",
+    "grade": 4,
+    "name": "按读法组数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_10079aa194",
+    "grade": 4,
+    "name": "条形统计图的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_103497c153",
+    "grade": 4,
+    "name": "大数的巩固练习",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_104ea16414",
+    "grade": 4,
+    "name": "平行四边形的高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1075c86a54",
+    "grade": 4,
+    "name": "等式两边同时乘除同一个数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_10e6e1ecd0",
+    "grade": 4,
+    "name": "除法部分之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_10f744544a",
+    "grade": 4,
+    "name": "小数的实例解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_11c1b06b90",
+    "grade": 4,
+    "name": "位数相同数的比较方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_12d5b1ef5a",
+    "grade": 4,
+    "name": "平方米到平方千米换算技巧",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_12decfbb21",
+    "grade": 4,
+    "name": "面积决定因素",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_137774649c",
+    "grade": 4,
+    "name": "建筑面积适用单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1389768e3e",
+    "grade": 4,
+    "name": "认识东方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_13a3298ff1",
+    "grade": 4,
+    "name": "面积单位的进率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_140289daa0",
+    "grade": 4,
+    "name": "平移的性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1425bc8a1f",
+    "grade": 4,
+    "name": "梯形的高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_14869e45eb",
+    "grade": 4,
+    "name": "观察物体方法指导",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1530e3aa47",
+    "grade": 4,
+    "name": "图形的拼组",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_176a6462f4",
+    "grade": 4,
+    "name": "假设法解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1844c5a482",
+    "grade": 4,
+    "name": "三角形的外角性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_18b62f2e01",
+    "grade": 4,
+    "name": "烙饼问题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_19aa1b4599",
+    "grade": 4,
+    "name": "平方千米的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1a5436f5ed",
+    "grade": 4,
+    "name": "小数的数位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1abd4b8acd",
+    "grade": 4,
+    "name": "单价、数量和总价",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1abd78eb41",
+    "grade": 4,
+    "name": "四边形的内角和",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1b30b847da",
+    "grade": 4,
+    "name": "大数位数的确定",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1b846403d6",
+    "grade": 4,
+    "name": "轴对称的性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1b8abdb0da",
+    "grade": 4,
+    "name": "制作条形统计图的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1c21b3bddc",
+    "grade": 4,
+    "name": "假设法方法结论",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1d08e2bc27",
+    "grade": 4,
+    "name": "数的读法和写法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1d36f3cbd8",
+    "grade": 4,
+    "name": "三角形的边长条件",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1d4145fc29",
+    "grade": 4,
+    "name": "观察物体的诀窍",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1eb2beb464",
+    "grade": 4,
+    "name": "大数的读法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2035edff6d",
+    "grade": 4,
+    "name": "商两位数的情况示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_215f51ed41",
+    "grade": 4,
+    "name": "认识方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_22fa3dac99",
+    "grade": 4,
+    "name": "按角分类的三角形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_234ccda1db",
+    "grade": 4,
+    "name": "比较两个零下的温度的高低",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_236db92b25",
+    "grade": 4,
+    "name": "角之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_25134b27d4",
+    "grade": 4,
+    "name": "绘制复式条形统计图的工具",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_25441958f0",
+    "grade": 4,
+    "name": "数看到的面数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_26797bdd64",
+    "grade": 4,
+    "name": "直线和射线的区别",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_26d3eae84b",
+    "grade": 4,
+    "name": "三角形的边的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_29e75f6604",
+    "grade": 4,
+    "name": "乘法部分之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2ace0fafe5",
+    "grade": 4,
+    "name": "减法关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2bad321375",
+    "grade": 4,
+    "name": "折线统计图的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2d0e267634",
+    "grade": 4,
+    "name": "加法部分之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2db26fd2b4",
+    "grade": 4,
+    "name": "整十数除法示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2dc8426344",
+    "grade": 4,
+    "name": "钝角三角形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2e1643e24e",
+    "grade": 4,
+    "name": "垂直线的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2ed24f3bb0",
+    "grade": 4,
+    "name": "比较图形面积的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2f91dd768c",
+    "grade": 4,
+    "name": "角的计量单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_31c503ee72",
+    "grade": 4,
+    "name": "四边形的内角和实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_31f9cb3b7e",
+    "grade": 4,
+    "name": "点到直线的距离",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_32407b6d7d",
+    "grade": 4,
+    "name": "等腰直角三角形的拼组特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3313ed30c6",
+    "grade": 4,
+    "name": "了解被除数、除数和商之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3383e03efb",
+    "grade": 4,
+    "name": "读数的注意事项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_33faaa0005",
+    "grade": 4,
+    "name": "低级单位换算高级单位方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3520495342",
+    "grade": 4,
+    "name": "改写大数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_35208d4d46",
+    "grade": 4,
+    "name": "列举法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_35b071c4a6",
+    "grade": 4,
+    "name": "列表法解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_35bafdcddd",
+    "grade": 4,
+    "name": "三角形的内角和",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_38041ff82b",
+    "grade": 4,
+    "name": "理解确定和不确定的现象",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3820f0f9c1",
+    "grade": 4,
+    "name": "经过一点的直线数量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_38c00f4864",
+    "grade": 4,
+    "name": "平方千米到公顷换算技巧",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3a6917f2b1",
+    "grade": 4,
+    "name": "商两位数的情况",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3ca8ac8be1",
+    "grade": 4,
+    "name": "使用数位顺序表进行读数与写数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3d232a11a4",
+    "grade": 4,
+    "name": "数位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3d91cac618",
+    "grade": 4,
+    "name": "计算工具的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_40f59c87e4",
+    "grade": 4,
+    "name": "平均数的作用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4317d73522",
+    "grade": 4,
+    "name": "换算方法的小技巧",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_440913d2dd",
+    "grade": 4,
+    "name": "进位制",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_440b9e146b",
+    "grade": 4,
+    "name": "行程问题的关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_44194c4c7f",
+    "grade": 4,
+    "name": "含括号的运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_46ae4e7761",
+    "grade": 4,
+    "name": "购物问题的关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_46ce114e24",
+    "grade": 4,
+    "name": "鸡兔同笼问题描述",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_48746e8102",
+    "grade": 4,
+    "name": "使用可能描述不确定的现象",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_48e8816d89",
+    "grade": 4,
+    "name": "不同级数的写法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_48ebcf4331",
+    "grade": 4,
+    "name": "理解速度并比较快慢",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4975f2820c",
+    "grade": 4,
+    "name": "拼长方形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4ac4cef421",
+    "grade": 4,
+    "name": "平移的基本方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4b7dccfe58",
+    "grade": 4,
+    "name": "分类颜色区分",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4baee4a6a0",
+    "grade": 4,
+    "name": "大数比较中的特殊情况",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4c11c06d3f",
+    "grade": 4,
+    "name": "数量的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4c65d2e293",
+    "grade": 4,
+    "name": "乘法交换律示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4c74cdda65",
+    "grade": 4,
+    "name": "速度、时间和路程的含义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4cb1ed7fb8",
+    "grade": 4,
+    "name": "锐角三角形的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4d24d3d15e",
+    "grade": 4,
+    "name": "使用一定描述确定的现象",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4e00cc7cda",
+    "grade": 4,
+    "name": "按读数组数的例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4e6217081e",
+    "grade": 4,
+    "name": "按要求组数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4e69fd7d48",
+    "grade": 4,
+    "name": "锐角的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4ea749100a",
+    "grade": 4,
+    "name": "小数的数位顺序表",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5073535867",
+    "grade": 4,
+    "name": "统计表数据与条形统计图的区别",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5297a8122a",
+    "grade": 4,
+    "name": "总数与份数的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_52af353aed",
+    "grade": 4,
+    "name": "从右向左的分级方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_52b76fde22",
+    "grade": 4,
+    "name": "乘法的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_52cb1d3915",
+    "grade": 4,
+    "name": "计数单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_52f4c146de",
+    "grade": 4,
+    "name": "轴对称图形的对称轴数量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5394aed15a",
+    "grade": 4,
+    "name": "三角形的高的画法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_545eda1226",
+    "grade": 4,
+    "name": "轴对称建筑实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5467169fb3",
+    "grade": 4,
+    "name": "平均数的定义和计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5717befd49",
+    "grade": 4,
+    "name": "观察物体二",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5735aad20b",
+    "grade": 4,
+    "name": "四则运算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_579abdcd71",
+    "grade": 4,
+    "name": "小数的数位实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_57cd735480",
+    "grade": 4,
+    "name": "平行四边形的底和高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_580bfed697",
+    "grade": 4,
+    "name": "通过商求被除数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_58b9390443",
+    "grade": 4,
+    "name": "乘法结合律解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_595ff19486",
+    "grade": 4,
+    "name": "含有小括号和中括号的算式运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_59f161f2c6",
+    "grade": 4,
+    "name": "速度的常见单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5b4470be21",
+    "grade": 4,
+    "name": "连除",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5c2850c2a9",
+    "grade": 4,
+    "name": "数字表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5c95e3b6f4",
+    "grade": 4,
+    "name": "不同位置观察同一物体",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5ed5463fa3",
+    "grade": 4,
+    "name": "除法余数小于除数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6126136c59",
+    "grade": 4,
+    "name": "梯形的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_61c1147874",
+    "grade": 4,
+    "name": "单价的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_61dcededf2",
+    "grade": 4,
+    "name": "特殊情况的试商方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_620cfcaa50",
+    "grade": 4,
+    "name": "小数的近似数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_62585e645d",
+    "grade": 4,
+    "name": "条形统计图的分类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_636a077387",
+    "grade": 4,
+    "name": "速度、时间和路程的数量关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_63ace47646",
+    "grade": 4,
+    "name": "解题方法：假设法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_64af89fb12",
+    "grade": 4,
+    "name": "条形统计图的画法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_64e3aeb7be",
+    "grade": 4,
+    "name": "同时除以或乘以相同数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6594d75325",
+    "grade": 4,
+    "name": "四边形的分类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_65972e7b92",
+    "grade": 4,
+    "name": "钝角三角形的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_65c7bbfb4b",
+    "grade": 4,
+    "name": "加法交换律示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_65e83b96d5",
+    "grade": 4,
+    "name": "长方形是特殊的平行四边形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_66a81c1cbd",
+    "grade": 4,
+    "name": "数的比较方法的例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_66bc749c95",
+    "grade": 4,
+    "name": "减法的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_66eff1d677",
+    "grade": 4,
+    "name": "不同面积单位的换算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_67135ea588",
+    "grade": 4,
+    "name": "假设法计算步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6766e8e9ab",
+    "grade": 4,
+    "name": "对称轴画法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_689ba87f62",
+    "grade": 4,
+    "name": "单位换算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_68bc5fa991",
+    "grade": 4,
+    "name": "图形拼组与拼组特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_68d7b0cd7b",
+    "grade": 4,
+    "name": "不同物体的相同图形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6a692d9b74",
+    "grade": 4,
+    "name": "锐角三角形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6af221c190",
+    "grade": 4,
+    "name": "小数的读法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d2d681c5a",
+    "grade": 4,
+    "name": "大数的认识",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d358d5be3",
+    "grade": 4,
+    "name": "乘法分配律（扩展）解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d38f8b12e",
+    "grade": 4,
+    "name": "解题方法：列表法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6ea1ec5bc2",
+    "grade": 4,
+    "name": "拼长方形或者平行四边形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6f3f3303ec",
+    "grade": 4,
+    "name": "条形统计图与折线统计图的区别",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6fc8817035",
+    "grade": 4,
+    "name": "理解被除数或除数扩大或缩小对商影响的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_701f92f585",
+    "grade": 4,
+    "name": "角的测量方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7056d3d811",
+    "grade": 4,
+    "name": "乘法分配律示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_70923d7106",
+    "grade": 4,
+    "name": "面积单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7097e89f6b",
+    "grade": 4,
+    "name": "用万和亿表示大数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7239fa2cef",
+    "grade": 4,
+    "name": "除数是两位数的除法计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_72812eaf84",
+    "grade": 4,
+    "name": "四边形小结",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_72fa26b76e",
+    "grade": 4,
+    "name": "小数的读法解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_73743bbb92",
+    "grade": 4,
+    "name": "利用平移求面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_73cf1b7884",
+    "grade": 4,
+    "name": "理解正数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_740f1c8192",
+    "grade": 4,
+    "name": "从左面观察物体形状",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7446603594",
+    "grade": 4,
+    "name": "乘、除法的意义及各部分之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_752c916fed",
+    "grade": 4,
+    "name": "理解单价、数量、总价之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_75e8d6b781",
+    "grade": 4,
+    "name": "小数的产生",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7605764a91",
+    "grade": 4,
+    "name": "平行四边形的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_76dff50320",
+    "grade": 4,
+    "name": "除法关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_78771368eb",
+    "grade": 4,
+    "name": "小数的性质解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_78885dcf44",
+    "grade": 4,
+    "name": "轴对称图形举例及对称轴数量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_78b5894f7c",
+    "grade": 4,
+    "name": "流程图的初步认识",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_798da2e552",
+    "grade": 4,
+    "name": "不同计数单位的整万数和整亿数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7aab09a196",
+    "grade": 4,
+    "name": "图形面积相同的条件",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7ac55f3f18",
+    "grade": 4,
+    "name": "连除解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7bee2972c2",
+    "grade": 4,
+    "name": "乘法分配律解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7c5bcef96b",
+    "grade": 4,
+    "name": "线段和射线的区别",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7c64c71e49",
+    "grade": 4,
+    "name": "直角的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7d1075f20f",
+    "grade": 4,
+    "name": "保留整数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7d3ffe7f2b",
+    "grade": 4,
+    "name": "整万和整亿的改写方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7d620f41ca",
+    "grade": 4,
+    "name": "自然数的表示方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7d8f81f4e3",
+    "grade": 4,
+    "name": "射线的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7d9fd944b9",
+    "grade": 4,
+    "name": "画对称轴的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7df51002f1",
+    "grade": 4,
+    "name": "时间的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7e3be32af8",
+    "grade": 4,
+    "name": "折半试商法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7e764a3823",
+    "grade": 4,
+    "name": "小数的写法解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7eac1503a9",
+    "grade": 4,
+    "name": "绘制条形统计图时的刻度选择",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7f433a9893",
+    "grade": 4,
+    "name": "高位数的读法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_80004913a9",
+    "grade": 4,
+    "name": "平行四边形的变形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_822f2e87df",
+    "grade": 4,
+    "name": "加法交换律解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_833cacbbdc",
+    "grade": 4,
+    "name": "鸡兔同笼问题示例计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_84635c1573",
+    "grade": 4,
+    "name": "三角形的物理特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_848c366de4",
+    "grade": 4,
+    "name": "质量单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_84d4490d60",
+    "grade": 4,
+    "name": "同头无除法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_850e18ab01",
+    "grade": 4,
+    "name": "广场校园适用单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8731fedffd",
+    "grade": 4,
+    "name": "平行线的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_881d53b942",
+    "grade": 4,
+    "name": "路程、速度和时间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_88893ae374",
+    "grade": 4,
+    "name": "梯形面积的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_889ecd64aa",
+    "grade": 4,
+    "name": "等腰三角形的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_89a8136acd",
+    "grade": 4,
+    "name": "从同一位置观察不同物体",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_89cb387317",
+    "grade": 4,
+    "name": "加、减法的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_89f1df3af8",
+    "grade": 4,
+    "name": "连减解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8a87a9de2e",
+    "grade": 4,
+    "name": "三角形的分类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8ab976e806",
+    "grade": 4,
+    "name": "运算定律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8b0ee25ec5",
+    "grade": 4,
+    "name": "小括号运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8b410b454f",
+    "grade": 4,
+    "name": "使用不可能描述确定不会发生的现象",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8c10660bd9",
+    "grade": 4,
+    "name": "计算工具的认识",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8c2651cdb4",
+    "grade": 4,
+    "name": "测量两点之间的图上距离",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8c89d00e51",
+    "grade": 4,
+    "name": "等腰梯形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8d53880712",
+    "grade": 4,
+    "name": "角的顶点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8d5ba1421f",
+    "grade": 4,
+    "name": "路程、时间和速度之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8dc6b6f7b1",
+    "grade": 4,
+    "name": "小数的计数单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8ef3fb617e",
+    "grade": 4,
+    "name": "正方形特殊长方形的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8f4546779a",
+    "grade": 4,
+    "name": "生活中常用的单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8faf7d84f9",
+    "grade": 4,
+    "name": "复式条形统计图的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_90de4dcf87",
+    "grade": 4,
+    "name": "平行线到垂直线的距离",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9251c50c97",
+    "grade": 4,
+    "name": "最优方案",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_92ff72f034",
+    "grade": 4,
+    "name": "相邻的计数单位的进率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9356dabfd1",
+    "grade": 4,
+    "name": "小数点的移动",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_93ebd53757",
+    "grade": 4,
+    "name": "三角形的拼组性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_947554aecd",
+    "grade": 4,
+    "name": "复式条形统计图的作图特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_952bbe1b76",
+    "grade": 4,
+    "name": "等边三角形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_956b1fd939",
+    "grade": 4,
+    "name": "表示数对的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_958dd9e27d",
+    "grade": 4,
+    "name": "总价的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_95e15026a9",
+    "grade": 4,
+    "name": "长方形周长公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_964f485994",
+    "grade": 4,
+    "name": "地毯上图形面积的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_97776a9f23",
+    "grade": 4,
+    "name": "减法部分之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_991333da61",
+    "grade": 4,
+    "name": "加法关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_996f0a4302",
+    "grade": 4,
+    "name": "乘法分配律（扩展）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_997d106548",
+    "grade": 4,
+    "name": "通过商求除数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9a2f93d2a4",
+    "grade": 4,
+    "name": "同一位置观察不同物体",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9a81864ffe",
+    "grade": 4,
+    "name": "角的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9b7d467812",
+    "grade": 4,
+    "name": "周角的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a0566dcf81",
+    "grade": 4,
+    "name": "人民币单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a149ed6351",
+    "grade": 4,
+    "name": "平均数关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a18a6cb72c",
+    "grade": 4,
+    "name": "平行四边形面积的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a2feec0cc0",
+    "grade": 4,
+    "name": "判断商位数的示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a332d9f448",
+    "grade": 4,
+    "name": "连除示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a385155658",
+    "grade": 4,
+    "name": "速度的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a3bab6a705",
+    "grade": 4,
+    "name": "数级分级的具体规则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a4111d4849",
+    "grade": 4,
+    "name": "公顷到平方米换算技巧",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a4e9217bb0",
+    "grade": 4,
+    "name": "商变化规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a5cf132e62",
+    "grade": 4,
+    "name": "计数单位与数位的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a66282ada6",
+    "grade": 4,
+    "name": "三角形的表示法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a6725a869a",
+    "grade": 4,
+    "name": "平方千米到平方米换算技巧",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a791abd712",
+    "grade": 4,
+    "name": "加法与乘法定律对比",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a7a6174207",
+    "grade": 4,
+    "name": "根据方向和距离确定物体位置的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a89a58fe3d",
+    "grade": 4,
+    "name": "量角器的使用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a9339f76c7",
+    "grade": 4,
+    "name": "复式条形统计图的优点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a94135fbc0",
+    "grade": 4,
+    "name": "不同形状物体的多角度观察",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aad08a1485",
+    "grade": 4,
+    "name": "乘法结合律示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ab4ffb8242",
+    "grade": 4,
+    "name": "三角形的内角和特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_add843f8ac",
+    "grade": 4,
+    "name": "适用面积单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ae91f5c553",
+    "grade": 4,
+    "name": "作垂线的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_af7311e927",
+    "grade": 4,
+    "name": "单式条形统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_af8d1a6c84",
+    "grade": 4,
+    "name": "保留一位小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_affba174d0",
+    "grade": 4,
+    "name": "连减",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b1497616b9",
+    "grade": 4,
+    "name": "全面认识物体",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b1f8907cc5",
+    "grade": 4,
+    "name": "认识南方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b1febd96c8",
+    "grade": 4,
+    "name": "从不同位置观察的影响",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b221b61ef2",
+    "grade": 4,
+    "name": "积的变化规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b328b8673a",
+    "grade": 4,
+    "name": "直角三角形中两个锐角的和",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b50f329381",
+    "grade": 4,
+    "name": "折线统计图的制作方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b5c2cdda0d",
+    "grade": 4,
+    "name": "单价、数量和总价的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b5d3374cd2",
+    "grade": 4,
+    "name": "商一位数的情况示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b5f655ff9f",
+    "grade": 4,
+    "name": "对策论问题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b5f8b7aefb",
+    "grade": 4,
+    "name": "计算工具的使用规范",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b67c1fd8ec",
+    "grade": 4,
+    "name": "三角形和四边形的角度总和",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b6cecd247f",
+    "grade": 4,
+    "name": "分上下画数量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b6d55e3ef4",
+    "grade": 4,
+    "name": "计算器的使用方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b7b21412c4",
+    "grade": 4,
+    "name": "面积单位换算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b8f942e346",
+    "grade": 4,
+    "name": "运算顺序基本原则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b8fa378961",
+    "grade": 4,
+    "name": "四舍五入后的表示符号",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b95b70f6c1",
+    "grade": 4,
+    "name": "三角形和四边形的角度和",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ba3a101bdf",
+    "grade": 4,
+    "name": "角的分类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ba99b553dc",
+    "grade": 4,
+    "name": "自然数和整数的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bac4015288",
+    "grade": 4,
+    "name": "梯形的底和高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bac6636bc8",
+    "grade": 4,
+    "name": "旋转形成的角",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bae08a3be7",
+    "grade": 4,
+    "name": "缺省情况处理",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bb1b96cb1e",
+    "grade": 4,
+    "name": "自然数的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bd3d8d7317",
+    "grade": 4,
+    "name": "计数单位的进率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_be01b542ab",
+    "grade": 4,
+    "name": "三位数乘两位数的第三步",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_be04bbd430",
+    "grade": 4,
+    "name": "鸡兔同笼问题的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_be6e6bab86",
+    "grade": 4,
+    "name": "尾数处理规则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bea2e79fef",
+    "grade": 4,
+    "name": "假设思想在数学中的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_beafed4274",
+    "grade": 4,
+    "name": "相遇问题的关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bf5587b5ea",
+    "grade": 4,
+    "name": "余数的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bfab644eac",
+    "grade": 4,
+    "name": "三角形的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bff17b1a52",
+    "grade": 4,
+    "name": "角的符号表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c04c2da483",
+    "grade": 4,
+    "name": "商一位数的情况",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c0acad3e27",
+    "grade": 4,
+    "name": "理解商不变的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c0c9428be6",
+    "grade": 4,
+    "name": "平行四边形的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c3adef58c6",
+    "grade": 4,
+    "name": "公顷的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c3b9ca3c23",
+    "grade": 4,
+    "name": "小数的性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c440fd6807",
+    "grade": 4,
+    "name": "算盘的历史和作用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c56088b10b",
+    "grade": 4,
+    "name": "三位数乘两位数的第一步",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c5d340010c",
+    "grade": 4,
+    "name": "路程的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c684bea8cb",
+    "grade": 4,
+    "name": "数级",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c735c6748d",
+    "grade": 4,
+    "name": "认识西南方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c866af007a",
+    "grade": 4,
+    "name": "等边三角形的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ca9128343d",
+    "grade": 4,
+    "name": "不含括号的算式运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cbd83a93e6",
+    "grade": 4,
+    "name": "四舍五入法的详细步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cc04dfe555",
+    "grade": 4,
+    "name": "读写数的检验方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cce7f0b7ce",
+    "grade": 4,
+    "name": "小数的大小比较解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cd7a47beac",
+    "grade": 4,
+    "name": "试商方法示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d01679315b",
+    "grade": 4,
+    "name": "认识西方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d0899e02ef",
+    "grade": 4,
+    "name": "十进制计数法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d1003acd57",
+    "grade": 4,
+    "name": "算盘的使用方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d16d860426",
+    "grade": 4,
+    "name": "加法的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d19cc40639",
+    "grade": 4,
+    "name": "求平均数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d25899160f",
+    "grade": 4,
+    "name": "正方形面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d266342877",
+    "grade": 4,
+    "name": "小数的大小比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d435037c67",
+    "grade": 4,
+    "name": "等边三角形的内角",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d4470d4db9",
+    "grade": 4,
+    "name": "从前面观察物体形状",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d511958e46",
+    "grade": 4,
+    "name": "写数的步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d55ac21657",
+    "grade": 4,
+    "name": "十进制计数法的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d55d5b3b65",
+    "grade": 4,
+    "name": "乘法分配律（扩展）示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d7d6c24a3d",
+    "grade": 4,
+    "name": "直角梯形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d832f95f24",
+    "grade": 4,
+    "name": "认识西北方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d8cec0e71f",
+    "grade": 4,
+    "name": "小数是十进制分数的表现形式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d919f86c65",
+    "grade": 4,
+    "name": "计数单位表达",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d9c659153a",
+    "grade": 4,
+    "name": "四舍五入试商法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d9e4040448",
+    "grade": 4,
+    "name": "角的大小与两边的关联",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_da5f859050",
+    "grade": 4,
+    "name": "拼平行四边形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_da857e2c8c",
+    "grade": 4,
+    "name": "运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dc799e9c82",
+    "grade": 4,
+    "name": "等腰梯形的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dcfb55afe0",
+    "grade": 4,
+    "name": "高级单位换算低级单位方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dd2b8271c7",
+    "grade": 4,
+    "name": "试商方法：近似整十法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_de5c4fc984",
+    "grade": 4,
+    "name": "自然数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_df0dd49dd5",
+    "grade": 4,
+    "name": "等腰三角形的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_df4719828b",
+    "grade": 4,
+    "name": "数的直观表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_df9d9072c9",
+    "grade": 4,
+    "name": "三角形的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dfa5df6a7b",
+    "grade": 4,
+    "name": "加法结合律解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dfbd65195e",
+    "grade": 4,
+    "name": "长方形面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e067310389",
+    "grade": 4,
+    "name": "乘法关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e137457726",
+    "grade": 4,
+    "name": "乘法交换律解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e22f874f71",
+    "grade": 4,
+    "name": "等式两边同时加减同一个数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e2520287a5",
+    "grade": 4,
+    "name": "商的变化规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e2f2b3bd72",
+    "grade": 4,
+    "name": "直角三角形的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e2f62c904c",
+    "grade": 4,
+    "name": "条形统计图比较数据差异的优势",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e30cfa9d4d",
+    "grade": 4,
+    "name": "沏茶问题的合理安排步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e3bf5d3621",
+    "grade": 4,
+    "name": "绘制复式条形统计图的注意事项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e3c6b07e06",
+    "grade": 4,
+    "name": "三角形的底和高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e5ff652b0c",
+    "grade": 4,
+    "name": "通过积求乘数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e67095a0f0",
+    "grade": 4,
+    "name": "直角梯形的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e6d10a39e9",
+    "grade": 4,
+    "name": "数级的划分原则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e7685bc946",
+    "grade": 4,
+    "name": "三角形面积的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e795dc0c16",
+    "grade": 4,
+    "name": "一种特别情况的试商方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e7c688a13c",
+    "grade": 4,
+    "name": "国土面积适用单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e7d10fd15a",
+    "grade": 4,
+    "name": "条形统计图的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e843041619",
+    "grade": 4,
+    "name": "三位数乘两位数的第二步",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e8584274c2",
+    "grade": 4,
+    "name": "个位与十分位的进率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e85ff32dee",
+    "grade": 4,
+    "name": "工程问题的关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e89c2fd453",
+    "grade": 4,
+    "name": "近似数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e8f87d7045",
+    "grade": 4,
+    "name": "观察面排列法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e90e828997",
+    "grade": 4,
+    "name": "条形统计图的标题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e9e0a3064b",
+    "grade": 4,
+    "name": "小数点的移动解析",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ea9be5f242",
+    "grade": 4,
+    "name": "等腰三角形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eb1675bc8a",
+    "grade": 4,
+    "name": "数位顺序表",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eb30a47a2d",
+    "grade": 4,
+    "name": "认识北方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eb83b70946",
+    "grade": 4,
+    "name": "小数的写法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ebbb565932",
+    "grade": 4,
+    "name": "鸡兔同笼问题列表法示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ecd20296ad",
+    "grade": 4,
+    "name": "零下温度的表示方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ece28b7d0d",
+    "grade": 4,
+    "name": "认识东南方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ece8f38a9b",
+    "grade": 4,
+    "name": "从上面观察物体形状",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ee8eb283b9",
+    "grade": 4,
+    "name": "长度单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eeb2c94c0d",
+    "grade": 4,
+    "name": "直角三角形的拼组特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ef7220c8c0",
+    "grade": 4,
+    "name": "运算定律概述",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_efea224417",
+    "grade": 4,
+    "name": "平角的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f012f3753c",
+    "grade": 4,
+    "name": "解题过程中发现的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f19720b1df",
+    "grade": 4,
+    "name": "解题思路",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f285f56f71",
+    "grade": 4,
+    "name": "线段的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f2f4710a2a",
+    "grade": 4,
+    "name": "四边形的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f32644e842",
+    "grade": 4,
+    "name": "大数比较具体步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f48a695e62",
+    "grade": 4,
+    "name": "最大和最小数的组数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f506f6b9cb",
+    "grade": 4,
+    "name": "平方米到公顷换算技巧",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f515fb85d9",
+    "grade": 4,
+    "name": "大数的读法例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f537d11bb4",
+    "grade": 4,
+    "name": "辨认物体形状",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f550307a50",
+    "grade": 4,
+    "name": "直线的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f5710ea5f1",
+    "grade": 4,
+    "name": "除数、商和余数的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f5d3a16f5f",
+    "grade": 4,
+    "name": "数的分级方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f730afbca8",
+    "grade": 4,
+    "name": "改写为万和亿的数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f751105ca5",
+    "grade": 4,
+    "name": "数字表示的具体例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f892156f7f",
+    "grade": 4,
+    "name": "从不同位置观察同一物体",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f8ba5c6f63",
+    "grade": 4,
+    "name": "整十数段差两位数的除法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f96f7f39c1",
+    "grade": 4,
+    "name": "复式条形统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fac95ac329",
+    "grade": 4,
+    "name": "平行四边形和梯形的高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fd9f3e1d20",
+    "grade": 4,
+    "name": "连减示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fe657c51f0",
+    "grade": 4,
+    "name": "加法结合律示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ffb91a874f",
+    "grade": 4,
+    "name": "三位数乘两位数的笔算方法",
+    "ability_tags": []
+  },
+  {
     "id": "mult_3digit",
     "grade": 4,
     "name": "三位数乘两位数",
     "ability_tags": [
       "mental_math"
+    ]
+  },
+  {
+    "id": "n",
+    "grade": 4,
+    "name": "n边形的内角和",
+    "ability_tags": []
+  },
+  {
+    "id": "parallel_perp",
+    "grade": 4,
+    "name": "平行与垂直",
+    "ability_tags": [
+      "logic"
     ]
   },
   {
@@ -16,20 +2420,94 @@
     ]
   },
   {
-    "id": "angle_measure",
-    "grade": 4,
-    "name": "角的度量",
-    "ability_tags": [
-      "spatial"
-    ]
+    "id": "0_6_0_3_0_6_0_3",
+    "grade": 5,
+    "name": "0.6÷0.3 表示已知两个因数的积0.6，一个因数是0.3，求另一个因数",
+    "ability_tags": []
   },
   {
-    "id": "parallel_perp",
-    "grade": 4,
-    "name": "平行与垂直",
-    "ability_tags": [
-      "logic"
-    ]
+    "id": "100",
+    "grade": 5,
+    "name": "100以内的质数",
+    "ability_tags": []
+  },
+  {
+    "id": "12",
+    "grade": 5,
+    "name": "正方体的12条棱的相等性",
+    "ability_tags": []
+  },
+  {
+    "id": "1_1",
+    "grade": 5,
+    "name": "1和任何大于1的自然数互质",
+    "ability_tags": []
+  },
+  {
+    "id": "1_5_0_8",
+    "grade": 5,
+    "name": "具体算例:1.5×0.8",
+    "ability_tags": []
+  },
+  {
+    "id": "1_5_1_8",
+    "grade": 5,
+    "name": "具体算例:1.5×1.8",
+    "ability_tags": []
+  },
+  {
+    "id": "1_5_3",
+    "grade": 5,
+    "name": "具体算例:1.5×3",
+    "ability_tags": []
+  },
+  {
+    "id": "1a",
+    "grade": 5,
+    "name": "特殊情况下的1a",
+    "ability_tags": []
+  },
+  {
+    "id": "20",
+    "grade": 5,
+    "name": "20以内的质数",
+    "ability_tags": []
+  },
+  {
+    "id": "2_3_5",
+    "grade": 5,
+    "name": "2, 3, 5的倍数",
+    "ability_tags": []
+  },
+  {
+    "id": "2_5",
+    "grade": 5,
+    "name": "2和5的倍数",
+    "ability_tags": []
+  },
+  {
+    "id": "3_2_3_5",
+    "grade": 5,
+    "name": "3的倍数特征和同时是2,3,5的倍数的数的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "5",
+    "grade": 5,
+    "name": "5的倍数的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "6",
+    "grade": 5,
+    "name": "正方体的6个面",
+    "ability_tags": []
+  },
+  {
+    "id": "a",
+    "grade": 5,
+    "name": "a的立方概念",
+    "ability_tags": []
   },
   {
     "id": "dec_mult",
@@ -56,9 +2534,2401 @@
     ]
   },
   {
+    "id": "kp_012d822d84",
+    "grade": 5,
+    "name": "组合图形面积计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_017644d992",
+    "grade": 5,
+    "name": "分割法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_026c5b2200",
+    "grade": 5,
+    "name": "带分数加法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_02c804068a",
+    "grade": 5,
+    "name": "商的不变性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0342ba6eff",
+    "grade": 5,
+    "name": "大单位乘进率换算成小单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_03a3849dcf",
+    "grade": 5,
+    "name": "偶数加偶数的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_03e30d1a34",
+    "grade": 5,
+    "name": "平移的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_04ed372a3b",
+    "grade": 5,
+    "name": "表面积的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_063e2a9c37",
+    "grade": 5,
+    "name": "整除的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_073e473601",
+    "grade": 5,
+    "name": "长方体与正方体的等棱长体积比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0816ca8726",
+    "grade": 5,
+    "name": "带分数化为小数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_08727f0e68",
+    "grade": 5,
+    "name": "分数的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_091c8f09b1",
+    "grade": 5,
+    "name": "方程的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0ac29a728d",
+    "grade": 5,
+    "name": "最小公倍数的求法-分解质因数法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0bff4d3f92",
+    "grade": 5,
+    "name": "长方体的表面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0c08224e70",
+    "grade": 5,
+    "name": "轴对称的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0d1dbae91d",
+    "grade": 5,
+    "name": "已知梯形的面积与上下底之和求高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0d453fdab5",
+    "grade": 5,
+    "name": "等底等高三角形面积相等",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0e63e7bb83",
+    "grade": 5,
+    "name": "被除数不变，除数扩大的商",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0efe3c0ca3",
+    "grade": 5,
+    "name": "正方体棱长的应用实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0f72edf893",
+    "grade": 5,
+    "name": "两个质数的互质数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_111389f491",
+    "grade": 5,
+    "name": "质因数分解",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_11eb071f12",
+    "grade": 5,
+    "name": "构造轴对称图形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_120e2fa54d",
+    "grade": 5,
+    "name": "长方体相对面的不可见性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_12af829fc7",
+    "grade": 5,
+    "name": "进一法求近似数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1355043602",
+    "grade": 5,
+    "name": "倍数关系与最大公因数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_14041a7a9e",
+    "grade": 5,
+    "name": "正方体与长方体的区别",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_14199604cc",
+    "grade": 5,
+    "name": "不规则图形面积估计与计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_158968a797",
+    "grade": 5,
+    "name": "不可能的可能性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_158ab8a4f9",
+    "grade": 5,
+    "name": "对称图形的分类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_16e502ecf5",
+    "grade": 5,
+    "name": "长方体容积计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_17386d1fa8",
+    "grade": 5,
+    "name": "有余数的处理方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_18495ee74e",
+    "grade": 5,
+    "name": "除数不变, 被除数缩小的商",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1894ec5085",
+    "grade": 5,
+    "name": "长宽高概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_19643df157",
+    "grade": 5,
+    "name": "奇数减奇数的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_199001c911",
+    "grade": 5,
+    "name": "用分数表示可能性的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_19a8750bff",
+    "grade": 5,
+    "name": "因数概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_19ca053a78",
+    "grade": 5,
+    "name": "线路两端都不植树",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1a2304e780",
+    "grade": 5,
+    "name": "循环节",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1baef8b332",
+    "grade": 5,
+    "name": "进一法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1bbe15d12f",
+    "grade": 5,
+    "name": "折线统计图的优点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1bf0df7e71",
+    "grade": 5,
+    "name": "奇数和偶数的加减关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1c069f112f",
+    "grade": 5,
+    "name": "最小因数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1c63c98f92",
+    "grade": 5,
+    "name": "图形变换的基本方式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1d8767a364",
+    "grade": 5,
+    "name": "工作效率公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1d89a61cb0",
+    "grade": 5,
+    "name": "单一或双向观察的局限性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1daa945877",
+    "grade": 5,
+    "name": "运算符不能省略",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1e277e8dd6",
+    "grade": 5,
+    "name": "完全数定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1ec8e3eb17",
+    "grade": 5,
+    "name": "小数除法的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1ed8f91819",
+    "grade": 5,
+    "name": "最小的质数和合数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1ee4fc1aad",
+    "grade": 5,
+    "name": "长方体的正方形面",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1f9e667acc",
+    "grade": 5,
+    "name": "生活中的表面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_20cb5c3110",
+    "grade": 5,
+    "name": "旋转的性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2109b48523",
+    "grade": 5,
+    "name": "小数乘整数的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_218ff33f46",
+    "grade": 5,
+    "name": "化假分数为带分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_21968dd72b",
+    "grade": 5,
+    "name": "五面体的生活实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_21d5036b18",
+    "grade": 5,
+    "name": "质数与合数的判断方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2303c9ba1d",
+    "grade": 5,
+    "name": "真分数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_231d49e00a",
+    "grade": 5,
+    "name": "刀分物体表面积增加",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_23b53d9e5a",
+    "grade": 5,
+    "name": "确定物体的位置",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2428300304",
+    "grade": 5,
+    "name": "已知平行四边形的面积和底求高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_246f62a548",
+    "grade": 5,
+    "name": "路程的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_249007ffc0",
+    "grade": 5,
+    "name": "在坐标系中标出物体位置",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_251ebc9323",
+    "grade": 5,
+    "name": "最大公因数的一般关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2533c72fe7",
+    "grade": 5,
+    "name": "被除数位数不够的处理方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2582a9ff46",
+    "grade": 5,
+    "name": "长方体棱长的应用实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_258fdf1549",
+    "grade": 5,
+    "name": "物体的体积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_265b618d87",
+    "grade": 5,
+    "name": "运用分数表示可能性的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_26d77b3b82",
+    "grade": 5,
+    "name": "总路线长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2773dc20c1",
+    "grade": 5,
+    "name": "小数除以整数的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_297ba55739",
+    "grade": 5,
+    "name": "公倍数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_299b239384",
+    "grade": 5,
+    "name": "正方体的面相等性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2a31da6ecc",
+    "grade": 5,
+    "name": "已知长方形的面积和长求宽",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2a35673129",
+    "grade": 5,
+    "name": "因数的求法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2a7ce9737e",
+    "grade": 5,
+    "name": "整数与自然数的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2afa6b7e11",
+    "grade": 5,
+    "name": "质数定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2b1f12ff1c",
+    "grade": 5,
+    "name": "奇数加奇数的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2bae33f474",
+    "grade": 5,
+    "name": "平均数的求法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2cdde6f709",
+    "grade": 5,
+    "name": "去尾法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2ce742e002",
+    "grade": 5,
+    "name": "线路一端植树",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2e4c330f69",
+    "grade": 5,
+    "name": "两个质数一定互质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2f361b7a5d",
+    "grade": 5,
+    "name": "最大公因数的找法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_306d4dff6e",
+    "grade": 5,
+    "name": "分母相同的分数大小比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_30d337f239",
+    "grade": 5,
+    "name": "最小倍数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_314bc8741e",
+    "grade": 5,
+    "name": "分数的相对性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_315e8eb0cd",
+    "grade": 5,
+    "name": "解方程的原理",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_31dee862e0",
+    "grade": 5,
+    "name": "被除数不变，除数缩小的商",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_32a79cab68",
+    "grade": 5,
+    "name": "长方体体积求高公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_345c0fe8bd",
+    "grade": 5,
+    "name": "整数化为假分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_34fd7eaf93",
+    "grade": 5,
+    "name": "无底长方体表面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_36017e72da",
+    "grade": 5,
+    "name": "除数是小数的除法的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3643ef195a",
+    "grade": 5,
+    "name": "棵数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3915b3e7ec",
+    "grade": 5,
+    "name": "旋转中心到对应点的距离",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3ad38eae78",
+    "grade": 5,
+    "name": "合数定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3b363bf5ad",
+    "grade": 5,
+    "name": "常用长度单位的换算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3b7a5f61f8",
+    "grade": 5,
+    "name": "因数与倍数的相互关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3b8ac53870",
+    "grade": 5,
+    "name": "循环小数与循环节",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3bc89bfe79",
+    "grade": 5,
+    "name": "长方体的棱的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3ce318f8fc",
+    "grade": 5,
+    "name": "分子的含义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3d54ea64cd",
+    "grade": 5,
+    "name": "加法交换律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3e7b974f3d",
+    "grade": 5,
+    "name": "真分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3f2d199685",
+    "grade": 5,
+    "name": "自然数与整数的认识",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_40dcd0a803",
+    "grade": 5,
+    "name": "时间的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_411a7e0b7e",
+    "grade": 5,
+    "name": "长方体和正方体的表面特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4433814116",
+    "grade": 5,
+    "name": "小数乘小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_443c061340",
+    "grade": 5,
+    "name": "有限小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_44bb40732e",
+    "grade": 5,
+    "name": "求近似数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_455516348c",
+    "grade": 5,
+    "name": "整数部分不够除的处理方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_464e5b2805",
+    "grade": 5,
+    "name": "加法结合律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_47ecf0ca6c",
+    "grade": 5,
+    "name": "观察位置对形状的影响",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_480c212463",
+    "grade": 5,
+    "name": "长方体或正方体体积公式（底面积×高）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_492e5b2e01",
+    "grade": 5,
+    "name": "正方体的面的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4963180626",
+    "grade": 5,
+    "name": "循环小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_49b9b43387",
+    "grade": 5,
+    "name": "整数乘法法则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4a87a1b6af",
+    "grade": 5,
+    "name": "长宽高同时扩大对表面积的影响",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4b5b45b7ba",
+    "grade": 5,
+    "name": "分数化为小数的方法一",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4bb9ec9022",
+    "grade": 5,
+    "name": "倍数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4c6c1203f8",
+    "grade": 5,
+    "name": "最小的奇数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4c7eb52a9e",
+    "grade": 5,
+    "name": "正方体棱长总和计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4e3446cf0f",
+    "grade": 5,
+    "name": "小数乘法的基本步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4e3dc638d2",
+    "grade": 5,
+    "name": "长方体与正方体关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4e70ae981b",
+    "grade": 5,
+    "name": "倍数与因数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4fb503cf70",
+    "grade": 5,
+    "name": "总价的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4fc5c6c61a",
+    "grade": 5,
+    "name": "长方形的对称轴",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_503f22e73a",
+    "grade": 5,
+    "name": "最大公因数的求法-列举法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_507168aa34",
+    "grade": 5,
+    "name": "化带分数为假分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5075f91021",
+    "grade": 5,
+    "name": "正方体与长方体棱长总和公式对比",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_50cbe5af2d",
+    "grade": 5,
+    "name": "生活中的旋转案例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_50ce858c46",
+    "grade": 5,
+    "name": "相邻两个自然数互质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_510da39252",
+    "grade": 5,
+    "name": "奇数减偶数的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5124e0f69b",
+    "grade": 5,
+    "name": "无法一次看到长方体相对的面",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_515fc5f473",
+    "grade": 5,
+    "name": "中位数的求法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_51c5ff4d8e",
+    "grade": 5,
+    "name": "公因数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_526690add9",
+    "grade": 5,
+    "name": "互质的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_52e24f37e7",
+    "grade": 5,
+    "name": "正方体的形状",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_53ad600730",
+    "grade": 5,
+    "name": "求近似数的三种方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_53b75aa3b0",
+    "grade": 5,
+    "name": "相邻的两个自然数互质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5495f80d8e",
+    "grade": 5,
+    "name": "平均数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_549ef058e3",
+    "grade": 5,
+    "name": "分数单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_55335a885b",
+    "grade": 5,
+    "name": "偶数定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_553fef762d",
+    "grade": 5,
+    "name": "长方体的棱的数量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_554c740e65",
+    "grade": 5,
+    "name": "小数扩大成整数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_55a4a59734",
+    "grade": 5,
+    "name": "长方形的面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_574e65d329",
+    "grade": 5,
+    "name": "除法性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_575fd6ef24",
+    "grade": 5,
+    "name": "等底等高平行四边形面积是三角形的两倍",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_57d3cb3e45",
+    "grade": 5,
+    "name": "中心对称图形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_58306b30f4",
+    "grade": 5,
+    "name": "整数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5a3d613ba1",
+    "grade": 5,
+    "name": "对应点的角度关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5a7678a8f9",
+    "grade": 5,
+    "name": "平移图形的绘制",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5a7e9472f3",
+    "grade": 5,
+    "name": "梯形面积公式推导方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5b63c618e1",
+    "grade": 5,
+    "name": "分数与小数的转换",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5c1b917646",
+    "grade": 5,
+    "name": "连续的两个质数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5c2911c10e",
+    "grade": 5,
+    "name": "通过棱长总和计算长方体的长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5cb5ee8d1e",
+    "grade": 5,
+    "name": "对应点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5d5de7177f",
+    "grade": 5,
+    "name": "奇偶性规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5eb4524f29",
+    "grade": 5,
+    "name": "相等的可能性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5f315f4982",
+    "grade": 5,
+    "name": "真分数与假分数的比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5f6cd8e641",
+    "grade": 5,
+    "name": "体积计量单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5f71e6959c",
+    "grade": 5,
+    "name": "最大公因数的求法-分解质因数法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5f7968d12e",
+    "grade": 5,
+    "name": "锯木问题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5fbf83ae12",
+    "grade": 5,
+    "name": "小数乘整数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5ff66e761a",
+    "grade": 5,
+    "name": "长方体的面",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6096af9644",
+    "grade": 5,
+    "name": "完全数例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_60aea9fdd0",
+    "grade": 5,
+    "name": "四舍五入法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_61a6429f65",
+    "grade": 5,
+    "name": "正方体的别名",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_61b614135e",
+    "grade": 5,
+    "name": "偶数加奇数的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_628458f4ad",
+    "grade": 5,
+    "name": "去尾法求近似数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_638ec18568",
+    "grade": 5,
+    "name": "计算长方体的长宽高之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_644a87f2a6",
+    "grade": 5,
+    "name": "最小的偶数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_64979f9ff7",
+    "grade": 5,
+    "name": "旋转绘图注意事项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_64be10e289",
+    "grade": 5,
+    "name": "正方体的棱的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6587dcf247",
+    "grade": 5,
+    "name": "无底又无盖长方体表面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6595a8e717",
+    "grade": 5,
+    "name": "通过棱长总和计算长方体的高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_65ffc0cdef",
+    "grade": 5,
+    "name": "四舍五入法求近似数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_670e67f774",
+    "grade": 5,
+    "name": "组合图形面积计算方法（凸出组合图形）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_68457b0c0e",
+    "grade": 5,
+    "name": "质数与合数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6864614e37",
+    "grade": 5,
+    "name": "加法的基本数量关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6ab97534b7",
+    "grade": 5,
+    "name": "完全数的因数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6b90ed41cf",
+    "grade": 5,
+    "name": "无限循环小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6ce849e1bd",
+    "grade": 5,
+    "name": "正方体的表面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d03adf1ef",
+    "grade": 5,
+    "name": "两个合数的互质数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d8948ad33",
+    "grade": 5,
+    "name": "公因数和最大公因数的找法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6f09246694",
+    "grade": 5,
+    "name": "偶数减偶数的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6fd157da09",
+    "grade": 5,
+    "name": "异分母分数加法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7001aeaa7c",
+    "grade": 5,
+    "name": "长方体面数量变化",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_706c0f1357",
+    "grade": 5,
+    "name": "找质数和合数的技巧",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_706e7650e2",
+    "grade": 5,
+    "name": "简化小数结果的规则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_70ce224d91",
+    "grade": 5,
+    "name": "通过棱长总和计算正方体的棱长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_715dc44de6",
+    "grade": 5,
+    "name": "不相同的两个质数互质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7175f95e1d",
+    "grade": 5,
+    "name": "梯形的面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_726f7a6bb2",
+    "grade": 5,
+    "name": "常用面积单位的换算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_72cdf62c07",
+    "grade": 5,
+    "name": "计算结果处理",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_732167190d",
+    "grade": 5,
+    "name": "旋转角",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7445bcedba",
+    "grade": 5,
+    "name": "长方体的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_74758b3c0d",
+    "grade": 5,
+    "name": "行（横）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7554d3d4e9",
+    "grade": 5,
+    "name": "不同角度观察物体",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_776d4d933e",
+    "grade": 5,
+    "name": "减法的基本数量关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7771ec095c",
+    "grade": 5,
+    "name": "组合图形面积计算方法（凹陷组合图形）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_785ae3b35f",
+    "grade": 5,
+    "name": "面积单位进率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_78cdb5c9a1",
+    "grade": 5,
+    "name": "最小公倍数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_78e81206e6",
+    "grade": 5,
+    "name": "对称点的连线与对称轴垂直",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7b6c46490e",
+    "grade": 5,
+    "name": "公因数和最大公因数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7cbb3ed110",
+    "grade": 5,
+    "name": "积的小数点处理",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7ce9d9015c",
+    "grade": 5,
+    "name": "方程的解",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7ec25401d7",
+    "grade": 5,
+    "name": "分数比较大小的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7f3bc7d470",
+    "grade": 5,
+    "name": "质数与合数的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7fb83ea681",
+    "grade": 5,
+    "name": "变式乘法分配律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7febef3e2f",
+    "grade": 5,
+    "name": "可能发生的事件",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8089c93838",
+    "grade": 5,
+    "name": "线路两端都植树",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8111c11136",
+    "grade": 5,
+    "name": "圆的对称轴",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_859431bd5e",
+    "grade": 5,
+    "name": "正方形的对称轴",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8639a2cabf",
+    "grade": 5,
+    "name": "求几个相同加数的和的简便运算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8813997903",
+    "grade": 5,
+    "name": "小数四则运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8848c025ac",
+    "grade": 5,
+    "name": "一定能发生的可能性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_88d7c81096",
+    "grade": 5,
+    "name": "近似数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_89f3ed8652",
+    "grade": 5,
+    "name": "条形统计图的优点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8a6327f956",
+    "grade": 5,
+    "name": "小数除法的近似数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8abbbe3b9a",
+    "grade": 5,
+    "name": "最小的合数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8ae9c726ee",
+    "grade": 5,
+    "name": "众数的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8be97ed08d",
+    "grade": 5,
+    "name": "相同角度不同立体图形的可能性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8c3505d49a",
+    "grade": 5,
+    "name": "最大因数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8d76a4af14",
+    "grade": 5,
+    "name": "四面体的生活实例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8df3ce7572",
+    "grade": 5,
+    "name": "除法交换律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8e32f4e2d2",
+    "grade": 5,
+    "name": "互质数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8e45e88d18",
+    "grade": 5,
+    "name": "小数乘小数的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8ed43db3f1",
+    "grade": 5,
+    "name": "同时看到多个面",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8f0634202d",
+    "grade": 5,
+    "name": "分母的含义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8f87e1d9c9",
+    "grade": 5,
+    "name": "对称轴两边图形大小形状相同",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_907d2ff7bd",
+    "grade": 5,
+    "name": "除数缩小，商扩大",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_918cd68c92",
+    "grade": 5,
+    "name": "长方体体积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_92c0d3f827",
+    "grade": 5,
+    "name": "列（竖）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_95236e1fa7",
+    "grade": 5,
+    "name": "多边形的面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9574af4cdd",
+    "grade": 5,
+    "name": "容积的基本概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_963df97425",
+    "grade": 5,
+    "name": "真分数与带分数的比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_96c42d4dd7",
+    "grade": 5,
+    "name": "通过棱长总和计算长方体的宽",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_98a9b7625f",
+    "grade": 5,
+    "name": "分数和除法的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_991b1c3d92",
+    "grade": 5,
+    "name": "异分母分数减法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9bde682de9",
+    "grade": 5,
+    "name": "单价公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9bff3b8cdd",
+    "grade": 5,
+    "name": "通分",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9c1b417d74",
+    "grade": 5,
+    "name": "长方体棱长总和计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9c5193171a",
+    "grade": 5,
+    "name": "条形统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9c93f52ab7",
+    "grade": 5,
+    "name": "中位数的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9c99df6a4b",
+    "grade": 5,
+    "name": "偶数和奇数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9de184a51c",
+    "grade": 5,
+    "name": "无限不循环小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9e2103f5d8",
+    "grade": 5,
+    "name": "长方体的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9e8e97315b",
+    "grade": 5,
+    "name": "无限小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a15c41897f",
+    "grade": 5,
+    "name": "解方程的过程",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a1c000699e",
+    "grade": 5,
+    "name": "封闭的植树路线",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a2ae5c629d",
+    "grade": 5,
+    "name": "毫升与立方厘米的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a2bc7b2835",
+    "grade": 5,
+    "name": "最小公倍数的求法-列举法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a31e25f60e",
+    "grade": 5,
+    "name": "三角形面积公式推导方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a3b8d7b0e4",
+    "grade": 5,
+    "name": "小数乘法的计算步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a53db29826",
+    "grade": 5,
+    "name": "最大公因数的倍数关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a5a4f2f958",
+    "grade": 5,
+    "name": "中位数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a5f37d4b4f",
+    "grade": 5,
+    "name": "除数不变, 被除数扩大的商",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a5f9bfccd2",
+    "grade": 5,
+    "name": "自然数的分类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a63d44e0cd",
+    "grade": 5,
+    "name": "长方体体积求宽公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a6c0317597",
+    "grade": 5,
+    "name": "正面、左面和上面的相对性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a6c65670ce",
+    "grade": 5,
+    "name": "有限小数和无限小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a79e48ab26",
+    "grade": 5,
+    "name": "平行四边形面积公式推导方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a9e3d1f768",
+    "grade": 5,
+    "name": "一质一合的互质数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aa6c155a4f",
+    "grade": 5,
+    "name": "质量单位进率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aa94b8cb1b",
+    "grade": 5,
+    "name": "字母中间的乘号表示法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ac02cdd0d6",
+    "grade": 5,
+    "name": "偶数减奇数的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ac740e39e4",
+    "grade": 5,
+    "name": "小数四则混合运算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ae5c714a45",
+    "grade": 5,
+    "name": "旋转要素",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ae603e184e",
+    "grade": 5,
+    "name": "公倍数和最小公倍数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b0369ac3c0",
+    "grade": 5,
+    "name": "正方体棱长计算公式理解",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b081518981",
+    "grade": 5,
+    "name": "正方形的面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b15186a3b5",
+    "grade": 5,
+    "name": "组合图形定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b306195634",
+    "grade": 5,
+    "name": "互质与最小公倍数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b420680c46",
+    "grade": 5,
+    "name": "已知正方形的面积求边长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b4238e8df5",
+    "grade": 5,
+    "name": "正方体的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b53ab84294",
+    "grade": 5,
+    "name": "工作时间的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b57ec16f83",
+    "grade": 5,
+    "name": "假分数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b58eec5a2c",
+    "grade": 5,
+    "name": "长方体体积求长公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b5a6be52a1",
+    "grade": 5,
+    "name": "质因数分解示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b5c2da0f86",
+    "grade": 5,
+    "name": "最大公因数的互质关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b5fe5b673c",
+    "grade": 5,
+    "name": "数对",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b6ce8b726b",
+    "grade": 5,
+    "name": "数据的一般水平",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b6f8d45d50",
+    "grade": 5,
+    "name": "最简分数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b781f2e343",
+    "grade": 5,
+    "name": "假分数化整数或带分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b8fe77720a",
+    "grade": 5,
+    "name": "被除数扩大，商扩大",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b923e6d66d",
+    "grade": 5,
+    "name": "统计图绘制方法-描点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ba2de4d1fe",
+    "grade": 5,
+    "name": "长度单位进率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bad10e5429",
+    "grade": 5,
+    "name": "长方体和正方体的相同点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bc33942b62",
+    "grade": 5,
+    "name": "长方体的棱和顶点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bc50ba693c",
+    "grade": 5,
+    "name": "因数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bd11fb95f3",
+    "grade": 5,
+    "name": "顶点的共同特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bd428461e3",
+    "grade": 5,
+    "name": "旋转的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c0ad353160",
+    "grade": 5,
+    "name": "倍数概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c1f22e1cd7",
+    "grade": 5,
+    "name": "同分母分数减法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c2321b7f04",
+    "grade": 5,
+    "name": "计算钱数的保留位数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c29f9bf195",
+    "grade": 5,
+    "name": "事件发生的三种情况",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c4ca60bb87",
+    "grade": 5,
+    "name": "三角形的面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c519b346f7",
+    "grade": 5,
+    "name": "旋转中心",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c59ebf504b",
+    "grade": 5,
+    "name": "合数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c5be5a032e",
+    "grade": 5,
+    "name": "速度的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c5d6edbf1a",
+    "grade": 5,
+    "name": "小单位除进率换算成大单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c662b3ae9c",
+    "grade": 5,
+    "name": "相邻的两个奇数互质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c716cf4f50",
+    "grade": 5,
+    "name": "特点对比",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c754998cce",
+    "grade": 5,
+    "name": "公顷的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c834357764",
+    "grade": 5,
+    "name": "因数的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ca916b7b5c",
+    "grade": 5,
+    "name": "体积与容积的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cc22c62808",
+    "grade": 5,
+    "name": "用数对表示坐标点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cc4018afa2",
+    "grade": 5,
+    "name": "短除法求最小公倍数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cdb2bea92c",
+    "grade": 5,
+    "name": "最简分数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ce332b14fb",
+    "grade": 5,
+    "name": "轴对称",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ce7911d5d3",
+    "grade": 5,
+    "name": "分数化为小数的方法二",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d0fe92c377",
+    "grade": 5,
+    "name": "约分的含义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d1513415ff",
+    "grade": 5,
+    "name": "带分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d361816381",
+    "grade": 5,
+    "name": "公因数的找法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d3bc1947ae",
+    "grade": 5,
+    "name": "等腰梯形的对称轴",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d3c2eb724e",
+    "grade": 5,
+    "name": "左右面观察的差异",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d3e2a0c77d",
+    "grade": 5,
+    "name": "带分数减法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d52dbb50fa",
+    "grade": 5,
+    "name": "数乘积的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d5644e4e25",
+    "grade": 5,
+    "name": "正方体与长方体的棱长总和异同点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d61c6dedfd",
+    "grade": 5,
+    "name": "质数与比它小的合数互质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d67fb1bead",
+    "grade": 5,
+    "name": "不封闭的植树路线",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d8a60c93ab",
+    "grade": 5,
+    "name": "统计图绘制方法-不同组数据的连接",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d8da513121",
+    "grade": 5,
+    "name": "轴对称平面图形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d99187fa3a",
+    "grade": 5,
+    "name": "分数与除法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d9a83a9311",
+    "grade": 5,
+    "name": "最大公因数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d9bad2f977",
+    "grade": 5,
+    "name": "添补法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_da136798ef",
+    "grade": 5,
+    "name": "平方千米的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_da2f204238",
+    "grade": 5,
+    "name": "最多能看到长方体的三个面",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_da55f4f99f",
+    "grade": 5,
+    "name": "最简分数转化为有限小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_da633513c7",
+    "grade": 5,
+    "name": "数量关系中的基本公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dad07b8aeb",
+    "grade": 5,
+    "name": "奇数定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_db5c1a25cf",
+    "grade": 5,
+    "name": "质数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dc0d7770d2",
+    "grade": 5,
+    "name": "众数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dccd89e220",
+    "grade": 5,
+    "name": "轴对称图形的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_de25ff8553",
+    "grade": 5,
+    "name": "已知三角形的面积和底求高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_de7dbb13b9",
+    "grade": 5,
+    "name": "长宽高同时扩大体积变化",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dfccc26358",
+    "grade": 5,
+    "name": "分数的大小比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e0b629782b",
+    "grade": 5,
+    "name": "假分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e16db41330",
+    "grade": 5,
+    "name": "底面积概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e3810c6f6b",
+    "grade": 5,
+    "name": "约分",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e4d4b032f2",
+    "grade": 5,
+    "name": "长方体和正方体的棱和顶点相似点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e4ed508994",
+    "grade": 5,
+    "name": "等腰三角形的对称轴",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e5cb197180",
+    "grade": 5,
+    "name": "统计图绘制方法-标数据",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e5e44fdcd8",
+    "grade": 5,
+    "name": "合数和质数互质条件",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e724c378fd",
+    "grade": 5,
+    "name": "平均数的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e7a6205582",
+    "grade": 5,
+    "name": "等边三角形的对称轴",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e8e6374b6e",
+    "grade": 5,
+    "name": "倍数的求法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ea985fa19c",
+    "grade": 5,
+    "name": "排水法测体积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ebf8a959c5",
+    "grade": 5,
+    "name": "长方体的顶点数量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ec232047e4",
+    "grade": 5,
+    "name": "长方体的面的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ec45ff17d4",
+    "grade": 5,
+    "name": "带分数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ecbdfb21ae",
+    "grade": 5,
+    "name": "体积单位换算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ed0be5a627",
+    "grade": 5,
+    "name": "等底等高平行四边形面积相等",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_edc1ed35cb",
+    "grade": 5,
+    "name": "最小的质数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ee910c66af",
+    "grade": 5,
+    "name": "计算长方体棱长总和公式的理解",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eeb7173d4b",
+    "grade": 5,
+    "name": "升与立方分米的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eee4435aa0",
+    "grade": 5,
+    "name": "统计图绘制方法-连线",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ef4372c95c",
+    "grade": 5,
+    "name": "分数加减混合运算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ef73cbbd07",
+    "grade": 5,
+    "name": "常用的容积单位",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ef8bdebee8",
+    "grade": 5,
+    "name": "短除法求最大公因数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f026b8d070",
+    "grade": 5,
+    "name": "公倍数和最小公倍数的找法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f03b374297",
+    "grade": 5,
+    "name": "常用质量单位的换算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f07bdaede5",
+    "grade": 5,
+    "name": "长方体的长、宽、高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f0859c047b",
+    "grade": 5,
+    "name": "找因数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f0b014bfb0",
+    "grade": 5,
+    "name": "对称点到对称轴的距离",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f109758e29",
+    "grade": 5,
+    "name": "减法性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f210618155",
+    "grade": 5,
+    "name": "面数量变化特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f22b0069f6",
+    "grade": 5,
+    "name": "特殊图形旋转重合",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f2732ce300",
+    "grade": 5,
+    "name": "平行四边形的面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f30385eb18",
+    "grade": 5,
+    "name": "正方体体积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f34d7b09da",
+    "grade": 5,
+    "name": "带分数化为假分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f3e13808ec",
+    "grade": 5,
+    "name": "通分的含义和方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f48d0d6a20",
+    "grade": 5,
+    "name": "复式折线统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f4ac1c25bd",
+    "grade": 5,
+    "name": "数量的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f67664332f",
+    "grade": 5,
+    "name": "最小的自然数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f7e61a0f6f",
+    "grade": 5,
+    "name": "升与毫升的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f840eb0ffd",
+    "grade": 5,
+    "name": "小数化为分数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f8818e5c4f",
+    "grade": 5,
+    "name": "假分数化为整数或带分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f962535c50",
+    "grade": 5,
+    "name": "分子相同的分数大小比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f9900ed6cf",
+    "grade": 5,
+    "name": "梯形已知面积和高求上底",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f9bcc50ed9",
+    "grade": 5,
+    "name": "正方体与长方体关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fb3c0543a2",
+    "grade": 5,
+    "name": "可能性的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fb7bd29262",
+    "grade": 5,
+    "name": "间距（株距）长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fbbe159575",
+    "grade": 5,
+    "name": "数的奇偶性以及相加相减相乘结果的奇偶性规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fbe454dcc3",
+    "grade": 5,
+    "name": "倍数的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fcd93eabdf",
+    "grade": 5,
+    "name": "偶数乘偶数的规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fd1d58cd78",
+    "grade": 5,
+    "name": "植树问题概述",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fd7d2f4f57",
+    "grade": 5,
+    "name": "倍数关系与最小公倍数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fdb1cd5a12",
+    "grade": 5,
+    "name": "可能性大小",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fdc8d34bbd",
+    "grade": 5,
+    "name": "长方体长宽高关系公式推导",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_feeb83563d",
+    "grade": 5,
+    "name": "非轴对称图形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ff29cd4110",
+    "grade": 5,
+    "name": "分数化简",
+    "ability_tags": []
+  },
+  {
     "id": "simple_eq",
     "grade": 5,
     "name": "简易方程",
+    "ability_tags": [
+      "logic"
+    ]
+  },
+  {
+    "id": "0",
+    "grade": 6,
+    "name": "数0的性质",
+    "ability_tags": []
+  },
+  {
+    "id": "1",
+    "grade": 6,
+    "name": "图上距离公式1",
+    "ability_tags": []
+  },
+  {
+    "id": "2",
+    "grade": 6,
+    "name": "图上距离公式2",
+    "ability_tags": []
+  },
+  {
+    "id": "3",
+    "grade": 6,
+    "name": "图上距离公式3",
+    "ability_tags": []
+  },
+  {
+    "id": "3_2",
+    "grade": 6,
+    "name": "3个苹果放入2个盒子的放法",
+    "ability_tags": []
+  },
+  {
+    "id": "4",
+    "grade": 6,
+    "name": "具有4条对称轴的图形",
+    "ability_tags": []
+  },
+  {
+    "id": "circle_area",
+    "grade": 6,
+    "name": "圆的面积",
+    "ability_tags": [
+      "spatial"
+    ]
+  },
+  {
+    "id": "factors",
+    "grade": 6,
+    "name": "因数与倍数",
     "ability_tags": [
       "logic"
     ]
@@ -72,20 +4942,2836 @@
     ]
   },
   {
-    "id": "ratio",
+    "id": "kp_001f032011",
     "grade": 6,
-    "name": "比和比例",
-    "ability_tags": [
-      "logic"
-    ]
+    "name": "绘制条形统计图步骤",
+    "ability_tags": []
   },
   {
-    "id": "circle_area",
+    "id": "kp_0085167783",
     "grade": 6,
-    "name": "圆的面积",
-    "ability_tags": [
-      "spatial"
-    ]
+    "name": "圆面积公式的推导",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_00af849fb1",
+    "grade": 6,
+    "name": "圆锥底面周长公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_021c5aeadc",
+    "grade": 6,
+    "name": "圆心",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_024a1e3b9f",
+    "grade": 6,
+    "name": "旋转方向的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0252598613",
+    "grade": 6,
+    "name": "三种单式统计图和两种复式统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_02b33cdc23",
+    "grade": 6,
+    "name": "计算的简便性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_03c92b9996",
+    "grade": 6,
+    "name": "分数乘整数，第二个因数不能是分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0437d4b02d",
+    "grade": 6,
+    "name": "比值的分数表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_043dee4aee",
+    "grade": 6,
+    "name": "圆锥和圆柱的横截面问题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_04541197d4",
+    "grade": 6,
+    "name": "圆的半径和周长的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_04e1d4b2c6",
+    "grade": 6,
+    "name": "按比例分配的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_04e661eaf4",
+    "grade": 6,
+    "name": "比例的各部分名称",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_055e5268ac",
+    "grade": 6,
+    "name": "百分数和分数的区别",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_05617383b3",
+    "grade": 6,
+    "name": "画图（画出单位长度）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_05b0c68bdb",
+    "grade": 6,
+    "name": "常见的数量关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0651d26416",
+    "grade": 6,
+    "name": "圆心角和弧、扇形面积的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_066f16bd35",
+    "grade": 6,
+    "name": "工程问题数量关系式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_06e85ec0a9",
+    "grade": 6,
+    "name": "分数乘法的计算法则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0734393b86",
+    "grade": 6,
+    "name": "圆柱表面积的特殊应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_076fdd6a19",
+    "grade": 6,
+    "name": "路程公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0777e11a48",
+    "grade": 6,
+    "name": "求常见的百分率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_07ae099fe1",
+    "grade": 6,
+    "name": "税率的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_07d2f8c697",
+    "grade": 6,
+    "name": "周长公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_08a00ef9fb",
+    "grade": 6,
+    "name": "圆的常见面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_091b0ae680",
+    "grade": 6,
+    "name": "利息计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_097b801766",
+    "grade": 6,
+    "name": "分数混合运算顺序与整数混合运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_098191723e",
+    "grade": 6,
+    "name": "竖切圆锥面是等腰三角形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_09e75c38e3",
+    "grade": 6,
+    "name": "按比例分配",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_09eea253aa",
+    "grade": 6,
+    "name": "圆柱底面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0a909ef543",
+    "grade": 6,
+    "name": "判断成正比例或反比例的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0a95bc0e62",
+    "grade": 6,
+    "name": "绘制复式折线统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0b080013a2",
+    "grade": 6,
+    "name": "图形的放大与缩小",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0b34c85a9c",
+    "grade": 6,
+    "name": "比的前项定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0b3ce3a11f",
+    "grade": 6,
+    "name": "四种颜色的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0c49359368",
+    "grade": 6,
+    "name": "圆心和半径的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0c80b06c07",
+    "grade": 6,
+    "name": "弧",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0d136be65e",
+    "grade": 6,
+    "name": "解方程定律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0d6a1436be",
+    "grade": 6,
+    "name": "假分数的倒数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_0f7fe2dbd9",
+    "grade": 6,
+    "name": "小数的倒数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_10905a3e0d",
+    "grade": 6,
+    "name": "绘制路线图的步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_11053666c2",
+    "grade": 6,
+    "name": "正方形和内切圆的面积比",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_112d7fdbc4",
+    "grade": 6,
+    "name": "鸽巢原理的必然结果",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_128fdbea41",
+    "grade": 6,
+    "name": "比的各项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_12be1cfc33",
+    "grade": 6,
+    "name": "变化的量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1423501c17",
+    "grade": 6,
+    "name": "解答分数应用题的关键",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_144bbcdfb3",
+    "grade": 6,
+    "name": "旋转角度的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_14b15e7290",
+    "grade": 6,
+    "name": "烟囱通风管表面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_156bfeac9b",
+    "grade": 6,
+    "name": "单式统计图的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_15e2062fbd",
+    "grade": 6,
+    "name": "扇形统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_17327be6cf",
+    "grade": 6,
+    "name": "比例尺的实际应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_178a059a79",
+    "grade": 6,
+    "name": "乘法的交换律和结合律在分数乘小数中的作用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_17b3b6219f",
+    "grade": 6,
+    "name": "连除的运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_189a6002f9",
+    "grade": 6,
+    "name": "比的应用——已知差求比值",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_189fa98f45",
+    "grade": 6,
+    "name": "圆周率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_18f553722b",
+    "grade": 6,
+    "name": "同级运算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1a58909bd7",
+    "grade": 6,
+    "name": "利用正负数含义比较大小",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1b3ec27c8b",
+    "grade": 6,
+    "name": "圆的周长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1d40b2dd59",
+    "grade": 6,
+    "name": "鸽巢原理的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1d881c8eea",
+    "grade": 6,
+    "name": "整数和分母约分",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1ec2d5d177",
+    "grade": 6,
+    "name": "圆的对称性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_1fc2bebe35",
+    "grade": 6,
+    "name": "倒数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2091fa281e",
+    "grade": 6,
+    "name": "加、减法为一级运算，乘、除法为二级运算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_216e586230",
+    "grade": 6,
+    "name": "图形变换的基本方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_217ff103d8",
+    "grade": 6,
+    "name": "扇形弧长和面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_21d4a350c5",
+    "grade": 6,
+    "name": "圆柱的底面特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_220fb6e206",
+    "grade": 6,
+    "name": "利率的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_22d1513a27",
+    "grade": 6,
+    "name": "百分数化成分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2334d9f0d0",
+    "grade": 6,
+    "name": "侧面积应用场景",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_23b9187067",
+    "grade": 6,
+    "name": "两个数的和或差及这两个数的倍数关系问题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_244b5c74ba",
+    "grade": 6,
+    "name": "分数的基本性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_250428d3bd",
+    "grade": 6,
+    "name": "同心圆",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_253efbdabd",
+    "grade": 6,
+    "name": "百分数化分数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2617c67aa6",
+    "grade": 6,
+    "name": "比的几何应用——长方形的周长和面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2654da3c06",
+    "grade": 6,
+    "name": "已知底面周长和高求体积和底面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_26bca8fb76",
+    "grade": 6,
+    "name": "鸽子飞进鸽笼的例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_26cb1f9db8",
+    "grade": 6,
+    "name": "百分号的规范",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_27da75416f",
+    "grade": 6,
+    "name": "轴对称图形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2801c8cd6a",
+    "grade": 6,
+    "name": "利用数轴比较数的大小",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_285e30404d",
+    "grade": 6,
+    "name": "解题方法——增加百分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_29dfe93f86",
+    "grade": 6,
+    "name": "纳税的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2a7db2f0bb",
+    "grade": 6,
+    "name": "播种的公顷数和天数的反比例关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2cc44caa5c",
+    "grade": 6,
+    "name": "周长相等时的面积比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_2da959b832",
+    "grade": 6,
+    "name": "百分数化成小数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_306fecb9d8",
+    "grade": 6,
+    "name": "直径",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_30d4dcfa92",
+    "grade": 6,
+    "name": "扇形面积占圆面积的百分比和圆心角度数占圆周角度数的百分比关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_31f5774848",
+    "grade": 6,
+    "name": "比的基本性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_320b3f2386",
+    "grade": 6,
+    "name": "相对位置的示例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_32572eb8ae",
+    "grade": 6,
+    "name": "整数和分母约掉最大公因数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_327fbc6211",
+    "grade": 6,
+    "name": "求甲是乙的几倍（百分之几）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3303def825",
+    "grade": 6,
+    "name": "比的应用计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_336efd5cc9",
+    "grade": 6,
+    "name": "写出图的名称",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_338ef8eb27",
+    "grade": 6,
+    "name": "乘法分配律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_343ba4fad0",
+    "grade": 6,
+    "name": "应用题示例：求杨树的棵树占柳树的百分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_34bc304c70",
+    "grade": 6,
+    "name": "正数的种类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_34be16a290",
+    "grade": 6,
+    "name": "直角三角形及其直角边旋转形成圆锥",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_356efe947b",
+    "grade": 6,
+    "name": "成反比例的量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_35bd9d00ad",
+    "grade": 6,
+    "name": "根据比例尺画图的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_363e381f18",
+    "grade": 6,
+    "name": "圆的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_36c5384569",
+    "grade": 6,
+    "name": "已知比一个数多几分之几的数，求这个数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_36f3f0e69a",
+    "grade": 6,
+    "name": "半径或直径增加对周长的影响",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3723635e41",
+    "grade": 6,
+    "name": "带单位的表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_373c53fefb",
+    "grade": 6,
+    "name": "分数化小数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_373d7f03bc",
+    "grade": 6,
+    "name": "未知量的除法求已知量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_387221cdd8",
+    "grade": 6,
+    "name": "正比例关系的判断",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_38b0ab0306",
+    "grade": 6,
+    "name": "求甲比乙多几分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_38db321d8e",
+    "grade": 6,
+    "name": "负数和正数的大小关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3960bf2e17",
+    "grade": 6,
+    "name": "正比例的图像",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_397858684a",
+    "grade": 6,
+    "name": "利用百分数计算折扣",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_39ad82dd6e",
+    "grade": 6,
+    "name": "四分之一圆的面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3a4d7a48af",
+    "grade": 6,
+    "name": "圆柱底面周长计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3a928a1c49",
+    "grade": 6,
+    "name": "利息税的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3ba9de6918",
+    "grade": 6,
+    "name": "轴对称图形的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3d76323121",
+    "grade": 6,
+    "name": "圆锥体积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3dc8ee380b",
+    "grade": 6,
+    "name": "圆面积的变化规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3e48261594",
+    "grade": 6,
+    "name": "圆柱形容器的容积及其计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3e9068f134",
+    "grade": 6,
+    "name": "两个圆的比关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3e947c4339",
+    "grade": 6,
+    "name": "扇形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3ebc3cf924",
+    "grade": 6,
+    "name": "百分数的表示方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3f2e21aac4",
+    "grade": 6,
+    "name": "数轴的原点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3f30b9dd5a",
+    "grade": 6,
+    "name": "已知一个数的几分之几的解法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_3f36b3e411",
+    "grade": 6,
+    "name": "免税与减税",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4235e9368a",
+    "grade": 6,
+    "name": "圆柱体积与形成方式的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_42db45234e",
+    "grade": 6,
+    "name": "混合运算用梯等式计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_430db7d390",
+    "grade": 6,
+    "name": "国债和教育储蓄利息免税",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4327373779",
+    "grade": 6,
+    "name": "图上距离的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4443acb5af",
+    "grade": 6,
+    "name": "圆柱体积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_44f8ae4a35",
+    "grade": 6,
+    "name": "常见题型解析-已知底面积和高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_460e708338",
+    "grade": 6,
+    "name": "比值",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_469f59205a",
+    "grade": 6,
+    "name": "解比例的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_46f9ec66a8",
+    "grade": 6,
+    "name": "整数的倒数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4733e695a7",
+    "grade": 6,
+    "name": "圆柱的形成",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4764382d4c",
+    "grade": 6,
+    "name": "比例的外项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_48334ed1a4",
+    "grade": 6,
+    "name": "依据‘除以几个数，等于乘上这几个数的积’的简便方法计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_48eff4f884",
+    "grade": 6,
+    "name": "比的后项不能为零",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_48f877c698",
+    "grade": 6,
+    "name": "常见题型解析-已知底面周长和高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_491c483d5d",
+    "grade": 6,
+    "name": "常见题型解析-已知侧面积和高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4979e8ec68",
+    "grade": 6,
+    "name": "扇形的面积大小",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_49bcd158b2",
+    "grade": 6,
+    "name": "圆锥的形成",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_49f4941beb",
+    "grade": 6,
+    "name": "成数的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4ab79c5242",
+    "grade": 6,
+    "name": "负数的应用场景",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4ac134e4e9",
+    "grade": 6,
+    "name": "圆锥的高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4b8be82d40",
+    "grade": 6,
+    "name": "商不变性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4ca14d35b8",
+    "grade": 6,
+    "name": "半圆的周长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4d050a8ead",
+    "grade": 6,
+    "name": "纳税的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4d0eed25fd",
+    "grade": 6,
+    "name": "百分数的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4dbb5e05d6",
+    "grade": 6,
+    "name": "环形面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4e981dd618",
+    "grade": 6,
+    "name": "八折的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4f085abfc2",
+    "grade": 6,
+    "name": "小数与百分数互化",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4f6f689baa",
+    "grade": 6,
+    "name": "增加和减少量的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_4f90e94c3f",
+    "grade": 6,
+    "name": "反比例的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_51176ec0e8",
+    "grade": 6,
+    "name": "反比例关系的判断",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5166c17a94",
+    "grade": 6,
+    "name": "用方程解决分数应用题的步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_52e97946f6",
+    "grade": 6,
+    "name": "利率的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5306e888f5",
+    "grade": 6,
+    "name": "工效×工作时间=工作总量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_538f029e38",
+    "grade": 6,
+    "name": "数轴的正负方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_53fbc689ad",
+    "grade": 6,
+    "name": "圆周率的性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5464d10b62",
+    "grade": 6,
+    "name": "有括号的混合运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_56b9ac1230",
+    "grade": 6,
+    "name": "无盖水桶表面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_578f0b761a",
+    "grade": 6,
+    "name": "求比一个数少几分之几的数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_57acd461e0",
+    "grade": 6,
+    "name": "三种颜色的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_587791fc24",
+    "grade": 6,
+    "name": "保证摸出两个同色球的数量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_59345e6d62",
+    "grade": 6,
+    "name": "横切圆锥面是圆",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5a083f7832",
+    "grade": 6,
+    "name": "等体积转换问题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5aa105300f",
+    "grade": 6,
+    "name": "比例的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5aa1661f5a",
+    "grade": 6,
+    "name": "比号的定义和读法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5ab41df451",
+    "grade": 6,
+    "name": "负数的种类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5b18e96d7e",
+    "grade": 6,
+    "name": "圆柱的表面积计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5b9eb80988",
+    "grade": 6,
+    "name": "成正比例的量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5bd97c497b",
+    "grade": 6,
+    "name": "小数化成百分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5d535d4a60",
+    "grade": 6,
+    "name": "读懂复式条形统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5d53f90c5f",
+    "grade": 6,
+    "name": "确定比例尺",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5e8d429d6f",
+    "grade": 6,
+    "name": "百分数表示倍比关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5fa74c0b8d",
+    "grade": 6,
+    "name": "小数化分数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_5fc5cc5eca",
+    "grade": 6,
+    "name": "等圆",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_60a6b65823",
+    "grade": 6,
+    "name": "扇形统计图的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_619aa15089",
+    "grade": 6,
+    "name": "求打折后售价",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6210172250",
+    "grade": 6,
+    "name": "圆锥底面积公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_62632c2de2",
+    "grade": 6,
+    "name": "常见的轴对称图形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_628cae6a82",
+    "grade": 6,
+    "name": "等腰三角形三角形的高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_62aabaf709",
+    "grade": 6,
+    "name": "常用统计图的优点 - 扇形统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_63bd93768e",
+    "grade": 6,
+    "name": "圆柱侧面积的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_64c09d2692",
+    "grade": 6,
+    "name": "圆锥的横切",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_65c9d2d1f8",
+    "grade": 6,
+    "name": "负数的由来",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_65d745a478",
+    "grade": 6,
+    "name": "解题方法——减少百分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_65dee1959d",
+    "grade": 6,
+    "name": "侧面积+一个底面积应用场景",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_662c504e37",
+    "grade": 6,
+    "name": "比例尺的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6673e694a3",
+    "grade": 6,
+    "name": "小数化成分数进行计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_67522e24ec",
+    "grade": 6,
+    "name": "真分数的倒数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_67b6ebf7ae",
+    "grade": 6,
+    "name": "求实际距离的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6809526440",
+    "grade": 6,
+    "name": "分数化百分数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6810afd44d",
+    "grade": 6,
+    "name": "比",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_68267e5714",
+    "grade": 6,
+    "name": "圆柱的竖切",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_688b45776d",
+    "grade": 6,
+    "name": "量率对应",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_68e756810c",
+    "grade": 6,
+    "name": "直径的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_690a400fe4",
+    "grade": 6,
+    "name": "反比例的图像",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_69382bf738",
+    "grade": 6,
+    "name": "圆柱与圆锥等底等高的体积差",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_695ed7579b",
+    "grade": 6,
+    "name": "盲区",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6a4ae046a6",
+    "grade": 6,
+    "name": "圆周长计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6af537b903",
+    "grade": 6,
+    "name": "侧面积+两个底面积应用场景",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6c2038cf99",
+    "grade": 6,
+    "name": "求甲比乙少几分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6c28fe32ea",
+    "grade": 6,
+    "name": "比的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6c8d7b6e10",
+    "grade": 6,
+    "name": "区分比与比值",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6ceb8eac0a",
+    "grade": 6,
+    "name": "圆柱的横切",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d0829d00f",
+    "grade": 6,
+    "name": "比例的基本性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d33ac7231",
+    "grade": 6,
+    "name": "半径和周长、面积的倍数关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d6a0d69c1",
+    "grade": 6,
+    "name": "圆的周长与直径的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6d85cdb876",
+    "grade": 6,
+    "name": "圆柱的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6e26dd45e4",
+    "grade": 6,
+    "name": "比值的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6e5d194ff1",
+    "grade": 6,
+    "name": "求折扣转化为百分数或分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_6e73624ec9",
+    "grade": 6,
+    "name": "求百分率",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_700d156e60",
+    "grade": 6,
+    "name": "比的前项和后项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7063b64888",
+    "grade": 6,
+    "name": "圆柱与圆锥等高等体积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_709a766e84",
+    "grade": 6,
+    "name": "求图上距离的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_70a71d2a93",
+    "grade": 6,
+    "name": "带分数的倒数与原数关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_71b9adf317",
+    "grade": 6,
+    "name": "百分数和分数的联系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7208a9b320",
+    "grade": 6,
+    "name": "底面直径等于等腰三角形的底",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_722b9cfa97",
+    "grade": 6,
+    "name": "描述路线图的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_723120c611",
+    "grade": 6,
+    "name": "求比率的四个基本公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7369baa616",
+    "grade": 6,
+    "name": "应纳税额的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_738f1777db",
+    "grade": 6,
+    "name": "平移的要素",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_73b2a53bf5",
+    "grade": 6,
+    "name": "求比例尺的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_74e31ae9d0",
+    "grade": 6,
+    "name": "比一个数增加百分之几的数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_74fddb7ee2",
+    "grade": 6,
+    "name": "正数的写法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_750073772e",
+    "grade": 6,
+    "name": "浸水体积的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_75b8e44c0f",
+    "grade": 6,
+    "name": "正方形内画圆",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_76792f1d37",
+    "grade": 6,
+    "name": "扇形的大小与圆心角的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_768a112f04",
+    "grade": 6,
+    "name": "线段比例尺",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_76cd7339b4",
+    "grade": 6,
+    "name": "数值比例尺",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_76ff058589",
+    "grade": 6,
+    "name": "比例的内项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7819441ddd",
+    "grade": 6,
+    "name": "求一个数的百分之几是多少",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7896e275dc",
+    "grade": 6,
+    "name": "假分数化简",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_78fdf5e8f1",
+    "grade": 6,
+    "name": "圆柱的体积计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_793a5c8d9a",
+    "grade": 6,
+    "name": "旋转点的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_79821babb3",
+    "grade": 6,
+    "name": "比例尺的分类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_79b207feac",
+    "grade": 6,
+    "name": "点、线、面、体之间的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_79cf7b10da",
+    "grade": 6,
+    "name": "比和分数的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7a40cc6f79",
+    "grade": 6,
+    "name": "圆柱与圆锥关系转换",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7a4ab7b160",
+    "grade": 6,
+    "name": "反比例关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7a70a90924",
+    "grade": 6,
+    "name": "两种颜色的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7ad0deaa9b",
+    "grade": 6,
+    "name": "百分数与分数的区别",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7b0dfb4288",
+    "grade": 6,
+    "name": "比例尺的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7d86e8ba13",
+    "grade": 6,
+    "name": "正比例关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7dc27ca131",
+    "grade": 6,
+    "name": "求一个数是另一个数的百分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7de9a2bec2",
+    "grade": 6,
+    "name": "数对的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7f396967b6",
+    "grade": 6,
+    "name": "极端思想法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7f4476ac57",
+    "grade": 6,
+    "name": "用比例解决问题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7fadbd8c8e",
+    "grade": 6,
+    "name": "数轴的刻度",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7fd9120bab",
+    "grade": 6,
+    "name": "圆柱的侧面特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7febed0b7e",
+    "grade": 6,
+    "name": "一个数乘分数的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_7ff9954c23",
+    "grade": 6,
+    "name": "观察物体的方向",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_80707f10e5",
+    "grade": 6,
+    "name": "百化互化的概述",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_808057ae10",
+    "grade": 6,
+    "name": "常用统计图的优点 - 折线统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_809975c516",
+    "grade": 6,
+    "name": "小数化百分数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_80f41fedd7",
+    "grade": 6,
+    "name": "圆锥的底面特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_818188e88d",
+    "grade": 6,
+    "name": "分数连乘",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_820a5b5270",
+    "grade": 6,
+    "name": "折扣的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8323a415e4",
+    "grade": 6,
+    "name": "圆锥的体积计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_835992f7cf",
+    "grade": 6,
+    "name": "连比",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8394e9b1f8",
+    "grade": 6,
+    "name": "乘法结合律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_83cb1b917b",
+    "grade": 6,
+    "name": "小数乘分数的运算法则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8451760e6a",
+    "grade": 6,
+    "name": "时间公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_84b1cff3b5",
+    "grade": 6,
+    "name": "负数的写法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_84e7603d6d",
+    "grade": 6,
+    "name": "因数和积的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_863dae8c38",
+    "grade": 6,
+    "name": "反向推导——已知减少百分之几的数，求原数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8640fea5d7",
+    "grade": 6,
+    "name": "分数乘法中的约分",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8735020622",
+    "grade": 6,
+    "name": "最简比的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8753455694",
+    "grade": 6,
+    "name": "比的几何应用——长方体的棱长和体积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_879b0e952d",
+    "grade": 6,
+    "name": "画线段图解比例问题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_87e89cf90b",
+    "grade": 6,
+    "name": "分数除法的计算法则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_87ebae4e9f",
+    "grade": 6,
+    "name": "比的限制条件",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_88a6c5d447",
+    "grade": 6,
+    "name": "圆心的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_88b8c4154d",
+    "grade": 6,
+    "name": "比值的表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_88e5e47955",
+    "grade": 6,
+    "name": "绘制路线图的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_89adaf61c1",
+    "grade": 6,
+    "name": "圆的常见周长计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8a11c99f7d",
+    "grade": 6,
+    "name": "复式统计图的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8a64e37127",
+    "grade": 6,
+    "name": "图形旋转的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8a6db86b3c",
+    "grade": 6,
+    "name": "判断两个比能否组成比例的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8a9f430197",
+    "grade": 6,
+    "name": "比的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8b1b1d8653",
+    "grade": 6,
+    "name": "速度×时间=路程",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8b3c2bd86d",
+    "grade": 6,
+    "name": "分数乘法混合运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8b6667c95c",
+    "grade": 6,
+    "name": "已知一个数的几分之几是多少，求这个数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8bbbb57b25",
+    "grade": 6,
+    "name": "分数除法转化法则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8bcb6a64a7",
+    "grade": 6,
+    "name": "圆柱侧面积的展开图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8c07eafa46",
+    "grade": 6,
+    "name": "单位时间的定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8cb5a66a31",
+    "grade": 6,
+    "name": "油桶表面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8ce0326104",
+    "grade": 6,
+    "name": "分数的倒数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8ceede9ada",
+    "grade": 6,
+    "name": "六折五的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_8d1621da23",
+    "grade": 6,
+    "name": "分数乘法概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_90304b5de5",
+    "grade": 6,
+    "name": "圆柱的高特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_90b2f59e12",
+    "grade": 6,
+    "name": "圆锥的高的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_90e6be495a",
+    "grade": 6,
+    "name": "鸽巢原理的公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9167dd6cfc",
+    "grade": 6,
+    "name": "观察物体的高度与视野",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9168e1a76e",
+    "grade": 6,
+    "name": "国债利息的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_92356cad04",
+    "grade": 6,
+    "name": "判断倒数标准",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9251f8fcb7",
+    "grade": 6,
+    "name": "比的几何应用——三角形的三条边长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_92972c7cc1",
+    "grade": 6,
+    "name": "已知底面积和高求体积和底面周长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_92e31eb944",
+    "grade": 6,
+    "name": "应用比例尺画图的步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9360363da2",
+    "grade": 6,
+    "name": "按比例分配的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_937fbaa475",
+    "grade": 6,
+    "name": "利率的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_93e6e9eac3",
+    "grade": 6,
+    "name": "分数除法中的小数处理",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_945e067f77",
+    "grade": 6,
+    "name": "扇形卷曲形成圆锥",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9543f51f01",
+    "grade": 6,
+    "name": "图形的放大和缩小",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_95fdec191f",
+    "grade": 6,
+    "name": "制作复式条形统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_964d2d5617",
+    "grade": 6,
+    "name": "绘制路线图步骤详细说明",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_966ecf9eda",
+    "grade": 6,
+    "name": "分数化成小数进行计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9675025190",
+    "grade": 6,
+    "name": "确定观察的范围",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_97cce8da3b",
+    "grade": 6,
+    "name": "半径变化对各项的影响",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_980cd3145d",
+    "grade": 6,
+    "name": "标出实际距离，写清地点名称",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_98658391be",
+    "grade": 6,
+    "name": "应纳税额的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_994c0413da",
+    "grade": 6,
+    "name": "常见题型解析-已知底面周长和体积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9a5f4578c1",
+    "grade": 6,
+    "name": "比与除法的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9aa7b85ce3",
+    "grade": 6,
+    "name": "比与分数的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9ac6dd7461",
+    "grade": 6,
+    "name": "百分数的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9b516907ec",
+    "grade": 6,
+    "name": "半径的特性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9ca020322a",
+    "grade": 6,
+    "name": "长方形内画圆",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9d46824ca3",
+    "grade": 6,
+    "name": "环形的面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9d982d6546",
+    "grade": 6,
+    "name": "竖切圆锥面积增加关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9da07c0b02",
+    "grade": 6,
+    "name": "比的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9da646c0ec",
+    "grade": 6,
+    "name": "圆锥体积公式的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9f07793ca8",
+    "grade": 6,
+    "name": "求比一个数少百分之几的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9f1260672d",
+    "grade": 6,
+    "name": "扇形面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9f2b896a0a",
+    "grade": 6,
+    "name": "鸽巢原理的基本表达形式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9f74551af0",
+    "grade": 6,
+    "name": "分数与百分数互化",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_9f8442179d",
+    "grade": 6,
+    "name": "用分数运算解决“求比已知量多或少的量”",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a05ac93a5e",
+    "grade": 6,
+    "name": "一成的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a0754c1d20",
+    "grade": 6,
+    "name": "利息的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a129a7dfc9",
+    "grade": 6,
+    "name": "播种总公顷数的反比例例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a1814f2bcb",
+    "grade": 6,
+    "name": "反向推导——已知增加百分之几的数，求原数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a1b9ac081f",
+    "grade": 6,
+    "name": "单产量×数量=总产量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a217250102",
+    "grade": 6,
+    "name": "最佳使用统计图的场景",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a274b589ef",
+    "grade": 6,
+    "name": "分数除法和比的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a2e6eddab8",
+    "grade": 6,
+    "name": "常用π的倍数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a40090abbb",
+    "grade": 6,
+    "name": "求成数转化为百分数或分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a406c30342",
+    "grade": 6,
+    "name": "倒数的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a53e66cf66",
+    "grade": 6,
+    "name": "分数除法中带分数处理",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a67b5e0242",
+    "grade": 6,
+    "name": "两圆柱或两圆锥几何属性之比",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a6d89014d5",
+    "grade": 6,
+    "name": "税后利息的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a6fd7666cd",
+    "grade": 6,
+    "name": "应纳税额的计算方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a89399bb25",
+    "grade": 6,
+    "name": "半径和直径的倍数关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a8f10f0f60",
+    "grade": 6,
+    "name": "圆的周长定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_a9d7a1cc9f",
+    "grade": 6,
+    "name": "百分数的读法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aa689d9934",
+    "grade": 6,
+    "name": "比的应用——已知一个数量求比值",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aa7d013262",
+    "grade": 6,
+    "name": "信投入信箱的例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aa8a459aae",
+    "grade": 6,
+    "name": "小数和分母能约分的先约分",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aa95a8c0e9",
+    "grade": 6,
+    "name": "已知一个数的百分之几是多少，求这个数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aadecb4fc8",
+    "grade": 6,
+    "name": "圆柱与圆锥等底等高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_acecaf020f",
+    "grade": 6,
+    "name": "几折的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_acf486b7d0",
+    "grade": 6,
+    "name": "比的后项定义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ad1a9c18f1",
+    "grade": 6,
+    "name": "圆柱的高",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ad2b3f4616",
+    "grade": 6,
+    "name": "确定物体位置的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ad2f8fe7b1",
+    "grade": 6,
+    "name": "速度的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ad35c75acc",
+    "grade": 6,
+    "name": "计算时单位必须统一",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_adc578d5df",
+    "grade": 6,
+    "name": "百分数应用题型分类",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_adddca07b1",
+    "grade": 6,
+    "name": "求一个数比另一个数少百分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_aeea4fde10",
+    "grade": 6,
+    "name": "旋转的要素",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_af625bfeb1",
+    "grade": 6,
+    "name": "半圆周长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_af6bc31eee",
+    "grade": 6,
+    "name": "求一个数比另一个数多百分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_af87f5836f",
+    "grade": 6,
+    "name": "比例的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b0ad7f3b7a",
+    "grade": 6,
+    "name": "放大比例尺",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b110323089",
+    "grade": 6,
+    "name": "圆柱侧面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b1ad21e544",
+    "grade": 6,
+    "name": "已知量的乘法求未知量",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b214ff8a5f",
+    "grade": 6,
+    "name": "求比一个数多百分之几的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b29ee13085",
+    "grade": 6,
+    "name": "半径",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b3cbbdf735",
+    "grade": 6,
+    "name": "应用题示例：求六年级参加兴趣活动小组人数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b4191e8976",
+    "grade": 6,
+    "name": "百分数的写法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b45089e6d5",
+    "grade": 6,
+    "name": "储蓄的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b61d924179",
+    "grade": 6,
+    "name": "分数除法应用题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b664f64a5b",
+    "grade": 6,
+    "name": "正数的概念和表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b6dffb5ba7",
+    "grade": 6,
+    "name": "不成正比例的量的例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b726d2179a",
+    "grade": 6,
+    "name": "分数乘法的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b95361afce",
+    "grade": 6,
+    "name": "乘法交换律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_b9ce5c0d8c",
+    "grade": 6,
+    "name": "同色球计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bb1b4b6b97",
+    "grade": 6,
+    "name": "利息和利率的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bb7f80175c",
+    "grade": 6,
+    "name": "跑道的周长",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bc76793e0d",
+    "grade": 6,
+    "name": "比例的内项和外项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bd4fdc2aac",
+    "grade": 6,
+    "name": "速度公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bda720e8af",
+    "grade": 6,
+    "name": "求甲数的标准量解法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bde35cebc3",
+    "grade": 6,
+    "name": "圆柱体积公式的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bdf6d8457d",
+    "grade": 6,
+    "name": "分数乘除混合运算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_be9b218ca1",
+    "grade": 6,
+    "name": "一个数乘分数，第二个因数必须是分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bf2c00c93c",
+    "grade": 6,
+    "name": "比的读法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bf47c062d8",
+    "grade": 6,
+    "name": "单价×数量=总价",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_bfd3a0ed31",
+    "grade": 6,
+    "name": "具有无数条对称轴的图形",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c042e7e99a",
+    "grade": 6,
+    "name": "求比一个数多几分之几的数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c05404d55a",
+    "grade": 6,
+    "name": "画圆步骤",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c11f840d95",
+    "grade": 6,
+    "name": "比一个数减少百分之几的数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c176bbcb58",
+    "grade": 6,
+    "name": "比例的限制条件",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c187e47624",
+    "grade": 6,
+    "name": "化简比的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c20ed9843b",
+    "grade": 6,
+    "name": "在数轴上找到并标记数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c239aec295",
+    "grade": 6,
+    "name": "分数化简的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c2482f2ba5",
+    "grade": 6,
+    "name": "折线统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c325a547c8",
+    "grade": 6,
+    "name": "求甲数的几倍（百分之几）是多少",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c3ce716770",
+    "grade": 6,
+    "name": "分数应用题的几种算术解法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c43a3a4dd0",
+    "grade": 6,
+    "name": "半圆的面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c4d4cb8369",
+    "grade": 6,
+    "name": "比的几何应用——三角形的内角度数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c54cd823b8",
+    "grade": 6,
+    "name": "折扣的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c5e5aa7f16",
+    "grade": 6,
+    "name": "比的应用——已知和求比值",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c6d83bbb73",
+    "grade": 6,
+    "name": "圆心角",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c70859909f",
+    "grade": 6,
+    "name": "被除数与商的变化规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c7a565b01b",
+    "grade": 6,
+    "name": "标出比例尺",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c7bee0513d",
+    "grade": 6,
+    "name": "分数除法的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c92e9c7a15",
+    "grade": 6,
+    "name": "比值的整数表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_c977106f6f",
+    "grade": 6,
+    "name": "圆柱与圆锥等底等体积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cbf35115b8",
+    "grade": 6,
+    "name": "三种统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cccd01053c",
+    "grade": 6,
+    "name": "百分数化小数的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cd230ecde4",
+    "grade": 6,
+    "name": "正比例的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ce68625d7d",
+    "grade": 6,
+    "name": "比例的特点",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cfbb9b9805",
+    "grade": 6,
+    "name": "圆的半径和直径",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_cfdd66de66",
+    "grade": 6,
+    "name": "分数乘整数的意义",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d272fd4117",
+    "grade": 6,
+    "name": "图形放大和缩小的条件",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d2f50677f8",
+    "grade": 6,
+    "name": "比的表示方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d40f7aebf3",
+    "grade": 6,
+    "name": "求比值的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d51926083d",
+    "grade": 6,
+    "name": "八成五的计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d52349d936",
+    "grade": 6,
+    "name": "竖切圆锥切面特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d5bbc3f1da",
+    "grade": 6,
+    "name": "分数乘分数的运算法则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d642b94999",
+    "grade": 6,
+    "name": "比例的项",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d7d478b4f5",
+    "grade": 6,
+    "name": "列方程解百分数应用题",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d8087a4e57",
+    "grade": 6,
+    "name": "圆与长方形的周长和面积关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d80ba2416a",
+    "grade": 6,
+    "name": "分数乘法与整数乘法运算定律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d81f8ead7b",
+    "grade": 6,
+    "name": "比和比例的区别",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d918682cd8",
+    "grade": 6,
+    "name": "存款方式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d924061ccd",
+    "grade": 6,
+    "name": "分数乘整数约分",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_d924213c88",
+    "grade": 6,
+    "name": "除法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_da335e204f",
+    "grade": 6,
+    "name": "分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_da86c41d0b",
+    "grade": 6,
+    "name": "圆的直径和周长的关系",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_db05f47f17",
+    "grade": 6,
+    "name": "在平面图上标出物体位置的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dc65193581",
+    "grade": 6,
+    "name": "百分数的生活应用举例",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dce2b23e55",
+    "grade": 6,
+    "name": "圆柱的体积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dcf14d1adc",
+    "grade": 6,
+    "name": "轴对称的要素",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_deb7872964",
+    "grade": 6,
+    "name": "求增加或减少百分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_df2ecc5799",
+    "grade": 6,
+    "name": "利息的计算公式",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_dfa3eb3b8a",
+    "grade": 6,
+    "name": "利用公式分析求面积和体积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e07ce940f7",
+    "grade": 6,
+    "name": "分数乘整数的运算法则",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e109c44fe1",
+    "grade": 6,
+    "name": "应用题示例：求五年级有学生多少人",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e1f2b08fad",
+    "grade": 6,
+    "name": "数轴概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e238a93d14",
+    "grade": 6,
+    "name": "数对的作用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e26ee6d659",
+    "grade": 6,
+    "name": "负数的概念和表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e2c27bf795",
+    "grade": 6,
+    "name": "同色球问题概述",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e60727b04b",
+    "grade": 6,
+    "name": "位置关系的相对性",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e6ccd7f783",
+    "grade": 6,
+    "name": "周长的变化规律",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e74b87ec28",
+    "grade": 6,
+    "name": "已知底面周长和体积求高和底面积",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e75252819c",
+    "grade": 6,
+    "name": "比值的表示方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e79f35bf3e",
+    "grade": 6,
+    "name": "常用统计图的优点 - 条形统计图",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e80a957ef3",
+    "grade": 6,
+    "name": "圆锥的竖切（过顶点和底面直径）",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_e8fdb4c758",
+    "grade": 6,
+    "name": "缩小比例尺",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eaa0998cb7",
+    "grade": 6,
+    "name": "物体影子的变化与光源距离",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eb9ed07c32",
+    "grade": 6,
+    "name": "数轴上的数的大小比较",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eceea10a93",
+    "grade": 6,
+    "name": "比值的小数表示",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ed46ecd6e9",
+    "grade": 6,
+    "name": "圆的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ed60d07b43",
+    "grade": 6,
+    "name": "利息的基本概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ed7e403b6c",
+    "grade": 6,
+    "name": "圆锥的特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ee7efdde23",
+    "grade": 6,
+    "name": "没有括号的混合运算顺序",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_eed7dae260",
+    "grade": 6,
+    "name": "带分数的倒数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ef77071348",
+    "grade": 6,
+    "name": "鸽巢原理概述",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ef87eab6c5",
+    "grade": 6,
+    "name": "百分数应用题中的常见术语",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f0d285dc81",
+    "grade": 6,
+    "name": "本金的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f1c511e293",
+    "grade": 6,
+    "name": "分数除法是分数乘法的逆运算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f1ce0c452b",
+    "grade": 6,
+    "name": "圆的面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f279e7aac9",
+    "grade": 6,
+    "name": "本息的概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f4c8afce49",
+    "grade": 6,
+    "name": "分数化成百分数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f56fae34c3",
+    "grade": 6,
+    "name": "鸽巢原理的简单例子",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f677391ba7",
+    "grade": 6,
+    "name": "展开图的基本概念",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f6bbef87a7",
+    "grade": 6,
+    "name": "求出图上距离",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f7d376ab7e",
+    "grade": 6,
+    "name": "圆柱表面积公式的应用",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_f87a8d60e6",
+    "grade": 6,
+    "name": "连续求一个数的几分之几",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fa5699d106",
+    "grade": 6,
+    "name": "圆锥的侧面特征",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fbb31c30f5",
+    "grade": 6,
+    "name": "已知甲与乙的和求乙数",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fbe1bcab17",
+    "grade": 6,
+    "name": "绘制简单线段图的方法",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fc5bd47dee",
+    "grade": 6,
+    "name": "图形旋转的性质",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_fc7112be45",
+    "grade": 6,
+    "name": "圆柱表面积计算",
+    "ability_tags": []
+  },
+  {
+    "id": "kp_ff1c8715bc",
+    "grade": 6,
+    "name": "单式和复式折线统计图",
+    "ability_tags": []
   },
   {
     "id": "percent",
@@ -96,9 +7782,9 @@
     ]
   },
   {
-    "id": "factors",
+    "id": "ratio",
     "grade": 6,
-    "name": "因数与倍数",
+    "name": "比和比例",
     "ability_tags": [
       "logic"
     ]
