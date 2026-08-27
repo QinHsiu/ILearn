@@ -12,6 +12,7 @@ frontend/dist/
 doc/
 docs/
 .superpowers/
+.pr-body-*.md
 
 # Runtime session artifacts
 data/sessions/*
