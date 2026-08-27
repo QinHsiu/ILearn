@@ -276,6 +276,39 @@ textarea {
   color: var(--muted);
 }
 
+.chapter-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  align-items: center;
+  margin: 0.2rem 0 0.4rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+.chapter-banner__source {
+  font-weight: 500;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.item-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.item-images img {
+  max-height: 240px;
+  max-width: 100%;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fafafa;
+}
+
 .pill {
   border: 1px solid var(--line);
   border-radius: 0;

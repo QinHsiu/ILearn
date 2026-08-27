@@ -1,0 +1,38 @@
+[
+  {
+    "problem_id": "test_rect_001",
+    "question": "A rectangle has length 8 cm and width 5 cm. What is the area in square centimeters?",
+    "input_image": [],
+    "answer": "40",
+    "answer_type": "free-form",
+    "difficulty": "Medium",
+    "grade": "Elementary",
+    "subject": "Metric Geometry",
+    "analysis": "Area = length × width = 8 × 5 = 40.",
+    "image_relavance": "0"
+  },
+  {
+    "problem_id": "test_angle_002",
+    "question": "What is the measure of angle ABC in degrees?",
+    "input_image": [],
+    "answer": "60",
+    "answer_type": "free-form",
+    "difficulty": "Low",
+    "grade": "Elementary",
+    "subject": "Metric Geometry",
+    "analysis": "The angle measures 60 degrees.",
+    "image_relavance": "1"
+  },
+  {
+    "problem_id": "test_choice_003",
+    "question": "Which figure shows a rectangle with area 24?",
+    "input_image": [],
+    "answer": "B",
+    "answer_type": "choice",
+    "difficulty": "Low",
+    "grade": "Junior",
+    "subject": "Metric Geometry",
+    "analysis": "Option B is correct.",
+    "image_relavance": "0"
+  }
+]

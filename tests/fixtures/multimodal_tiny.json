@@ -1,0 +1,65 @@
+[
+  {
+    "id": "mmv-rect-001",
+    "stem": "观察图中长方形，求面积是多少平方厘米？",
+    "answer": "40",
+    "answer_type": "free-form",
+    "difficulty": "medium",
+    "knowledge_ids": ["rect_area"],
+    "image_paths": [
+      "assets/mv_math/mmv-rect-001/0.png",
+      "assets/mv_math/mmv-rect-001/1.png"
+    ],
+    "curriculum_ref": {
+      "region": "北京",
+      "edition": "人教版",
+      "grade": 4,
+      "semester": "上学期",
+      "chapter": "长方形面积",
+      "weeks": [17, 18, 19, 20],
+      "objective_ids": ["bj-g5-geo-01"],
+      "source_label": "北京·人教·小学数学"
+    },
+    "source": "mv_math"
+  },
+  {
+    "id": "mmv-dec-001",
+    "stem": "计算 2.5 × 4 的结果。",
+    "answer": "10",
+    "answer_type": "free-form",
+    "difficulty": "easy",
+    "knowledge_ids": ["dec_mult"],
+    "image_paths": ["assets/mv_math/mmv-dec-001/0.png"],
+    "curriculum_ref": {
+      "region": "北京",
+      "edition": "人教版",
+      "grade": 5,
+      "semester": "上学期",
+      "chapter": "小数乘法",
+      "weeks": [1, 2, 3, 4],
+      "objective_ids": ["bj-g5-num-01"],
+      "source_label": "北京·人教·小学数学"
+    },
+    "source": "mv_math"
+  },
+  {
+    "id": "mmv-bad-chapter",
+    "stem": "无效章节绑定示例。",
+    "answer": "0",
+    "answer_type": "free-form",
+    "difficulty": "easy",
+    "knowledge_ids": ["rect_area"],
+    "image_paths": ["assets/mv_math/mmv-bad-chapter/0.png"],
+    "curriculum_ref": {
+      "region": "北京",
+      "edition": "人教版",
+      "grade": 4,
+      "semester": "上学期",
+      "chapter": "不存在的章节",
+      "weeks": [17, 18],
+      "objective_ids": ["bj-g5-geo-01"],
+      "source_label": "北京·人教·小学数学"
+    },
+    "source": "mv_math"
+  }
+]

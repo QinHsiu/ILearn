@@ -1,0 +1,113 @@
+{
+  "rules": [
+    {
+      "match": {
+        "mv_subject": "Metric Geometry",
+        "stem_regex": "rectangle|rectangular|length.*width|width.*length"
+      },
+      "bind": {
+        "knowledge_ids": ["rect_area"],
+        "grade": 4,
+        "semester": "上学期",
+        "chapter": "长方形面积",
+        "objective_ids": ["bj-g5-geo-01"]
+      }
+    },
+    {
+      "match": {
+        "mv_subject": "Metric Geometry",
+        "stem_regex": "\\bangle\\b|degrees?|°|protractor"
+      },
+      "bind": {
+        "knowledge_ids": ["angle_measure"],
+        "grade": 4,
+        "semester": "上学期",
+        "chapter": "角的度量",
+        "objective_ids": ["bj-g4-mult-01"]
+      }
+    },
+    {
+      "match": {
+        "mv_subject": "Arithmetic",
+        "stem_regex": "decimal|multiply.*decimal|decimal.*multiply|\\d+\\.\\d+\\s*[×x*]"
+      },
+      "bind": {
+        "knowledge_ids": ["dec_mult"],
+        "grade": 5,
+        "semester": "上学期",
+        "chapter": "小数乘法",
+        "objective_ids": ["bj-g5-num-01"]
+      }
+    },
+    {
+      "match": {
+        "mv_subject": "Arithmetic",
+        "stem_regex": "fraction.*mult|mult.*fraction|\\d+/\\d+\\s*[×x*]|times.*fraction"
+      },
+      "bind": {
+        "knowledge_ids": ["frac_mult"],
+        "grade": 5,
+        "semester": "下学期",
+        "chapter": "分数乘法",
+        "objective_ids": ["bj-g5-frac-01"]
+      }
+    },
+    {
+      "match": {
+        "mv_subject": "Arithmetic",
+        "stem_regex": "three.?digit|\\d{3}\\s*[×x*]|\\d{2,3}\\s*[×x*]\\s*\\d{2,3}"
+      },
+      "bind": {
+        "knowledge_ids": ["mult_3digit"],
+        "grade": 4,
+        "semester": "上学期",
+        "chapter": "三位数乘两位数",
+        "objective_ids": ["bj-g4-mult-01"]
+      }
+    },
+    {
+      "match": {
+        "mv_subject": "Statistics",
+        "stem_regex": "percent|percentage|% of|\\d+\\s*%"
+      },
+      "bind": {
+        "knowledge_ids": ["percent"],
+        "grade": 6,
+        "semester": "下学期",
+        "chapter": "百分数应用",
+        "objective_ids": ["bj-g6-percent-01"]
+      }
+    },
+    {
+      "match": {
+        "mv_subject": "Arithmetic",
+        "stem_regex": "\\bratio\\b|proportion|scale factor|proportional"
+      },
+      "bind": {
+        "knowledge_ids": ["ratio"],
+        "grade": 6,
+        "semester": "上学期",
+        "chapter": "比和比例",
+        "objective_ids": ["bj-g6-ratio-01"]
+      }
+    },
+    {
+      "match": {
+        "mv_subject": "Metric Geometry",
+        "stem_regex": "\\barea\\b|square (cm|meter|unit)"
+      },
+      "bind": {
+        "knowledge_ids": ["rect_area"],
+        "grade": 4,
+        "semester": "上学期",
+        "chapter": "长方形面积",
+        "objective_ids": ["bj-g5-geo-01"]
+      }
+    }
+  ],
+  "grade_map": {
+    "Elementary": [4, 5, 6],
+    "Junior": [],
+    "Senior": []
+  }
+}

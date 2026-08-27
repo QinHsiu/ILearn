@@ -48,6 +48,19 @@ ILearn pilot curriculum artifacts under `data/pilot/` (including `knowledge.json
 
 ---
 
+## MV-MATH multimodal math benchmark
+
+| Field | Value |
+| --- | --- |
+| **Paper** | Wang, Peijie et al. *MV-MATH: Evaluating Multimodal Math Reasoning in Multi-Visual Contexts.* CVPR 2025, pp. 19541–19551. [Open Access](https://openaccess.thecvf.com/content/CVPR2025/html/Wang_MV-MATH_Evaluating_Multimodal_Math_Reasoning_in_Multi-Visual_Contexts_CVPR_2025_paper.html) |
+| **Dataset** | [PeijieWang/MV-MATH](https://huggingface.co/datasets/PeijieWang/MV-MATH) (Hugging Face) |
+| **License** | See dataset card on Hugging Face |
+| **ILearn use** | Curriculum-bound multimodal assessment bank (`ilearn/data/importers/mv_math.py`, `data/pilot/multimodal_bank.json`); raw download via `scripts/download_raw_data.py --dataset mv_math --download` |
+
+> **Note:** MV-MATH raw files and committed pilot images under `data/pilot/assets/mv_math/` are not bundled in full. Import requires a local download to `data/raw/mv_math/`.
+
+---
+
 ## Rebuild
 
 To regenerate pilot artifacts from raw sources:

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   api,
+  type AdaptiveAssessmentResponse,
   type AssessmentItem,
   type AssessmentPaper,
   type StudentProfile,
@@ -27,6 +28,29 @@ function gradeLocal(item: AssessmentItem, answer: string): boolean {
   return answer.trim() === key
 }
 
+function firstMultimodalSourceLabel(items: AssessmentItem[]): string | null {
+  for (const item of items) {
+    if (item.is_multimodal || (item.image_paths?.length ?? 0) > 0) {
+      const label = item.source_refs?.[0]?.source_label
+      if (label) return label
+    }
+  }
+  return null
+}
+
+function buildMetaLine(res: AdaptiveAssessmentResponse): string {
+  const bits = [
+    res.multimodal_count && res.multimodal_count > 0
+      ? `多模态 ${res.multimodal_count} 题`
+      : '',
+    res.layer2_used ? `二层补题：${res.layer2_source}` : '',
+    res.is_anchor ? `锚点 ${res.delivered}/${res.requested}` : '',
+    !res.is_anchor && res.paper ? `完整测评 ${res.paper.items.length} 题` : '',
+    !res.is_anchor && res.diagnosis ? '已根据锚点调整知识点' : '',
+  ].filter(Boolean)
+  return bits.join(' · ')
+}
+
 export default function Assessment({
   sessionId,
   profile,
@@ -41,6 +65,8 @@ export default function Assessment({
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [currentIndex, setCurrentIndex] = useState(0)
   const [meta, setMeta] = useState<string>('')
+  const [inferredChapter, setInferredChapter] = useState<string | null>(null)
+  const [sourceLabel, setSourceLabel] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -53,12 +79,9 @@ export default function Assessment({
         setAnswers({})
         setCurrentIndex(0)
         setPhase('anchor')
-        const bits = [
-          res.inferred_chapter ? `推断章节：${res.inferred_chapter}` : '',
-          res.layer2_used ? `二层补题：${res.layer2_source}` : '',
-          `锚点 ${res.delivered}/${res.requested}`,
-        ].filter(Boolean)
-        setMeta(bits.join(' · '))
+        setInferredChapter(res.inferred_chapter ?? null)
+        setSourceLabel(firstMultimodalSourceLabel(res.paper.items))
+        setMeta(buildMetaLine(res))
       } catch (err) {
         onError?.(err instanceof Error ? err.message : String(err))
       } finally {
@@ -85,10 +108,9 @@ export default function Assessment({
       setAnswers({})
       setCurrentIndex(0)
       setPhase('full')
-      setMeta(
-        `完整测评 ${res.paper.items.length} 题` +
-          (res.diagnosis ? ' · 已根据锚点调整知识点' : ''),
-      )
+      setInferredChapter(res.inferred_chapter ?? null)
+      setSourceLabel(firstMultimodalSourceLabel(res.paper.items))
+      setMeta(buildMetaLine(res))
     } catch (err) {
       onError?.(err instanceof Error ? err.message : String(err))
     } finally {
@@ -133,6 +155,14 @@ export default function Assessment({
       <div className="assess-head">
         <div>
           <h2>{phase === 'anchor' ? '锚点测评' : '完整测评'}</h2>
+          {inferredChapter ? (
+            <p className="chapter-banner">
+              <span className="chapter-banner__chapter">{inferredChapter}</span>
+              {sourceLabel ? (
+                <span className="chapter-banner__source">{sourceLabel}</span>
+              ) : null}
+            </p>
+          ) : null}
           <p className="lede">
             {profile.nickname ? `${profile.nickname} · ` : ''}
             {paper.curriculum_label} · 共 {paper.items.length} 题
@@ -159,6 +189,18 @@ export default function Assessment({
             <p className="item-meta">
               第 {index + 1} 题 · {item.difficulty} · {(item.knowledge_ids || []).join(', ')}
             </p>
+            {item.image_paths?.length ? (
+              <div className="item-images">
+                {item.image_paths.map((path, imgIndex) => (
+                  <img
+                    key={`${item.id}-img-${imgIndex}`}
+                    src={path}
+                    alt={`题目配图 ${imgIndex + 1}`}
+                    loading="lazy"
+                  />
+                ))}
+              </div>
+            ) : null}
             <p className="item-stem">{item.stem}</p>
             {item.choices?.length ? (
               <div className="choices">
