@@ -5,9 +5,9 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0826 课标数据扩充管线 |
-| **基线** | 439 tests（离线可跑） |
-| **日期** | 2026-08-26 |
+| **标签** | Edition 0827 多模态课标绑定 |
+| **基线** | 459 tests（离线可跑） |
+| **日期** | 2026-08-27 |
 
 ---
 
@@ -38,6 +38,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0825（规划 + 前端）：** 诊断默认写入 `metadata.diagnosis_enrichment`（前置缺口 + 学习建议）；规划追加「科学学习方法」至 `plan.markdown` + `metadata.scientific_plan`（费曼 / 间隔复习 / 苏格拉底任务，**不改 PlanDay**）；Tutor hint 按错误类型加策略前缀；前端 `useRole` / `useResponsive`，测评布局断点 class，计划页科学方法摘要
 - **Edition 0825（双层检索 + Assessment 页）：** 锚点本地不足时 Layer2（LLM 或确定性 stub）；`frontend/src/pages/Assessment.tsx` 替换学生向导第 2 步（锚点→完整 20 题）；完整卷配额不变
 - **Edition 0826（课标数据扩充）：** `ilearn/data/build_pilot.py` 统一重建管线；RCAE / MM-K12 / TAL-SCQ5K / **templates** 导入；知识点 **13 → 1294**（RCAE）；legacy 13 kp 例题 **≥8/个**（MM-K12 + TAL 中文 + 模板变式）；`data/pilot/ATTRIBUTION.md`
+- **Edition 0827（多模态课标绑定）：** `CurriculumRef` + `CurriculumGate`；独立 `multimodal_bank.json`（不并入 `example_bank`）；MV-MATH 导入（bindings crosswalk + Channel B 中文题干）；锚点卷 **2–4** 道多模态、完整卷 **≤4** 道（仍为 **20** 题）；`GET /pilot-assets/{path}`；前端 `Assessment.tsx` 题干配图 + 章节横幅
 
 ---
 
@@ -59,6 +60,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0825 planning + frontend | 诊断 enrichment、科学规划 markdown/metadata、Tutor 策略前缀、useRole/useResponsive | **416** |
 | Edition 0825 dual-layer + Assessment page | 锚点 Layer2（llm/stub）、学生向导接入 `Assessment.tsx` | **418** |
 | Edition 0826 curriculum data expansion | `build_pilot` 管线；RCAE/MM-K12/TAL/templates 导入；知识点 13→1294；legacy kp ≥8 例题 | **439** |
+| Edition 0827 multimodal curriculum binding | `CurriculumRef`/`CurriculumGate`；MV-MATH→`multimodal_bank`；锚点 2–4 / 完整卷 ≤4 多模态；`/pilot-assets`；Assessment 配图 UI | **459** |
 
 ---
 

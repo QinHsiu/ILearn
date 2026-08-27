@@ -38,6 +38,7 @@ def test_build_pilot_from_fixtures(tmp_path: Path):
     assert report.knowledge_count >= 13
     assert (pilot / "knowledge.json").is_file()
     assert (pilot / "example_bank.json").is_file()
+    assert (pilot / "multimodal_bank.json").is_file()
     assert graph.is_file()
     assert progress.is_file()
 

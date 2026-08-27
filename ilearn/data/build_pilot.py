@@ -19,7 +19,17 @@ RCAE_URL = (
 )
 RCAE_DOWNLOAD_TIMEOUT = 120
 
+from ilearn.core.curriculum_gate import CurriculumGate
+from ilearn.core.knowledge_graph import KnowledgeGraph
 from ilearn.data.importers.mm_k12 import iter_mm_k12_records, to_example_entry
+from ilearn.data.importers.mv_math import (
+    _item_id,
+    extract_images,
+    iter_mv_math_records,
+    load_bindings,
+    resolve_binding,
+    to_multimodal_item,
+)
 from ilearn.data.importers.rcae_graph import parse_rcae, to_ilearn_graph, to_ilearn_knowledge
 from ilearn.data.importers.tal_scq5k import stem_hash_prefix, to_example_from_scq5k
 from ilearn.data.importers.template_examples import supplement_legacy_from_templates
@@ -70,6 +80,7 @@ class BuildReport:
     knowledge_count: int = 0
     example_count: int = 0
     graph_nodes: int = 0
+    multimodal_count: int = 0
     warnings: list[str] = field(default_factory=list)
 
 
@@ -320,6 +331,92 @@ def _resolve_progress_mapping(
     return _merge_progress_mapping(minimal, overrides)
 
 
+def _find_mv_math_items_path(raw_dir: Path) -> Path | None:
+    mv_dir = raw_dir / "mv_math"
+    if not mv_dir.is_dir():
+        return None
+    preferred = mv_dir / "items.jsonl"
+    if preferred.is_file():
+        return preferred
+    for path in sorted(mv_dir.glob("*.jsonl")):
+        return path
+    for path in sorted(mv_dir.glob("*.json")):
+        return path
+    return None
+
+
+def build_multimodal_bank(
+    raw_dir: Path,
+    bindings_path: Path,
+    pilot_dir: Path,
+    example_bank_path: Path,
+    overrides_path: Path,
+    syllabus_path: Path,
+    graph_path: Path,
+    max_items: int = 80,
+) -> tuple[list[dict], list[str]]:
+    """Import curriculum-bound MV-MATH items into the multimodal bank."""
+    warnings: list[str] = []
+    items_path = _find_mv_math_items_path(raw_dir)
+    if items_path is None:
+        warnings.append("mv_math raw data not found; wrote empty multimodal_bank.json")
+        return [], warnings
+
+    bindings = load_bindings(bindings_path)
+    rules = bindings.get("rules", [])
+    example_bank = json.loads(example_bank_path.read_text(encoding="utf-8"))
+    if not isinstance(example_bank, dict):
+        example_bank = {}
+
+    gate = CurriculumGate(
+        overrides_path=overrides_path,
+        syllabus_path=syllabus_path,
+        graph=KnowledgeGraph(graph_path),
+    )
+
+    mv_dir = raw_dir / "mv_math"
+    pilot_dir.mkdir(parents=True, exist_ok=True)
+    items: list[dict] = []
+
+    for record in iter_mv_math_records(items_path):
+        if len(items) >= max_items:
+            break
+
+        bind = resolve_binding(record, rules, bindings)
+        if bind is None:
+            continue
+
+        problem_id = str(record.get("problem_id") or "").strip()
+        if not problem_id:
+            continue
+
+        item_id = _item_id(problem_id)
+        image_paths = extract_images(record, mv_dir, pilot_dir, item_id)
+        item = to_multimodal_item(
+            record,
+            bind,
+            image_paths,
+            example_bank,
+            overrides_path=overrides_path,
+        )
+        if item is None:
+            continue
+
+        errors = gate.validate_item(item)
+        if errors:
+            warnings.append(
+                f"skipped invalid multimodal item {item.get('id', problem_id)}: {errors[0]}"
+            )
+            continue
+
+        items.append(item)
+
+    if not items:
+        warnings.append("no valid multimodal items imported from mv_math")
+
+    return items, warnings
+
+
 def _validate(
     knowledge: list[dict],
     graph: dict[str, dict],
@@ -388,8 +485,27 @@ def build_pilot(
     _validate(knowledge, graph, example_bank, warnings)
 
     out_pilot.mkdir(parents=True, exist_ok=True)
-    _write_json(out_pilot / "knowledge.json", knowledge)
     _write_json(out_pilot / "example_bank.json", example_bank)
+
+    bindings_path = REPO_ROOT / "data" / "curriculum" / "mv_math_bindings.json"
+    overrides_path = REPO_ROOT / "data" / "curriculum" / "chapter_overrides.json"
+    syllabus_path = out_pilot / "syllabus.json"
+    if not syllabus_path.is_file():
+        syllabus_path = REPO_ROOT / "data" / "pilot" / "syllabus.json"
+    multimodal_items, multimodal_warnings = build_multimodal_bank(
+        raw_dir=raw_dir,
+        bindings_path=bindings_path,
+        pilot_dir=out_pilot,
+        example_bank_path=out_pilot / "example_bank.json",
+        overrides_path=overrides_path,
+        syllabus_path=syllabus_path,
+        graph_path=out_graph,
+        max_items=80,
+    )
+    warnings.extend(multimodal_warnings)
+
+    _write_json(out_pilot / "knowledge.json", knowledge)
+    _write_json(out_pilot / "multimodal_bank.json", multimodal_items)
     _write_json(out_graph, graph)
     _write_json(out_progress, progress)
 
@@ -398,6 +514,7 @@ def build_pilot(
         knowledge_count=len(knowledge),
         example_count=example_count,
         graph_nodes=len(graph),
+        multimodal_count=len(multimodal_items),
         warnings=warnings,
     )
 
@@ -416,6 +533,7 @@ def _print_summary(report: BuildReport) -> None:
     print(f"knowledge_count={report.knowledge_count}")
     print(f"example_count={report.example_count}")
     print(f"graph_nodes={report.graph_nodes}")
+    print(f"multimodal_count={report.multimodal_count}")
     if report.warnings:
         print("warnings:")
         for warning in report.warnings:

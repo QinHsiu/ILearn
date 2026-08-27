@@ -45,6 +45,15 @@ def load_example_bank(pilot_dir: str | Path) -> dict[str, list[dict[str, Any]]]:
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
 
+
+def load_multimodal_bank(pilot_dir: str | Path) -> list[dict[str, Any]]:
+    """Load validated multimodal assessment items from the pilot pack."""
+    path = Path(pilot_dir) / "multimodal_bank.json"
+    if not path.exists():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data if isinstance(data, list) else []
+
 _SAFE_BINOPS = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,

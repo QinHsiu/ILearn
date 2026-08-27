@@ -120,6 +120,8 @@ class AdaptiveAssessmentResponse(BaseModel):
     shortfall: int = 0
     layer2_used: bool = False
     layer2_source: str = "none"
+    multimodal_count: int = 0
+    curriculum_ref_summary: dict | None = None
 
 
 def create_app(
@@ -172,6 +174,7 @@ def create_app(
         store,
     )
     curriculum = PilotBeijingRenjiaoProvider(pilot_data_dir or _DEFAULT_PILOT_DATA)
+    pilot_assets_root = Path(pilot_data_dir or _DEFAULT_PILOT_DATA) / "assets"
     orchestrator = Orchestrator(store=store, curriculum=curriculum, llm=llm)
 
     app = FastAPI(title="ILearn", version="0.1.0")
@@ -205,6 +208,22 @@ def create_app(
         if spa_enabled:
             return FileResponse(spa_index)
         return RedirectResponse(url="/docs")
+
+    @app.get("/pilot-assets/{asset_path:path}", include_in_schema=True)
+    def pilot_assets(asset_path: str) -> FileResponse:
+        """Serve committed pilot images from data/pilot/assets/."""
+        normalized = asset_path.replace("\\", "/")
+        parts = Path(normalized).parts
+        if not normalized or any(part == ".." for part in parts):
+            raise HTTPException(status_code=400, detail="invalid asset path")
+        candidate = (pilot_assets_root / normalized).resolve()
+        try:
+            candidate.relative_to(pilot_assets_root.resolve())
+        except ValueError:
+            raise HTTPException(status_code=400, detail="invalid asset path") from None
+        if not candidate.is_file():
+            raise HTTPException(status_code=404, detail="asset not found")
+        return FileResponse(candidate)
 
     @app.post("/sessions", response_model=CreateSessionResponse)
     def create_session(profile: StudentProfile) -> CreateSessionResponse:
@@ -248,6 +267,8 @@ def create_app(
             shortfall=int(payload.get("shortfall") or 0),
             layer2_used=bool(payload.get("layer2_used")),
             layer2_source=str(payload.get("layer2_source") or "none"),
+            multimodal_count=int(payload.get("multimodal_count") or 0),
+            curriculum_ref_summary=payload.get("curriculum_ref_summary"),
         )
 
     @app.post(
@@ -274,6 +295,8 @@ def create_app(
             shortfall=int(payload.get("shortfall") or 0),
             layer2_used=bool(payload.get("layer2_used")),
             layer2_source=str(payload.get("layer2_source") or "none"),
+            multimodal_count=int(payload.get("multimodal_count") or 0),
+            curriculum_ref_summary=payload.get("curriculum_ref_summary"),
         )
 
     @app.post("/sessions/{session_id}/submit", response_model=SessionState)
@@ -376,6 +399,7 @@ def create_app(
                 "redoc",
                 "openapi.json",
                 "assets",
+                "pilot-assets",
             )
             first = spa_path.split("/", 1)[0]
             if first in blocked or spa_path.startswith("api"):

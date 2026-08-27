@@ -68,6 +68,22 @@ class KnowledgeNode(BaseModel):
     kc_type: KcType | None = None
 
 
+Semester = Literal["上学期", "下学期"]
+
+
+class CurriculumRef(BaseModel):
+    """Textbook binding for curriculum-aligned multimodal items."""
+
+    region: str
+    edition: str
+    grade: PilotGradeLevel
+    semester: Semester
+    chapter: str
+    weeks: list[int]
+    objective_ids: list[str]
+    source_label: str = "北京·人教·小学数学"
+
+
 class ItemSourceRef(BaseModel):
     """Traceable provenance for an assessment item (example + curriculum)."""
 
@@ -110,6 +126,8 @@ class AssessmentItem(BaseModel):
     curriculum_objective_ids: list[str] = Field(default_factory=list)
     source_refs: list[ItemSourceRef] = Field(default_factory=list)
     situation_tag: SituationTag | None = None
+    image_paths: list[str] = Field(default_factory=list)
+    is_multimodal: bool = False
 
 
 class BlueprintSlot(BaseModel):

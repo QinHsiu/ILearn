@@ -30,6 +30,8 @@ export type AssessmentItem = {
   choices?: string[] | null
   source_refs?: SourceRef[]
   situation_tag?: string | null
+  image_paths?: string[]
+  is_multimodal?: boolean
 }
 
 export type AssessmentPaper = {
@@ -193,6 +195,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
+export type CurriculumRefSummary = {
+  region?: string
+  edition?: string
+  grade?: number
+}
+
 export type AdaptiveAssessmentResponse = {
   is_anchor: boolean
   paper: AssessmentPaper
@@ -207,6 +215,8 @@ export type AdaptiveAssessmentResponse = {
   shortfall?: number
   layer2_used?: boolean
   layer2_source?: string
+  multimodal_count?: number
+  curriculum_ref_summary?: CurriculumRefSummary | null
 }
 
 export type AdaptiveAnchorResult = {
