@@ -82,6 +82,11 @@ class MultiAgentOrchestrator:
     ) -> AgentContext:
         context_metadata = dict(session.metadata)
         context_metadata.update(metadata or {})
+        if session.hint_interactions:
+            context_metadata["hint_interactions"] = {
+                item_id: [row.model_dump(mode="json") for row in rows]
+                for item_id, rows in session.hint_interactions.items()
+            }
         return trim_context(
             deepcopy(
                 AgentContext(
@@ -396,6 +401,7 @@ class MultiAgentOrchestrator:
         )
         for event in evidence_events:
             append_evidence(session, event)
+        self._update_hint_outcomes(session)
         session.diagnosis = None
         session.plan = None
         session.phase = result.phase
@@ -408,6 +414,28 @@ class MultiAgentOrchestrator:
         )
         self._store.save(session)
         return session.grades
+
+    @staticmethod
+    def _update_hint_outcomes(session: SessionState) -> None:
+        """Backfill HintInteraction.solved_after_hint from latest grades."""
+        if not session.hint_interactions or not session.grades:
+            return
+        by_item = {g.item_id: g for g in session.grades}
+        for item_id, rows in list(session.hint_interactions.items()):
+            grade = by_item.get(item_id)
+            if grade is None or not rows:
+                continue
+            solved = bool(grade.final_correct)
+            session.hint_interactions[item_id] = [
+                row.model_copy(update={"solved_after_hint": solved}) for row in rows
+            ]
+
+    @staticmethod
+    def _frustration_level(session: SessionState) -> float:
+        portrait = session.portrait
+        if portrait is None:
+            return 0.0
+        return float(portrait.dimensions.emotional.get("frustration", 0.0) or 0.0)
 
     @with_session_lock
     def diagnose(self, session_id: str) -> DiagnosisReport:
@@ -542,7 +570,9 @@ class MultiAgentOrchestrator:
             raise ValueError(f"unknown item id: {item_id}")
         grade = next((g for g in session.grades if g.item_id == item_id), None)
         error_tag = grade.error_tags[0] if grade and grade.error_tags else None
-        turn = self._tutor.start(item, error_tag)
+        turn = self._tutor.start(
+            item, error_tag, frustration=self._frustration_level(session)
+        )
         turn = self._guard_turn(session, item, turn)
         session.tutor_by_item[item_id] = turn
         self._record_decision(
@@ -573,6 +603,7 @@ class MultiAgentOrchestrator:
         diagnosis_ctx = (
             enrichment if isinstance(enrichment, dict) else None
         )
+        frustration = self._frustration_level(session)
         if previous.error_tag or diagnosis_ctx:
             turn = self._tutor.get_socratic_hint_with_diagnosis(
                 item,
@@ -580,6 +611,7 @@ class MultiAgentOrchestrator:
                 diagnosis_ctx,
                 phase=previous.phase,
                 error_tag=previous.error_tag,
+                frustration=frustration,
             )
         else:
             turn = self._tutor.step(
@@ -587,6 +619,7 @@ class MultiAgentOrchestrator:
                 user_message,
                 item,
                 previous.error_tag,
+                frustration=frustration,
             )
         turn = self._guard_turn(session, item, turn)
         session.tutor_by_item[item_id] = turn

@@ -13,7 +13,7 @@ PILOT = Path(__file__).resolve().parents[1] / "data" / "pilot"
 class LeakyTutor:
     name = "tutor"
 
-    def start(self, item, error_tag):
+    def start(self, item, error_tag, **kwargs):
         from ilearn.core.schemas import TutorTurn
 
         return TutorTurn(
@@ -22,7 +22,7 @@ class LeakyTutor:
             error_tag=error_tag,
         )
 
-    def step(self, state, user_message, item):
+    def step(self, state, user_message, item, error_tag=None, **kwargs):
         from ilearn.core.schemas import TutorTurn
 
         return TutorTurn(
