@@ -5,8 +5,8 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0830_3 可靠性加固（会话锁/LLM降级/边界/环检测） |
-| **基线** | 496 tests（离线可跑） |
+| **标签** | Edition 0830_4 产品友好化（摘要/归因/干预/可观测） |
+| **基线** | 501 tests（离线可跑） |
 | **日期** | 2026-08-30 |
 
 ---
@@ -42,6 +42,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0830（认知层次 + 风格 + 几何）：** `CognitiveSkillGraph`（分数三单元 ≥30 技能点）+ 诊断根因 enrichment；`LearningStyleInferer` + Planning 材料适配；JSXGraph `DynamicGeometryQuestion` + `PracticeAgent.analyze_geo_interaction`；`scripts/export_processed_bank.py` 导出清洗题库
 - **Edition 0830_2 A（平台硬化）：** `ILearnSettings`；同步日志/`RetryHandler`；图谱 JSON 进程缓存；滑动窗口限流中间件；submit 入参校验（允许空答案）
 - **Edition 0830_3 B（可靠性）：** `SessionStore` 线程锁+读缓存；按会话 `RLock`；LLM fallback/`RetryHandler`；诊断/规划空数据边界；`GraphValidator` 环依赖检测
+- **Edition 0830_4 C（产品友好化）：** 家长/教师摘要；`error_attribution`；技能干预库增强 Tutor；Orchestrator 耗时日志
 
 ---
 
@@ -67,6 +68,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0830 cognitive / style / geometry | 认知技能图谱、风格推断与规划适配、JSXGraph 交互几何、processed 导出 | **474** |
 | Edition 0830_2 platform hardening A | Settings/日志/缓存/限流/submit 校验 | **487** |
 | Edition 0830_3 reliability B | 会话锁/缓存、LLM 降级、诊断规划边界、图谱环检测 | **496** |
+| Edition 0830_4 product C | 家长教师摘要、错误归因、干预库、Orchestrator 埋点 | **501** |
 
 ---
 

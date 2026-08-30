@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import threading
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import wraps
 from typing import Any, Callable, TypeVar
+
+from ilearn.core.logging_utils import get_logger
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -43,7 +46,22 @@ def with_session_lock(func: F) -> F:
 
     @wraps(func)
     def wrapper(self: Any, session_id: str, *args: Any, **kwargs: Any) -> Any:
-        with session_lock_manager.hold(session_id):
-            return func(self, session_id, *args, **kwargs)
+        logger = get_logger("ilearn.orchestrator")
+        start = time.perf_counter()
+        logger.info("start %s session=%s", func.__name__, session_id)
+        try:
+            with session_lock_manager.hold(session_id):
+                return func(self, session_id, *args, **kwargs)
+        except Exception:
+            logger.exception("fail %s session=%s", func.__name__, session_id)
+            raise
+        finally:
+            elapsed = time.perf_counter() - start
+            logger.info(
+                "done %s session=%s elapsed=%.3fs",
+                func.__name__,
+                session_id,
+                elapsed,
+            )
 
     return wrapper  # type: ignore[return-value]

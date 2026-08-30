@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ilearn.core.schemas import ItemSourceRef, SessionState
+from ilearn.core.audience_summary import generate_audience_summary
 
 _ABILITY_LABELS: dict[str, str] = {
     "logic": "逻辑推理",
@@ -100,6 +101,24 @@ def render_full_report(session: SessionState) -> str:
                 lines.append(f"   - 优先修复：{item.what_to_fix_first}")
         else:
             lines.append("_当前无明显薄弱知识点，建议保持复习节奏。_")
+
+        enrichment = {}
+        if isinstance(session.metadata, dict):
+            enrichment = session.metadata.get("diagnosis_enrichment") or {}
+        parent_summary = enrichment.get("parent_summary") or generate_audience_summary(
+            diagnosis, enrichment, audience="parent"
+        )
+        teacher_summary = enrichment.get("teacher_summary") or generate_audience_summary(
+            diagnosis, enrichment, audience="teacher"
+        )
+        lines.extend(["", "### 家长可读摘要", "", parent_summary])
+        lines.extend(["", "### 教师可读摘要", "", teacher_summary])
+        attribution = enrichment.get("error_attribution") or {}
+        if attribution.get("top_tags"):
+            lines.extend(["", "### 错误类型归因", ""])
+            counts = attribution.get("counts") or {}
+            for tag in attribution["top_tags"]:
+                lines.append(f"- **{tag}：** {counts.get(tag, 0)} 次")
 
     if session.paper is not None and session.grades:
         wrong_grades = [grade for grade in session.grades if not grade.final_correct]

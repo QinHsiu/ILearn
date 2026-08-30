@@ -40,6 +40,18 @@ _STYLE_MAPPING: dict[str, dict[str, Any]] = {
     },
 }
 
+_ERROR_CORRECTION: dict[str, str] = {
+    "concept_gap": "针对概念混淆：先用自己的话解释定义，再做2道概念辨析题。",
+    "calc_error": "针对计算失误：限时完成3道同类计算，每题验算一步。",
+    "misread": "针对审题不清：读题后先圈出已知与所求，再动笔。",
+    "method_wrong": "针对方法不当：对比两种列式，说明为何选用其中一种。",
+    "incomplete": "针对步骤不完整：按标准步骤模板重写解题过程。",
+}
+
+
+def _error_correction_instruction(tag: str) -> str:
+    return _ERROR_CORRECTION.get(tag, f"针对错误类型「{tag}」完成2道纠错练习。")
+
 
 def max_practice_loops(profile: StudentProfile) -> int:
     return 4 if profile.learning_difficulty else _MAX_LOOPS
@@ -218,6 +230,18 @@ class PlanningAgent:
                     "estimated_time": 8,
                 }
             )
+
+        attribution = enrichment.get("error_attribution") or {}
+        for tag in list(attribution.get("top_tags") or [])[:2]:
+            plan["tasks"].append(
+                {
+                    "type": "error_correction",
+                    "skill": tag,
+                    "instruction": _error_correction_instruction(str(tag)),
+                    "estimated_time": 8,
+                }
+            )
+            plan["learning_methods"].append("error_correction")
 
         today = datetime.date.today()
         for skill in weak_skills:
