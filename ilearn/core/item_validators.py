@@ -250,3 +250,74 @@ def revise_paper_once(
         revised_items.append(builder._instantiate(template, index))
 
     return paper.model_copy(update={"items": revised_items})
+
+
+@dataclass(frozen=True)
+class RevisedPaperResult:
+    paper: AssessmentPaper
+    attempts: int
+    fallback_used: bool
+
+
+def make_fallback_item(
+    *,
+    index: int = 0,
+    knowledge_id: str = "frac_meaning",
+) -> AssessmentItem:
+    return AssessmentItem(
+        id=f"fallback_{index:02d}",
+        stem="一个苹果分给2个人，每人分到多少？",
+        type="choice",
+        difficulty="easy",
+        knowledge_ids=[knowledge_id],
+        answer_key="1/2",
+        choices=["1", "1/2", "2", "1/4"],
+        situation_tag="life",
+    )
+
+
+def revise_paper(
+    paper: AssessmentPaper,
+    issues: list[ValidationIssue],
+    *,
+    profile: StudentProfile,
+    curriculum: CurriculumProvider,
+    max_attempts: int = 3,
+    rng: Random | None = None,
+) -> RevisedPaperResult:
+    current = paper
+    pending = issues
+    attempts = 0
+    for _ in range(max(1, max_attempts)):
+        if not pending:
+            return RevisedPaperResult(
+                paper=current, attempts=attempts, fallback_used=False
+            )
+        attempts += 1
+        nxt = revise_paper_once(
+            current,
+            pending,
+            profile=profile,
+            curriculum=curriculum,
+            rng=rng,
+        )
+        current = nxt
+        pending = validate_paper(current, grade=profile.grade)
+    if not pending:
+        return RevisedPaperResult(
+            paper=current, attempts=attempts, fallback_used=False
+        )
+    failing = {issue.item_id for issue in pending}
+    replaced: list[AssessmentItem] = []
+    fb_i = 0
+    for item in current.items:
+        if item.id in failing:
+            replaced.append(make_fallback_item(index=fb_i))
+            fb_i += 1
+        else:
+            replaced.append(item)
+    return RevisedPaperResult(
+        paper=current.model_copy(update={"items": replaced}),
+        attempts=attempts,
+        fallback_used=True,
+    )

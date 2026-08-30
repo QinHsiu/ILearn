@@ -10,6 +10,8 @@ from ilearn.agents.orchestrator import MultiAgentOrchestrator
 from ilearn.core.item_validators import (
     ValidationIssue,
     _LIFE_CONTEXT_KEYWORDS,
+    make_fallback_item,
+    revise_paper,
     revise_paper_once,
     validate_paper,
 )
@@ -226,3 +228,39 @@ def test_validation_issue_fields():
     assert issue.item_id == "x__00"
     assert issue.dimension == "solvability"
     assert issue.message
+
+
+def test_make_fallback_item_passes_validators():
+    item = make_fallback_item(index=0)
+    paper = _paper(item, grade=5)
+    assert validate_paper(paper, grade=5) == []
+
+
+def test_revise_paper_multi_attempt_then_fallback(monkeypatch):
+    curriculum = PilotBeijingRenjiaoProvider(PILOT)
+    profile = StudentProfile(region="北京", grade=5, age=11)
+    # Always unsolvable id that has no alternate templates: force empty candidates
+    bad = _item(id="no_such_template__00", answer_key=None, stem="计算：1+1=?")
+    paper = _paper(bad, grade=5)
+    issues = validate_paper(paper, grade=5)
+    assert issues
+
+    def _no_alts(*args, **kwargs):
+        return []
+
+    monkeypatch.setattr(
+        "ilearn.core.item_validators._alternate_templates", _no_alts
+    )
+    result = revise_paper(
+        paper,
+        issues,
+        profile=profile,
+        curriculum=curriculum,
+        max_attempts=3,
+        rng=Random(0),
+    )
+    assert result.attempts == 3
+    assert result.fallback_used is True
+    assert len(result.paper.items) == 1
+    assert result.paper.items[0].answer_key
+    assert validate_paper(result.paper, grade=5) == []

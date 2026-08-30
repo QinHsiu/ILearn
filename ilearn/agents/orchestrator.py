@@ -14,7 +14,7 @@ from ilearn.agents.planning import PlanningAgent
 from ilearn.agents.practice import PracticeAgent, evidence_from_grades
 from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
-from ilearn.core.item_validators import revise_paper_once, validate_paper as validate_item_paper
+from ilearn.core.item_validators import revise_paper, validate_paper as validate_item_paper
 from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
 from ilearn.core.quality_gate import (
@@ -161,13 +161,14 @@ class MultiAgentOrchestrator:
         paper: AssessmentPaper,
     ) -> tuple[AssessmentPaper, str]:
         issues = validate_item_paper(paper, grade=session.profile.grade)
-        revised_paper = revise_paper_once(
+        result = revise_paper(
             paper,
             issues,
             profile=session.profile,
             curriculum=self._curriculum,
         )
-        revised = revised_paper.items != paper.items
+        revised_paper = result.paper
+        revised = revised_paper.items != paper.items or result.fallback_used
         if revised:
             pilot_dir = getattr(
                 self._curriculum,
@@ -184,8 +185,10 @@ class MultiAgentOrchestrator:
         remaining_issues = validate_item_paper(
             revised_paper, grade=session.profile.grade
         )
-        if revised:
-            revision_summary = "revised once"
+        if result.fallback_used:
+            revision_summary = f"revised {result.attempts}, fallback"
+        elif result.attempts:
+            revision_summary = f"revised {result.attempts}"
         elif issues:
             revision_summary = "revision no-op"
         else:
