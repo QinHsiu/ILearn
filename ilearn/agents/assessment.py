@@ -681,7 +681,7 @@ class AssessmentAgent:
             f"grade={profile.grade}; need={need}; "
             f"allow_knowledge_ids={list(knowledge_points)}"
         )
-        payload = self._llm.chat_json(system, user)
+        payload = self._llm.chat_json(system, user, fallback=True)
         raw_items = payload.get("items") or []
         if not isinstance(raw_items, list):
             raise ValueError("items must be a list")

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -9,6 +11,7 @@ from uuid import uuid4
 from ilearn.core.schemas import SessionMetadata, SessionState, StudentProfile
 
 _WEAK_SKILL_THRESHOLD = 0.6
+_DEFAULT_CACHE_TTL = 300.0
 
 
 def _to_metadata(state: SessionState, path: Path) -> SessionMetadata:
@@ -43,39 +46,60 @@ def _to_metadata(state: SessionState, path: Path) -> SessionMetadata:
 
 
 class SessionStore:
-    """Persist one validated ``SessionState`` per JSON file."""
+    """Persist one validated ``SessionState`` per JSON file (thread-safe)."""
 
-    def __init__(self, root: str | Path) -> None:
+    def __init__(
+        self,
+        root: str | Path,
+        *,
+        cache_ttl: float = _DEFAULT_CACHE_TTL,
+    ) -> None:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
+        self._io_lock = threading.RLock()
+        self._cache_ttl = cache_ttl
+        self._cache: dict[str, SessionState] = {}
+        self._cache_expires: dict[str, float] = {}
 
     def create(self, profile: StudentProfile) -> SessionState:
         state = SessionState(session_id=uuid4().hex, profile=profile)
         return self.save(state)
 
     def save(self, state: SessionState) -> SessionState:
-        path = self._path(state.session_id)
-        path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
-        return state
+        with self._io_lock:
+            path = self._path(state.session_id)
+            path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
+            self._cache_put(state)
+            return state
 
     def load(self, session_id: str) -> SessionState:
-        path = self._path(session_id)
-        if not path.is_file():
-            raise FileNotFoundError(f"session not found: {session_id}")
-        return SessionState.model_validate_json(path.read_text(encoding="utf-8"))
+        with self._io_lock:
+            cached = self._cache_get(session_id)
+            if cached is not None:
+                return cached.model_copy(deep=True)
+            path = self._path(session_id)
+            if not path.is_file():
+                raise FileNotFoundError(f"session not found: {session_id}")
+            state = SessionState.model_validate_json(path.read_text(encoding="utf-8"))
+            self._cache_put(state)
+            return state.model_copy(deep=True)
 
     def list_all(self) -> list[SessionState]:
-        rows: list[SessionState] = []
-        for path in sorted(self.root.glob("*.json")):
-            rows.append(SessionState.model_validate_json(path.read_text(encoding="utf-8")))
-        return rows
+        with self._io_lock:
+            rows: list[SessionState] = []
+            for path in sorted(self.root.glob("*.json")):
+                rows.append(
+                    SessionState.model_validate_json(path.read_text(encoding="utf-8"))
+                )
+            return rows
 
     def list_all_metadata(self) -> list[SessionMetadata]:
-        rows: list[SessionMetadata] = []
-        for path in sorted(self.root.glob("*.json")):
-            state = SessionState.model_validate_json(path.read_text(encoding="utf-8"))
-            rows.append(_to_metadata(state, path))
-        return rows
+        with self._io_lock:
+            rows: list[SessionMetadata] = []
+            for path in sorted(self.root.glob("*.json")):
+                state = SessionState.model_validate_json(path.read_text(encoding="utf-8"))
+                rows.append(_to_metadata(state, path))
+            return rows
 
     def list_by_nickname(self, nickname: str) -> list[SessionState]:
         needle = (nickname or "").strip().casefold()
@@ -88,10 +112,32 @@ class SessionStore:
         ]
 
     def delete(self, session_id: str) -> None:
-        path = self._path(session_id)
-        if not path.is_file():
-            raise FileNotFoundError(f"session not found: {session_id}")
-        path.unlink()
+        with self._io_lock:
+            path = self._path(session_id)
+            if not path.is_file():
+                raise FileNotFoundError(f"session not found: {session_id}")
+            path.unlink()
+            self._cache.pop(session_id, None)
+            self._cache_expires.pop(session_id, None)
+
+    def clear_cache(self) -> None:
+        with self._io_lock:
+            self._cache.clear()
+            self._cache_expires.clear()
+
+    def _cache_get(self, session_id: str) -> SessionState | None:
+        expires = self._cache_expires.get(session_id)
+        if expires is None or session_id not in self._cache:
+            return None
+        if time.time() > expires:
+            self._cache.pop(session_id, None)
+            self._cache_expires.pop(session_id, None)
+            return None
+        return self._cache[session_id]
+
+    def _cache_put(self, state: SessionState) -> None:
+        self._cache[state.session_id] = state.model_copy(deep=True)
+        self._cache_expires[state.session_id] = time.time() + self._cache_ttl
 
     def _path(self, session_id: str) -> Path:
         if not session_id or Path(session_id).name != session_id:

@@ -79,21 +79,44 @@ class LLMClient:
         return self._client
 
     def _call_chat(self, system: str, user: str) -> str:
-        client = self._get_client()
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-        )
-        content = response.choices[0].message.content
-        if not content:
-            raise LLMError("empty response from LLM")
-        return content
+        from ilearn.core.logging_utils import RetryHandler
 
-    def chat_json(self, system: str, user: str) -> dict[str, Any]:
+        def _once() -> str:
+            client = self._get_client()
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            )
+            content = response.choices[0].message.content
+            if not content:
+                raise LLMError("empty response from LLM")
+            return content
+
+        try:
+            return RetryHandler.with_retry(
+                _once,
+                max_retries=3,
+                delay=0.05,
+                exceptions=(OpenAIError, OSError, LLMError),
+            )
+        except (OpenAIError, OSError, LLMError) as exc:
+            raise LLMError(f"LLM request failed: {exc}") from exc
+
+    def chat_json(
+        self,
+        system: str,
+        user: str,
+        *,
+        fallback: bool = False,
+    ) -> dict[str, Any]:
         """Request a chat completion and parse a JSON object from the reply."""
+        if not self.available():
+            if fallback:
+                return self._fallback_json(system, user)
+            raise LLMError("LLM client is not available (missing API key)")
         last_error: Exception | None = None
         for _ in range(2):
             try:
@@ -101,11 +124,44 @@ class LLMClient:
                 return _parse_json_content(content)
             except (json.JSONDecodeError, ValueError) as exc:
                 last_error = exc
-            except (OpenAIError, OSError) as exc:
-                raise LLMError(f"LLM request failed: {exc}") from exc
+            except LLMError as exc:
+                last_error = exc
+                break
+        if fallback:
+            return self._fallback_json(system, user)
         raise LLMError(
             f"failed to parse JSON from LLM response after retry: {last_error}"
         )
+
+    @staticmethod
+    def _fallback_json(system: str, user: str) -> dict[str, Any]:
+        """Rule-based JSON when the remote LLM is unavailable."""
+        blob = f"{system}\n{user}"
+        if "题目" in blob or "assessment" in blob.lower() or "items" in blob.lower():
+            return {
+                "items": [
+                    {
+                        "stem": "一个苹果分给3个人，每人分到多少？",
+                        "type": "choice",
+                        "difficulty": "easy",
+                        "knowledge_ids": [],
+                        "answer_key": "1/3",
+                        "choices": ["1/2", "1/3", "1/4", "1/5"],
+                    }
+                ],
+                "fallback": True,
+            }
+        if "诊断" in blob or "diagnosis" in blob.lower():
+            return {
+                "mastery": 0.5,
+                "weak_skills": [],
+                "advice": "建议复习基本概念",
+                "fallback": True,
+            }
+        return {
+            "message": "系统目前无法处理您的请求，请稍后再试。",
+            "fallback": True,
+        }
 
     def grade_image_json(
         self,

@@ -84,6 +84,8 @@ class CognitiveSkillGraph:
 
 def validate_cognitive_skills(path: Path) -> list[str]:
     """Return validation error strings; empty list means OK."""
+    from ilearn.core.graph_validator import GraphValidator
+
     g = CognitiveSkillGraph(path)
     errors: list[str] = []
     ids = {n.skill_id for n in g.all_skills()}
@@ -98,4 +100,13 @@ def validate_cognitive_skills(path: Path) -> list[str]:
             CognitiveDimension(n.dimension.value)
         except ValueError:
             errors.append(f"{n.skill_id}: invalid dimension")
+    report = GraphValidator.validate_graph(
+        GraphValidator.from_cognitive_nodes(g.all_skills())
+    )
+    for err in report.get("errors") or []:
+        if err.get("type") == "circular_dependency":
+            errors.append(f"circular_dependency: {err.get('detail')}")
+        elif err.get("type") == "missing_prerequisite_node":
+            # already covered by unknown prerequisite above
+            continue
     return errors

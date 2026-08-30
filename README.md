@@ -5,7 +5,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](./frontend)
-[![Tests](https://img.shields.io/badge/tests-487%20passed-2ea44f)](./tests)
+[![Tests](https://img.shields.io/badge/tests-496%20passed-2ea44f)](./tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub](https://img.shields.io/badge/GitHub-QinHsiu%2FILearn-181717?logo=github)](https://github.com/QinHsiu/ILearn)
 
@@ -31,7 +31,7 @@ Curriculum · Assessment · Practice · Diagnosis · Planning
 - **报告可带走** — 一键导出做题复盘 PDF 与学习报告 PDF
 - **多形态交付** — CLI · REST API · React 向导
 - **零 LLM 可跑** — 无 API Key 亦可离线演示全流程
-- **487+ 测试** — 离线基准保障工程质量
+- **496+ 测试** — 离线基准保障工程质量
 
 ## 60 秒上手
 

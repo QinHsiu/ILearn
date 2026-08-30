@@ -104,11 +104,16 @@ class DiagnosisAgent:
                 portrait, ctx.grades, profile=ctx.profile
             )
         enrichment = self.enrich_with_prerequisites(diagnosis, evidence)
+        data_status, data_message = self._classify_evidence_volume(evidence, ctx.grades)
+        enrichment["data_status"] = data_status
+        enrichment["message"] = data_message
         flags = list(diagnosis.flags)
         if enrichment.get("prerequisite_gaps") and "prerequisite_gaps" not in flags:
             flags.append("prerequisite_gaps")
         if enrichment.get("cognitive_findings") and "cognitive_gap" not in flags:
             flags.append("cognitive_gap")
+        if data_status in {"insufficient_data", "limited_data"} and data_status not in flags:
+            flags.append(data_status)
         if flags != diagnosis.flags:
             diagnosis = diagnosis.model_copy(update={"flags": flags})
         return AgentResult(
@@ -119,6 +124,23 @@ class DiagnosisAgent:
                 "diagnosis_enrichment": enrichment,
             },
         )
+
+    @staticmethod
+    def _classify_evidence_volume(
+        evidence: list[Any], grades: list[Any]
+    ) -> tuple[str, str]:
+        count = len(evidence) if evidence else len(grades)
+        if count <= 0:
+            return (
+                "insufficient_data",
+                "暂无作答数据，请完成至少一道题目后再进行诊断。",
+            )
+        if count < 3:
+            return (
+                "limited_data",
+                "作答数据较少，诊断置信度较低，建议完成更多题目。",
+            )
+        return ("ok", "")
 
     def enrich_with_prerequisites(
         self,
