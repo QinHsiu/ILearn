@@ -36,6 +36,8 @@ def _parse_json_content(content: str) -> dict[str, Any]:
 class LLMClient:
     """Thin wrapper around an OpenAI-compatible chat completions API."""
 
+    _MAX_FALLBACK_DEPTH = 3
+
     def __init__(
         self,
         *,
@@ -47,6 +49,7 @@ class LLMClient:
         self.api_key = api_key
         self.model = model or "gpt-4o-mini"
         self._client: OpenAI | None = None
+        self._fallback_depth = 0
 
     @classmethod
     def from_env(cls) -> LLMClient:
@@ -115,7 +118,7 @@ class LLMClient:
         """Request a chat completion and parse a JSON object from the reply."""
         if not self.available():
             if fallback:
-                return self._fallback_json(system, user)
+                return self._safe_fallback_json(system, user)
             raise LLMError("LLM client is not available (missing API key)")
         last_error: Exception | None = None
         for _ in range(2):
@@ -128,14 +131,27 @@ class LLMClient:
                 last_error = exc
                 break
         if fallback:
-            return self._fallback_json(system, user)
+            return self._safe_fallback_json(system, user)
         raise LLMError(
             f"failed to parse JSON from LLM response after retry: {last_error}"
         )
 
+    def _safe_fallback_json(self, system: str, user: str) -> dict[str, Any]:
+        if self._fallback_depth >= self._MAX_FALLBACK_DEPTH:
+            return {
+                "message": "系统目前无法处理您的请求，请稍后再试。",
+                "fallback": True,
+                "fallback_exhausted": True,
+            }
+        self._fallback_depth += 1
+        try:
+            return self._fallback_json(system, user)
+        finally:
+            self._fallback_depth -= 1
+
     @staticmethod
     def _fallback_json(system: str, user: str) -> dict[str, Any]:
-        """Rule-based JSON when the remote LLM is unavailable."""
+        """Rule-based JSON when the remote LLM is unavailable (never calls LLM)."""
         blob = f"{system}\n{user}"
         if "题目" in blob or "assessment" in blob.lower() or "items" in blob.lower():
             return {

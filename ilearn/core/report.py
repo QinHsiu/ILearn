@@ -119,6 +119,15 @@ def render_full_report(session: SessionState) -> str:
             counts = attribution.get("counts") or {}
             for tag in attribution["top_tags"]:
                 lines.append(f"- **{tag}：** {counts.get(tag, 0)} 次")
+        explanations = enrichment.get("attribution_explanations") or []
+        if explanations:
+            lines.extend(["", "### 诊断解释", ""])
+            for text in explanations:
+                lines.append(f"- {text}")
+        unknown = enrichment.get("unknown_skills") or []
+        if unknown:
+            lines.extend(["", "### 未识别技能", ""])
+            lines.append("、".join(str(s) for s in unknown))
 
     if session.paper is not None and session.grades:
         wrong_grades = [grade for grade in session.grades if not grade.final_correct]

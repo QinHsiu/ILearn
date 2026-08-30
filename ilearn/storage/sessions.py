@@ -46,7 +46,7 @@ def _to_metadata(state: SessionState, path: Path) -> SessionMetadata:
 
 
 class SessionStore:
-    """Persist one validated ``SessionState`` per JSON file (thread-safe)."""
+    """Persist one validated ``SessionState`` per JSON file (per-session locks)."""
 
     def __init__(
         self,
@@ -56,24 +56,32 @@ class SessionStore:
     ) -> None:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
-        self._io_lock = threading.RLock()
+        self._lock_guard = threading.Lock()
+        self._session_locks: dict[str, threading.RLock] = {}
+        self._list_lock = threading.RLock()
         self._cache_ttl = cache_ttl
         self._cache: dict[str, SessionState] = {}
         self._cache_expires: dict[str, float] = {}
+
+    def _lock_for(self, session_id: str) -> threading.RLock:
+        with self._lock_guard:
+            if session_id not in self._session_locks:
+                self._session_locks[session_id] = threading.RLock()
+            return self._session_locks[session_id]
 
     def create(self, profile: StudentProfile) -> SessionState:
         state = SessionState(session_id=uuid4().hex, profile=profile)
         return self.save(state)
 
     def save(self, state: SessionState) -> SessionState:
-        with self._io_lock:
+        with self._lock_for(state.session_id):
             path = self._path(state.session_id)
             path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
             self._cache_put(state)
             return state
 
     def load(self, session_id: str) -> SessionState:
-        with self._io_lock:
+        with self._lock_for(session_id):
             cached = self._cache_get(session_id)
             if cached is not None:
                 return cached.model_copy(deep=True)
@@ -85,7 +93,7 @@ class SessionStore:
             return state.model_copy(deep=True)
 
     def list_all(self) -> list[SessionState]:
-        with self._io_lock:
+        with self._list_lock:
             rows: list[SessionState] = []
             for path in sorted(self.root.glob("*.json")):
                 rows.append(
@@ -94,7 +102,7 @@ class SessionStore:
             return rows
 
     def list_all_metadata(self) -> list[SessionMetadata]:
-        with self._io_lock:
+        with self._list_lock:
             rows: list[SessionMetadata] = []
             for path in sorted(self.root.glob("*.json")):
                 state = SessionState.model_validate_json(path.read_text(encoding="utf-8"))
@@ -112,7 +120,7 @@ class SessionStore:
         ]
 
     def delete(self, session_id: str) -> None:
-        with self._io_lock:
+        with self._lock_for(session_id):
             path = self._path(session_id)
             if not path.is_file():
                 raise FileNotFoundError(f"session not found: {session_id}")
@@ -121,7 +129,7 @@ class SessionStore:
             self._cache_expires.pop(session_id, None)
 
     def clear_cache(self) -> None:
-        with self._io_lock:
+        with self._list_lock:
             self._cache.clear()
             self._cache_expires.clear()
 

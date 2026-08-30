@@ -44,6 +44,7 @@ class CognitiveSkillGraph:
 
     def _load(self) -> None:
         from ilearn.core.cache import load_json_cached
+        from ilearn.core.graph_validator import GraphValidator
 
         raw: Any = load_json_cached(self.path)
         skills = raw["skills"] if isinstance(raw, dict) and "skills" in raw else raw
@@ -60,6 +61,15 @@ class CognitiveSkillGraph:
                 legacy_knowledge_ids=list(item.get("legacy_knowledge_ids") or []),
             )
             self._nodes[node.skill_id] = node
+        report = GraphValidator.validate_graph(
+            GraphValidator.from_cognitive_nodes(self.all_skills())
+        )
+        for err in report.get("errors") or []:
+            if err.get("type") == "circular_dependency":
+                raise ValueError(
+                    "cognitive skill graph has circular dependencies: "
+                    f"{err.get('cycles') or []}"
+                )
 
     def get(self, skill_id: str) -> SkillNode | None:
         return self._nodes.get(skill_id)
@@ -86,7 +96,10 @@ def validate_cognitive_skills(path: Path) -> list[str]:
     """Return validation error strings; empty list means OK."""
     from ilearn.core.graph_validator import GraphValidator
 
-    g = CognitiveSkillGraph(path)
+    try:
+        g = CognitiveSkillGraph(path)
+    except ValueError as exc:
+        return [str(exc)]
     errors: list[str] = []
     ids = {n.skill_id for n in g.all_skills()}
     if not ids:
