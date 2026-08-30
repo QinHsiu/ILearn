@@ -1,7 +1,10 @@
 from pathlib import Path
 
+import pytest
+
 from ilearn.agents.orchestrator import MultiAgentOrchestrator
 from ilearn.core.schemas import PlanVersion, StudentProfile
+from ilearn.core.user_errors import UserFriendlyError
 from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
 from ilearn.storage.sessions import SessionStore
 
@@ -48,12 +51,9 @@ def test_request_replan_requires_diagnosis(tmp_path):
     orch = _orchestrator(tmp_path)
     sid = orch.create_session(StudentProfile(region="北京", grade=5, age=11))
     orch.generate_assessment(sid)
-    try:
+    with pytest.raises(UserFriendlyError) as exc:
         orch.request_replan(sid)
-        raised = False
-    except ValueError:
-        raised = True
-    assert raised
+    assert exc.value.code == "E-013"
 
 
 def test_tutor_start_returns_locate_gap_without_answer(tmp_path):
