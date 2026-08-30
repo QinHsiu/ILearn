@@ -2,16 +2,24 @@
 
 from __future__ import annotations
 
+import json
 import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from ilearn.core.migration import EvidenceMigrator
 from ilearn.core.schemas import SessionMetadata, SessionState, StudentProfile
 
 _WEAK_SKILL_THRESHOLD = 0.6
 _DEFAULT_CACHE_TTL = 300.0
+
+
+def _load_state_from_path(path: Path) -> SessionState:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = EvidenceMigrator.migrate_session_payload(payload)
+    return SessionState.model_validate(payload)
 
 
 def _to_metadata(state: SessionState, path: Path) -> SessionMetadata:
@@ -88,7 +96,7 @@ class SessionStore:
             path = self._path(session_id)
             if not path.is_file():
                 raise FileNotFoundError(f"session not found: {session_id}")
-            state = SessionState.model_validate_json(path.read_text(encoding="utf-8"))
+            state = _load_state_from_path(path)
             self._cache_put(state)
             return state.model_copy(deep=True)
 
@@ -96,16 +104,14 @@ class SessionStore:
         with self._list_lock:
             rows: list[SessionState] = []
             for path in sorted(self.root.glob("*.json")):
-                rows.append(
-                    SessionState.model_validate_json(path.read_text(encoding="utf-8"))
-                )
+                rows.append(_load_state_from_path(path))
             return rows
 
     def list_all_metadata(self) -> list[SessionMetadata]:
         with self._list_lock:
             rows: list[SessionMetadata] = []
             for path in sorted(self.root.glob("*.json")):
-                state = SessionState.model_validate_json(path.read_text(encoding="utf-8"))
+                state = _load_state_from_path(path)
                 rows.append(_to_metadata(state, path))
             return rows
 
