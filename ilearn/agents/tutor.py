@@ -10,6 +10,7 @@ from ilearn.core.intervention_library import (
     intervention_hint_for_item,
     lookup_intervention,
 )
+from ilearn.core.replan import FRUSTRATION_THRESHOLD
 from ilearn.core.schemas import AssessmentItem, ErrorTag, TutorPhase, TutorTurn
 
 _WRONG_KEYWORDS = ("不对", "不会", "还是错", "错了", "不知道", "不懂", "还是不对")
@@ -22,11 +23,21 @@ _ERROR_STRATEGIES: dict[str, str] = {
     "incomplete": "过程补全：请把解题步骤写完整，再检查结论。",
 }
 
+_CALM_PREFIX = (
+    "先别着急，我们放慢一步。答错很正常，我们一起把卡住的地方找出来。"
+)
+
 
 class TutorAgent:
     name = "tutor"
 
-    def start(self, item: AssessmentItem, error_tag: str | None) -> TutorTurn:
+    def start(
+        self,
+        item: AssessmentItem,
+        error_tag: str | None,
+        *,
+        frustration: float = 0.0,
+    ) -> TutorTurn:
         steps_hint = ""
         if item.rubric_steps:
             steps_hint = f"（共 {len(item.rubric_steps)} 步：{' → '.join(item.rubric_steps)}）"
@@ -34,6 +45,7 @@ class TutorAgent:
             f"我们一起来看看这道题{steps_hint}。"
             "你觉得哪一步最不清楚？请告诉我是第几步或描述你的困惑。"
         )
+        message = self._with_calm_tone(message, frustration)
         return TutorTurn(phase="locate_gap", message=message, error_tag=error_tag)
 
     def step(
@@ -42,6 +54,8 @@ class TutorAgent:
         user_message: str,
         item: AssessmentItem,
         error_tag: str | None = None,
+        *,
+        frustration: float = 0.0,
     ) -> TutorTurn:
         tag: ErrorTag | None = error_tag  # type: ignore[assignment]
         if state == "locate_gap":
@@ -50,20 +64,24 @@ class TutorAgent:
             if skill_hint:
                 hint_text = f"{hint_text}；{skill_hint}"
             message = f"好的，我们先从这个方向入手：{hint_text}。你可以再想想这一步。"
+            message = self._with_calm_tone(message, frustration)
             return TutorTurn(phase="hint_1", message=message, error_tag=tag)
 
         if state == "hint_1":
             _, hint_text = hint_for_error(tag, fail_streak=1)
             message = f"再给你一点提示：{hint_text}。试着按这个思路检查一下。"
+            message = self._with_calm_tone(message, frustration)
             return TutorTurn(phase="hint_2", message=message, error_tag=tag)
 
         if state == "hint_2":
             message = "现在请你重新尝试完成那一步，写出你的计算或推理过程。"
+            message = self._with_calm_tone(message, frustration)
             return TutorTurn(phase="retry", message=message, error_tag=tag)
 
         if state == "retry":
             if self._retry_failed(user_message):
                 message = self._build_explanation(item)
+                message = self._with_calm_tone(message, frustration)
                 return TutorTurn(phase="explain", message=message, error_tag=tag)
             message = "很好！你已经找到了关键步骤，继续完成后面的部分吧。"
             return TutorTurn(phase="done", message=message, error_tag=tag)
@@ -85,6 +103,7 @@ class TutorAgent:
         error_tag: str | None = None,
         max_hint_level: int = 2,
         skill_id: str | None = None,
+        frustration: float = 0.0,
     ) -> TutorTurn:
         """Prefix strategy from diagnosis/error type, then run normal Socratic step."""
         del max_hint_level
@@ -102,7 +121,9 @@ class TutorAgent:
         mastery = self._mastery_for_skill(diagnosis, skill_id, kids)
         tiered = get_tiered_intervention(skill_id or (kids[0] if kids else None), mastery)
         intervention = lookup_intervention(skill_id, *kids)
-        turn = self.step(phase, student_input, item, tag)
+        turn = self.step(
+            phase, student_input, item, tag, frustration=frustration
+        )
         hint = (tiered or {}).get("hint") or (intervention or {}).get("hint")
         prefix_parts = [p for p in (strategy, hint) if p]
         if tiered and tiered.get("content"):
@@ -112,6 +133,14 @@ class TutorAgent:
                 update={"message": "\n\n".join(prefix_parts) + f"\n\n{turn.message}"}
             )
         return turn
+
+    @staticmethod
+    def _with_calm_tone(message: str, frustration: float) -> str:
+        if frustration < FRUSTRATION_THRESHOLD:
+            return message
+        if _CALM_PREFIX in message:
+            return message
+        return f"{_CALM_PREFIX}\n\n{message}"
 
     @staticmethod
     def _mastery_for_skill(

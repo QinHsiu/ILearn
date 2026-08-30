@@ -109,6 +109,12 @@ class DiagnosisAgent:
         data_status, data_message = self._classify_evidence_volume(evidence, ctx.grades)
         enrichment["data_status"] = data_status
         enrichment["message"] = data_message
+        enrichment["diagnosis_confidence"] = self._compute_diagnosis_confidence(
+            evidence, ctx.grades, data_status
+        )
+        enrichment["hint_effectiveness"] = self._summarize_hint_effectiveness(
+            ctx.metadata.get("hint_interactions")
+        )
         from ilearn.core.audience_summary import generate_audience_summary
 
         enrichment["parent_summary"] = generate_audience_summary(
@@ -124,6 +130,13 @@ class DiagnosisAgent:
             flags.append("cognitive_gap")
         if data_status in {"insufficient_data", "limited_data"} and data_status not in flags:
             flags.append(data_status)
+        conf = enrichment["diagnosis_confidence"]
+        if (
+            isinstance(conf, dict)
+            and float(conf.get("score") or 0) < 0.5
+            and "low_confidence" not in flags
+        ):
+            flags.append("low_confidence")
         if flags != diagnosis.flags:
             diagnosis = diagnosis.model_copy(update={"flags": flags})
         return AgentResult(
@@ -152,6 +165,80 @@ class DiagnosisAgent:
             )
         return ("ok", "")
 
+    @staticmethod
+    def _compute_diagnosis_confidence(
+        evidence: list[Any],
+        grades: list[Any],
+        data_status: str,
+    ) -> dict[str, Any]:
+        """Numeric confidence from evidence volume + answer coverage."""
+        count = len(evidence) if evidence else len(grades)
+        if data_status == "insufficient_data" or count <= 0:
+            return {
+                "score": 0.15,
+                "label": "很低",
+                "n": 0,
+                "reason": "暂无作答证据",
+            }
+        volume = min(1.0, count / 10.0)
+        grade_list = list(grades or [])
+        if grade_list:
+            scored = sum(
+                1
+                for g in grade_list
+                if getattr(g, "error_tags", None)
+                or getattr(g, "final_correct", None) is not None
+            )
+            coverage = scored / len(grade_list)
+        else:
+            coverage = min(1.0, count / 5.0)
+        if data_status == "limited_data":
+            score = round(min(0.55, 0.25 + 0.1 * count + 0.2 * coverage), 2)
+            label = "较低"
+            reason = "作答样本偏少，结论仅供参考"
+        else:
+            score = round(min(0.95, 0.45 * volume + 0.55 * coverage), 2)
+            if score >= 0.8:
+                label = "较高"
+            elif score >= 0.6:
+                label = "中等"
+            else:
+                label = "较低"
+            reason = "基于作答量与批改覆盖度估算"
+        return {
+            "score": score,
+            "label": label,
+            "n": count,
+            "reason": reason,
+        }
+
+    @staticmethod
+    def _summarize_hint_effectiveness(raw: Any) -> dict[str, Any]:
+        """Aggregate HintInteraction.solved_after_hint when available."""
+        if not isinstance(raw, dict) or not raw:
+            return {
+                "hint_turns_scored": 0,
+                "solved_after_hint_rate": None,
+            }
+        scored = 0
+        helped = 0
+        for rows in raw.values():
+            for row in rows or []:
+                if isinstance(row, dict):
+                    flag = row.get("solved_after_hint")
+                else:
+                    flag = getattr(row, "solved_after_hint", None)
+                if flag is None:
+                    continue
+                scored += 1
+                if flag:
+                    helped += 1
+        rate = round(helped / scored, 2) if scored else None
+        return {
+            "hint_turns_scored": scored,
+            "solved_after_hint_count": helped,
+            "solved_after_hint_rate": rate,
+        }
     def enrich_with_prerequisites(
         self,
         diagnosis: DiagnosisReport,

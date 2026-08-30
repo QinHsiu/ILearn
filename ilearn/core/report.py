@@ -128,6 +128,30 @@ def render_full_report(session: SessionState) -> str:
         if unknown:
             lines.extend(["", "### 未识别技能", ""])
             lines.append("、".join(str(s) for s in unknown))
+        conf = enrichment.get("diagnosis_confidence") or {}
+        if conf.get("score") is not None:
+            lines.extend(
+                [
+                    "",
+                    "### 诊断置信度",
+                    "",
+                    f"- **分数：** {conf.get('score')}（{conf.get('label') or ''}）",
+                    f"- **说明：** {conf.get('reason') or ''}",
+                ]
+            )
+        hint_eff = enrichment.get("hint_effectiveness") or {}
+        if hint_eff.get("hint_turns_scored"):
+            rate = hint_eff.get("solved_after_hint_rate")
+            rate_txt = f"{rate:.0%}" if isinstance(rate, float) else "—"
+            lines.extend(
+                [
+                    "",
+                    "### 提示效果",
+                    "",
+                    f"- 已评分提示轮次：{hint_eff.get('hint_turns_scored')}",
+                    f"- 提示后做对比例：{rate_txt}",
+                ]
+            )
 
     if session.paper is not None and session.grades:
         wrong_grades = [grade for grade in session.grades if not grade.final_correct]
