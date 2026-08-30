@@ -185,12 +185,23 @@ class DiagnosisAgent:
                 )
                 if finding.get("gap_skill"):
                     cognitive_findings.append(finding)
+        error_attribution = aggregate_error_attribution(grades)
+        from ilearn.core.diagnosis_explainer import DiagnosisExplainer
+
+        attribution_explanations = DiagnosisExplainer.build_explanations(
+            weak_skills=weak_skills,
+            error_attribution=error_attribution,
+            cognitive_findings=cognitive_findings,
+        )
+        unknown_skills = self._collect_unknown_skills(evidence_log)
         return {
             "weak_skills": weak_skills,
             "prerequisite_gaps": gaps,
             "learning_advice": advice,
             "cognitive_findings": cognitive_findings,
-            "error_attribution": aggregate_error_attribution(grades),
+            "error_attribution": error_attribution,
+            "attribution_explanations": attribution_explanations,
+            "unknown_skills": unknown_skills,
         }
 
     def diagnose_with_cognitive_profile(
@@ -305,6 +316,20 @@ class DiagnosisAgent:
     @staticmethod
     def _get_dimension_advice(dimension: CognitiveDimension) -> str:
         return _DIMENSION_ADVICE.get(dimension, "建议针对性复习该技能点。")
+
+    def _collect_unknown_skills(self, evidence_log: list[Any]) -> list[str]:
+        """skill_ids present in evidence but missing from the cognitive graph."""
+        if self._cognitive_graph is None:
+            return []
+        unknown: list[str] = []
+        for event in evidence_log:
+            skill_id = _event_get(event, "skill_id")
+            if not skill_id:
+                continue
+            sid = str(skill_id)
+            if self._cognitive_graph.get(sid) is None:
+                unknown.append(sid)
+        return list(dict.fromkeys(unknown))
 
     @staticmethod
     def _generate_learning_advice(weak_skills: list[str], gaps: list[str]) -> str:

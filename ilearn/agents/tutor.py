@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import Any
 
 from ilearn.core.hints import hint_for_error
-from ilearn.core.intervention_library import intervention_hint_for_item, lookup_intervention
+from ilearn.core.intervention_library import (
+    get_tiered_intervention,
+    intervention_hint_for_item,
+    lookup_intervention,
+)
 from ilearn.core.schemas import AssessmentItem, ErrorTag, TutorPhase, TutorTurn
 
 _WRONG_KEYWORDS = ("不对", "不会", "还是错", "错了", "不知道", "不懂", "还是不对")
@@ -94,16 +98,46 @@ class TutorAgent:
             if not tag and top:
                 tag = str(top[0])
         strategy = self._strategy_for_error(tag)
-        intervention = lookup_intervention(
-            skill_id, *(item.knowledge_ids or [])
-        )
+        kids = list(item.knowledge_ids or [])
+        mastery = self._mastery_for_skill(diagnosis, skill_id, kids)
+        tiered = get_tiered_intervention(skill_id or (kids[0] if kids else None), mastery)
+        intervention = lookup_intervention(skill_id, *kids)
         turn = self.step(phase, student_input, item, tag)
-        prefix_parts = [p for p in (strategy, (intervention or {}).get("hint")) if p]
+        hint = (tiered or {}).get("hint") or (intervention or {}).get("hint")
+        prefix_parts = [p for p in (strategy, hint) if p]
+        if tiered and tiered.get("content"):
+            prefix_parts.insert(0, f"【分层干预·{tiered.get('tier')}】{tiered['content']}")
         if prefix_parts:
             turn = turn.model_copy(
                 update={"message": "\n\n".join(prefix_parts) + f"\n\n{turn.message}"}
             )
         return turn
+
+    @staticmethod
+    def _mastery_for_skill(
+        diagnosis: dict[str, Any] | None,
+        skill_id: str | None,
+        knowledge_ids: list[str],
+    ) -> float:
+        if not diagnosis:
+            return 0.5
+        mastery_map = dict(diagnosis.get("skill_mastery") or {})
+        if skill_id and skill_id in mastery_map:
+            return float(mastery_map[skill_id])
+        for kid in knowledge_ids:
+            if kid in mastery_map:
+                return float(mastery_map[kid])
+        rows = diagnosis.get("knowledge_mastery") or []
+        for row in rows:
+            if isinstance(row, dict):
+                kid = row.get("knowledge_id")
+                score = row.get("score_rate")
+            else:
+                kid = getattr(row, "knowledge_id", None)
+                score = getattr(row, "score_rate", None)
+            if kid in {skill_id, *knowledge_ids} and score is not None:
+                return float(score)
+        return 0.5
 
     @staticmethod
     def _strategy_for_error(error_tag: str | None) -> str:
