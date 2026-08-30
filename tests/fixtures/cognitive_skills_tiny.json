@@ -1,0 +1,22 @@
+{
+  "skills": [
+    {
+      "skill_id": "fraction_001",
+      "name": "理解分数单位",
+      "knowledge_point": "分数的意义",
+      "dimension": "understand",
+      "prerequisites": [],
+      "grade": 4,
+      "examples": []
+    },
+    {
+      "skill_id": "fraction_002",
+      "name": "用分数表示部分",
+      "knowledge_point": "分数的意义",
+      "dimension": "apply",
+      "prerequisites": ["fraction_001"],
+      "grade": 4,
+      "examples": []
+    }
+  ]
+}

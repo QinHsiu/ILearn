@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Literal
+from typing import Any, Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -128,6 +128,7 @@ class AssessmentItem(BaseModel):
     situation_tag: SituationTag | None = None
     image_paths: list[str] = Field(default_factory=list)
     is_multimodal: bool = False
+    geo_config: dict[str, Any] | None = None
 
 
 class BlueprintSlot(BaseModel):

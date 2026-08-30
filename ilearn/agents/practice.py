@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import math
+from typing import Any
+
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.evidence import make_evidence_id
 from ilearn.core.grader import ItemGrader
@@ -15,6 +18,38 @@ from ilearn.core.schemas import (
     StepAttempt,
 )
 from ilearn.providers.llm import LLMClient
+
+
+def _is_position_correct(
+    position: list[float] | tuple[float, ...] | None,
+    correct_answer: dict[str, Any],
+    *,
+    tol: float = 0.1,
+) -> bool:
+    if not position or len(position) < 2:
+        return False
+    try:
+        tx = float(correct_answer.get("x"))
+        ty = float(correct_answer.get("y"))
+    except (TypeError, ValueError):
+        return False
+    return abs(float(position[0]) - tx) < tol and abs(float(position[1]) - ty) < tol
+
+
+def _calculate_path_length(interaction_log: list[dict[str, Any]]) -> float:
+    points: list[tuple[float, float]] = []
+    for entry in interaction_log:
+        pos = entry.get("position")
+        if isinstance(pos, (list, tuple)) and len(pos) >= 2:
+            points.append((float(pos[0]), float(pos[1])))
+    if len(points) < 2:
+        return 0.0
+    total = 0.0
+    for i in range(1, len(points)):
+        dx = points[i][0] - points[i - 1][0]
+        dy = points[i][1] - points[i - 1][1]
+        total += math.hypot(dx, dy)
+    return total
 
 
 def _attempts_for_grade(
@@ -80,6 +115,32 @@ class PracticeAgent:
     def __init__(self, llm: LLMClient | None = None) -> None:
         self._text_grader = ItemGrader(llm)
         self._ocr = OcrExtractor(llm)
+
+    def analyze_geo_interaction(
+        self,
+        interaction_log: list[dict[str, Any]],
+        correct_answer: dict[str, Any],
+    ) -> dict[str, str]:
+        """Analyze JSXGraph drag trajectories for diagnostic status."""
+        if not interaction_log:
+            return {"status": "empty", "diagnosis": "无交互轨迹"}
+
+        final_position = interaction_log[-1].get("position") or []
+        is_direct_hit = _is_position_correct(final_position, correct_answer)
+        path_length = _calculate_path_length(interaction_log)
+        attempts = len(
+            [log for log in interaction_log if log.get("type") == "drag_point"]
+        )
+        if attempts == 0:
+            attempts = len(interaction_log)
+
+        if is_direct_hit:
+            if path_length < 2 and attempts < 3:
+                return {"status": "confident", "diagnosis": "对图形关系理解清晰"}
+            return {"status": "explored", "diagnosis": "通过探索找到了答案"}
+        if attempts > 5:
+            return {"status": "struggling", "diagnosis": "对图形关系理解不足"}
+        return {"status": "misguided", "diagnosis": "可能误解了题目要求"}
 
     def run(self, ctx: AgentContext) -> AgentResult:
         if ctx.paper is None:

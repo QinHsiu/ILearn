@@ -32,6 +32,15 @@ export type AssessmentItem = {
   situation_tag?: string | null
   image_paths?: string[]
   is_multimodal?: boolean
+  geo_config?: {
+    type?: 'drag_point' | 'drag_slider' | 'construct_shape'
+    config?: {
+      boundingbox?: number[]
+      start?: [number, number]
+      snapToGrid?: boolean
+    }
+    correct_answer?: { x: number; y: number }
+  } | null
 }
 
 export type AssessmentPaper = {
