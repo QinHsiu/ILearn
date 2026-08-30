@@ -21,6 +21,7 @@ import Assessment from './pages/Assessment'
 import type { AuthRole } from './api/client'
 import { useRole } from './hooks/useRole'
 import { useSessionSync } from './hooks/useSessionSync'
+import { nextStepOnSync, stepFromSession } from './lib/sessionStep'
 import { applyTheme } from './theme'
 import './styles.css'
 import './dashboard.css'
@@ -48,13 +49,6 @@ function answersFromSession(nextSession: SessionState): Record<string, string> {
   return Object.fromEntries(
     (nextSession.answers || []).map((answer) => [answer.item_id, answer.answer_text]),
   )
-}
-
-function stepFromSession(nextSession: SessionState) {
-  if (nextSession.plan) return 3
-  if (nextSession.grades?.length) return 2
-  if (nextSession.paper) return 1
-  return 0
 }
 
 function wrongItemEntries(session: SessionState) {
@@ -156,7 +150,7 @@ function StudentApp() {
       setHistoryNickname(nextSession.profile.nickname || '')
       applyTheme(nextSession.profile.grade, nextSession.profile.gender || 'unspecified')
     }
-    setStep(stepFromSession(nextSession))
+    setStep((prev) => nextStepOnSync(prev, nextSession))
   }, [])
 
   const hasUnsavedChanges = useCallback(() => {
