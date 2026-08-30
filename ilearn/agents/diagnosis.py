@@ -103,10 +103,20 @@ class DiagnosisAgent:
             portrait = PortraitDimensionUpdater.apply(
                 portrait, ctx.grades, profile=ctx.profile
             )
-        enrichment = self.enrich_with_prerequisites(diagnosis, evidence)
+        enrichment = self.enrich_with_prerequisites(
+            diagnosis, evidence, grades=ctx.grades
+        )
         data_status, data_message = self._classify_evidence_volume(evidence, ctx.grades)
         enrichment["data_status"] = data_status
         enrichment["message"] = data_message
+        from ilearn.core.audience_summary import generate_audience_summary
+
+        enrichment["parent_summary"] = generate_audience_summary(
+            diagnosis, enrichment, audience="parent"
+        )
+        enrichment["teacher_summary"] = generate_audience_summary(
+            diagnosis, enrichment, audience="teacher"
+        )
         flags = list(diagnosis.flags)
         if enrichment.get("prerequisite_gaps") and "prerequisite_gaps" not in flags:
             flags.append("prerequisite_gaps")
@@ -146,8 +156,12 @@ class DiagnosisAgent:
         self,
         diagnosis: DiagnosisReport,
         evidence_log: list[Any],
+        *,
+        grades: list[Any] | None = None,
     ) -> dict[str, Any]:
         """Attach prerequisite gaps and learning advice without changing report schema."""
+        from ilearn.core.audience_summary import aggregate_error_attribution
+
         weak_skills = [
             row.knowledge_id
             for row in diagnosis.knowledge_mastery
@@ -176,6 +190,7 @@ class DiagnosisAgent:
             "prerequisite_gaps": gaps,
             "learning_advice": advice,
             "cognitive_findings": cognitive_findings,
+            "error_attribution": aggregate_error_attribution(grades),
         }
 
     def diagnose_with_cognitive_profile(

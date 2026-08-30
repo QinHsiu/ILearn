@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from ilearn.core.hints import hint_for_error
+from ilearn.core.intervention_library import intervention_hint_for_item, lookup_intervention
 from ilearn.core.schemas import AssessmentItem, ErrorTag, TutorPhase, TutorTurn
 
 _WRONG_KEYWORDS = ("不对", "不会", "还是错", "错了", "不知道", "不懂", "还是不对")
@@ -41,6 +42,9 @@ class TutorAgent:
         tag: ErrorTag | None = error_tag  # type: ignore[assignment]
         if state == "locate_gap":
             _, hint_text = hint_for_error(tag, fail_streak=0)
+            skill_hint = intervention_hint_for_item(item, tag)
+            if skill_hint:
+                hint_text = f"{hint_text}；{skill_hint}"
             message = f"好的，我们先从这个方向入手：{hint_text}。你可以再想想这一步。"
             return TutorTurn(phase="hint_1", message=message, error_tag=tag)
 
@@ -76,6 +80,7 @@ class TutorAgent:
         phase: TutorPhase = "locate_gap",
         error_tag: str | None = None,
         max_hint_level: int = 2,
+        skill_id: str | None = None,
     ) -> TutorTurn:
         """Prefix strategy from diagnosis/error type, then run normal Socratic step."""
         del max_hint_level
@@ -84,10 +89,20 @@ class TutorAgent:
             error_types = list(diagnosis.get("error_types") or [])
             if error_types:
                 tag = str(error_types[0])
+            attribution = diagnosis.get("error_attribution") or {}
+            top = list(attribution.get("top_tags") or [])
+            if not tag and top:
+                tag = str(top[0])
         strategy = self._strategy_for_error(tag)
+        intervention = lookup_intervention(
+            skill_id, *(item.knowledge_ids or [])
+        )
         turn = self.step(phase, student_input, item, tag)
-        if strategy:
-            turn = turn.model_copy(update={"message": f"{strategy}\n\n{turn.message}"})
+        prefix_parts = [p for p in (strategy, (intervention or {}).get("hint")) if p]
+        if prefix_parts:
+            turn = turn.model_copy(
+                update={"message": "\n\n".join(prefix_parts) + f"\n\n{turn.message}"}
+            )
         return turn
 
     @staticmethod
