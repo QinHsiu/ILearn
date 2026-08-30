@@ -8,6 +8,7 @@ import {
 } from '../api/client'
 import { useResponsive } from '../hooks/useResponsive'
 import ProgressDots from '../components/ProgressDots'
+import DynamicGeometryQuestion from '../components/DynamicGeometryQuestion'
 
 export type AssessmentCompletePayload = {
   paper: AssessmentPaper
@@ -202,7 +203,23 @@ export default function Assessment({
               </div>
             ) : null}
             <p className="item-stem">{item.stem}</p>
-            {item.choices?.length ? (
+            {item.geo_config?.correct_answer ? (
+              <DynamicGeometryQuestion
+                question={{
+                  id: item.id,
+                  type: item.geo_config.type || 'drag_point',
+                  config: item.geo_config.config,
+                  correct_answer: item.geo_config.correct_answer,
+                }}
+                onInteraction={(log) => {
+                  setAnswers((prev) => ({
+                    ...prev,
+                    [item.id]: `${log.position[0].toFixed(2)},${log.position[1].toFixed(2)}`,
+                  }))
+                }}
+              />
+            ) : null}
+            {item.geo_config?.correct_answer ? null : item.choices?.length ? (
               <div className="choices">
                 {item.choices.map((choice) => (
                   <label key={choice}>

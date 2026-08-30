@@ -6,6 +6,7 @@ import datetime
 from typing import Any
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
+from ilearn.core.learning_style import LearningStyleInferer
 from ilearn.core.planning import Planner
 from ilearn.core.schemas import (
     DiagnosisReport,
@@ -19,6 +20,25 @@ __all__ = ["PlanningAgent", "max_practice_loops", "should_enter_practice_loop"]
 
 _MAX_LOOPS = 2
 _REVIEW_INTERVALS = (1, 3, 7, 15, 30)
+
+_STYLE_MAPPING: dict[str, dict[str, Any]] = {
+    "visual": {
+        "material_type": ["diagram", "chart", "interactive_geometry"],
+        "suggestion": "推荐使用图形化材料辅助理解",
+    },
+    "auditory": {
+        "material_type": ["audio_explanation", "read_aloud"],
+        "suggestion": "推荐听讲解或跟读例题",
+    },
+    "kinesthetic": {
+        "material_type": ["simulation", "drag_drop", "manipulative"],
+        "suggestion": "推荐动手操作类练习",
+    },
+    "reading": {
+        "material_type": ["worked_example", "text_summary"],
+        "suggestion": "推荐文字例题与总结笔记",
+    },
+}
 
 
 def max_practice_loops(profile: StudentProfile) -> int:
@@ -68,11 +88,24 @@ class PlanningAgent:
             )
 
         enrichment = ctx.metadata.get("diagnosis_enrichment") or {}
-        scientific = self.generate_scientific_plan(
-            ctx.diagnosis,
-            ctx.profile,
-            enrichment=enrichment if isinstance(enrichment, dict) else {},
-        )
+        enrichment_dict = enrichment if isinstance(enrichment, dict) else {}
+        behavior = ctx.metadata.get("behavior")
+        learning_style: str | None = None
+        if isinstance(behavior, dict) and behavior:
+            learning_style = LearningStyleInferer().infer(behavior)
+        if learning_style:
+            scientific = self.generate_personalized_plan(
+                ctx.diagnosis,
+                learning_style,
+                enrichment=enrichment_dict,
+                profile=ctx.profile,
+            )
+        else:
+            scientific = self.generate_scientific_plan(
+                ctx.diagnosis,
+                ctx.profile,
+                enrichment=enrichment_dict,
+            )
         plan = plan.model_copy(
             update={"markdown": plan.markdown + self._scientific_markdown(scientific)}
         )
@@ -90,6 +123,26 @@ class PlanningAgent:
                 "scientific_plan": scientific,
             },
         )
+
+    def generate_personalized_plan(
+        self,
+        diagnosis: DiagnosisReport,
+        learning_style: str,
+        *,
+        enrichment: dict[str, Any] | None = None,
+        profile: StudentProfile | None = None,
+    ) -> dict[str, Any]:
+        """Scientific plan plus learning-style material adaptation."""
+        base_profile = profile or StudentProfile(region="北京", grade=5, age=11)
+        plan = self.generate_scientific_plan(
+            diagnosis, base_profile, enrichment=enrichment
+        )
+        adaptation = dict(
+            _STYLE_MAPPING.get(learning_style, _STYLE_MAPPING["reading"])
+        )
+        plan["learning_style"] = learning_style
+        plan["style_adaptation"] = adaptation
+        return plan
 
     def generate_scientific_plan(
         self,
@@ -204,4 +257,16 @@ class PlanningAgent:
             lines.append("")
         hours = scientific.get("estimated_total_hours") or 0
         lines.append(f"\u9884\u4f30\u603b\u7528\u65f6\uff1a{hours:.1f} \u5c0f\u65f6")
+        style = scientific.get("learning_style")
+        adaptation = scientific.get("style_adaptation") or {}
+        if style or adaptation:
+            lines.extend(["", "## \u5b66\u4e60\u98ce\u683c\u9002\u914d", ""])
+            if style:
+                lines.append(f"- \u63a8\u65ad\u98ce\u683c\uff1a{style}")
+            suggestion = adaptation.get("suggestion")
+            if suggestion:
+                lines.append(f"- {suggestion}")
+            materials = adaptation.get("material_type") or []
+            if materials:
+                lines.append("- \u63a8\u8350\u6750\u6599\uff1a" + ", ".join(materials))
         return "\n".join(lines)

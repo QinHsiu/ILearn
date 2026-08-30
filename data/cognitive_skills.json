@@ -1,0 +1,489 @@
+{
+  "skills": [
+    {
+      "skill_id": "frac_meaning_001",
+      "name": "理解分数单位",
+      "knowledge_point": "分数的意义",
+      "dimension": "understand",
+      "prerequisites": [],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_002",
+      "name": "认识几分之一",
+      "knowledge_point": "分数的意义",
+      "dimension": "remember",
+      "prerequisites": [
+        "frac_meaning_001"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_003",
+      "name": "用分数表示部分",
+      "knowledge_point": "分数的意义",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_meaning_001",
+        "frac_meaning_002"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_004",
+      "name": "分数与除法的联系",
+      "knowledge_point": "分数的意义",
+      "dimension": "understand",
+      "prerequisites": [
+        "frac_meaning_001"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_005",
+      "name": "在数轴上表示分数",
+      "knowledge_point": "分数的意义",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_meaning_001",
+        "frac_meaning_002"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_006",
+      "name": "真假分数辨别",
+      "knowledge_point": "分数的意义",
+      "dimension": "analyze",
+      "prerequisites": [
+        "frac_meaning_001",
+        "frac_meaning_002"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_007",
+      "name": "分数单位比较大小直觉",
+      "knowledge_point": "分数的意义",
+      "dimension": "understand",
+      "prerequisites": [
+        "frac_meaning_001"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_008",
+      "name": "分数集合模型",
+      "knowledge_point": "分数的意义",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_meaning_003"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_009",
+      "name": "分数面积模型",
+      "knowledge_point": "分数的意义",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_meaning_003"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_010",
+      "name": "解释分数意义文字题",
+      "knowledge_point": "分数的意义",
+      "dimension": "analyze",
+      "prerequisites": [
+        "frac_meaning_003",
+        "frac_meaning_004"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_meaning_011",
+      "name": "创造等分情境",
+      "knowledge_point": "分数的意义",
+      "dimension": "create",
+      "prerequisites": [
+        "frac_meaning_003"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_001",
+      "name": "同分母分数比较",
+      "knowledge_point": "分数比较",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_meaning_003"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_002",
+      "name": "同分子分数比较",
+      "knowledge_point": "分数比较",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_compare_001"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_003",
+      "name": "通分后比较",
+      "knowledge_point": "分数比较",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_compare_001",
+        "frac_compare_002"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_004",
+      "name": "用基准1比较",
+      "knowledge_point": "分数比较",
+      "dimension": "analyze",
+      "prerequisites": [
+        "frac_compare_001"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_005",
+      "name": "用数轴比较",
+      "knowledge_point": "分数比较",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_compare_001",
+        "frac_compare_004"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_006",
+      "name": "比较策略选择",
+      "knowledge_point": "分数比较",
+      "dimension": "evaluate",
+      "prerequisites": [
+        "frac_compare_001",
+        "frac_compare_002",
+        "frac_compare_003"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_007",
+      "name": "记住常见分数大小",
+      "knowledge_point": "分数比较",
+      "dimension": "remember",
+      "prerequisites": [],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_008",
+      "name": "解释比较理由",
+      "knowledge_point": "分数比较",
+      "dimension": "understand",
+      "prerequisites": [
+        "frac_compare_001",
+        "frac_compare_002"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_009",
+      "name": "分数与小数混比",
+      "knowledge_point": "分数比较",
+      "dimension": "analyze",
+      "prerequisites": [
+        "frac_compare_003",
+        "frac_compare_005"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_010",
+      "name": "错误比较模式识别",
+      "knowledge_point": "分数比较",
+      "dimension": "evaluate",
+      "prerequisites": [
+        "frac_compare_006"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_compare_011",
+      "name": "设计比较题",
+      "knowledge_point": "分数比较",
+      "dimension": "create",
+      "prerequisites": [
+        "frac_compare_006"
+      ],
+      "grade": 4,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same"
+      ]
+    },
+    {
+      "skill_id": "frac_add_001",
+      "name": "同分母加减",
+      "knowledge_point": "分数加减法",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_compare_001"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_002",
+      "name": "异分母通分",
+      "knowledge_point": "分数加减法",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_add_001"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_003",
+      "name": "异分母加减",
+      "knowledge_point": "分数加减法",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_add_001",
+        "frac_add_002"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_004",
+      "name": "带分数加减",
+      "knowledge_point": "分数加减法",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_add_003"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_005",
+      "name": "加减运算律应用",
+      "knowledge_point": "分数加减法",
+      "dimension": "analyze",
+      "prerequisites": [
+        "frac_add_003"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_006",
+      "name": "估算加减结果",
+      "knowledge_point": "分数加减法",
+      "dimension": "evaluate",
+      "prerequisites": [
+        "frac_add_003"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_007",
+      "name": "记住加减运算步骤",
+      "knowledge_point": "分数加减法",
+      "dimension": "remember",
+      "prerequisites": [
+        "frac_add_001"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_008",
+      "name": "理解通分必要性",
+      "knowledge_point": "分数加减法",
+      "dimension": "understand",
+      "prerequisites": [
+        "frac_add_002"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_009",
+      "name": "文字题列式加减",
+      "knowledge_point": "分数加减法",
+      "dimension": "apply",
+      "prerequisites": [
+        "frac_add_003"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_010",
+      "name": "检查得数合理性",
+      "knowledge_point": "分数加减法",
+      "dimension": "evaluate",
+      "prerequisites": [
+        "frac_add_003",
+        "frac_add_006"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    },
+    {
+      "skill_id": "frac_add_011",
+      "name": "编造加减应用题",
+      "knowledge_point": "分数加减法",
+      "dimension": "create",
+      "prerequisites": [
+        "frac_add_009"
+      ],
+      "grade": 5,
+      "examples": [],
+      "legacy_knowledge_ids": [
+        "frac_add_same",
+        "frac_mult"
+      ]
+    }
+  ],
+  "meta": {
+    "edition": "0830",
+    "units": 3
+  }
+}
