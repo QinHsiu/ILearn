@@ -15,10 +15,12 @@ from ilearn.core.export_markdown import (
     render_advice_report_markdown,
     render_assessment_review_markdown,
 )
+from ilearn.core.feature_flags import FeatureRegistry
 from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.pdf_export import markdown_to_pdf
 from ilearn.core.rate_limiter import RateLimiter, RateLimitMiddleware
 from ilearn.core.settings import clear_settings_cache, get_settings
+from ilearn.core.user_errors import UserFriendlyError, map_exception_message
 from ilearn.core.validators import validate_submit_answers
 from ilearn.api.auth import create_auth_router
 from ilearn.api.dashboard import create_dashboard_router
@@ -172,12 +174,22 @@ def create_app(
     async def handle_not_found(_request, exc: FileNotFoundError) -> JSONResponse:
         return JSONResponse(status_code=404, content={"detail": str(exc)})
 
+    @app.exception_handler(UserFriendlyError)
+    async def handle_user_friendly(_request, exc: UserFriendlyError) -> JSONResponse:
+        return JSONResponse(status_code=400, content=exc.to_response())
+
     @app.exception_handler(ValueError)
     async def handle_bad_request(_request, exc: ValueError) -> JSONResponse:
+        mapped = map_exception_message(str(exc))
+        if mapped is not None:
+            return JSONResponse(status_code=400, content=mapped.to_response())
         return JSONResponse(status_code=400, content={"detail": str(exc)})
 
     @app.exception_handler(CurriculumError)
     async def handle_curriculum_error(_request, exc: CurriculumError) -> JSONResponse:
+        mapped = map_exception_message(str(exc))
+        if mapped is not None:
+            return JSONResponse(status_code=422, content=mapped.to_response())
         return JSONResponse(status_code=422, content={"detail": str(exc)})
 
     spa_index = _FRONTEND_DIST / "index.html"
@@ -188,6 +200,11 @@ def create_app(
         if spa_enabled:
             return FileResponse(spa_index)
         return RedirectResponse(url="/docs")
+
+    @app.get("/capabilities")
+    def capabilities() -> dict:
+        """Offline / hybrid / online feature tiers for UI transparency."""
+        return FeatureRegistry.capabilities_payload(llm_available=llm is not None)
 
     @app.get("/pilot-assets/{asset_path:path}", include_in_schema=True)
     def pilot_assets(asset_path: str) -> FileResponse:

@@ -5,8 +5,8 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0830_6 诊断置信度与提示闭环（D） |
-| **基线** | 514 tests（离线可跑） |
+| **标签** | Edition 0830_7 状态机守卫与能力透明（D） |
+| **基线** | 522 tests（离线可跑） |
 | **日期** | 2026-08-30 |
 
 ---
@@ -45,6 +45,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0830_4 C（产品友好化）：** 家长/教师摘要；`error_attribution`；技能干预库增强 Tutor；Orchestrator 耗时日志
 - **Edition 0830_5 D（可解释 + 分层干预）：** SessionStore 按会话锁；LLM fallback 深度护栏；认知图谱环依赖硬失败；`DiagnosisExplainer`/`unknown_skills`；分层干预；报告解释段
 - **Edition 0830_6 D（置信度 + 提示闭环）：** KP 图谱环检测（默认告警/`strict_cycles` 硬失败）；`diagnosis_confidence`；`solved_after_hint` 回写；Tutor 挫败语气；提示效果摘要
+- **Edition 0830_7 D（状态机 + 能力透明）：** `PhaseGuard`/`phase_history`；`FeatureRegistry` + `GET /capabilities`；`UserFriendlyError` 错误码
 
 ---
 
@@ -73,6 +74,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0830_4 product C | 家长教师摘要、错误归因、干预库、Orchestrator 埋点 | **501** |
 | Edition 0830_5 explainability D | 按会话锁、fallback 深度、环依赖硬失败、诊断解释、分层干预 | **507** |
 | Edition 0830_6 confidence D | KP 环检测、诊断置信度、提示效果回写、挫败语气 | **514** |
+| Edition 0830_7 phase/capabilities D | PhaseGuard、能力注册表、友好错误码 | **522** |
 
 ---
 

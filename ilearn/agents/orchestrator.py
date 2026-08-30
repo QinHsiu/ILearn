@@ -26,6 +26,7 @@ from ilearn.core.quality_gate import (
     valid_diagnosis_result,
     valid_plan_result,
 )
+from ilearn.core.phase_guard import PhaseGuard
 from ilearn.core.report import render_full_report
 from ilearn.core.session_lock import with_session_lock
 from ilearn.core.schemas import (
@@ -109,6 +110,10 @@ class MultiAgentOrchestrator:
 
     def create_session(self, profile: StudentProfile) -> str:
         return self._store.create(profile).session_id
+
+    @staticmethod
+    def _set_phase(session: SessionState, target: SessionPhase) -> None:
+        PhaseGuard.transition(session, target)
 
     @staticmethod
     def _record_decision(
@@ -226,7 +231,7 @@ class MultiAgentOrchestrator:
         session.grades = []
         session.diagnosis = None
         session.plan = None
-        session.phase = result.phase
+        self._set_phase(session, result.phase)
         self._record_decision(
             session,
             self._assessment.name,
@@ -328,7 +333,7 @@ class MultiAgentOrchestrator:
         session.grades = []
         session.diagnosis = None
         session.plan = None
-        session.phase = SessionPhase.PRACTICE
+        self._set_phase(session, SessionPhase.PRACTICE)
         self._record_decision(
             session,
             self._assessment.name,
@@ -356,6 +361,7 @@ class MultiAgentOrchestrator:
         item_meta: dict[str, dict] | None = None,
     ) -> SessionState:
         session = self._store.load(session_id)
+        PhaseGuard.assert_ready_for("submit", session)
         paper = self._require_paper(session)
         if session.pending_questions:
             known_ids = {
@@ -376,12 +382,13 @@ class MultiAgentOrchestrator:
         session.grades = []
         session.diagnosis = None
         session.plan = None
-        session.phase = SessionPhase.GRADE
+        self._set_phase(session, SessionPhase.GRADE)
         return self._store.save(session)
 
     @with_session_lock
     def grade(self, session_id: str) -> list[GradeResult]:
         session = self._store.load(session_id)
+        PhaseGuard.assert_ready_for("grade", session)
         paper = self._require_paper(session)
         answer_map = {answer.item_id: answer.answer_text for answer in session.answers}
         session.answers = [
@@ -404,7 +411,7 @@ class MultiAgentOrchestrator:
         self._update_hint_outcomes(session)
         session.diagnosis = None
         session.plan = None
-        session.phase = result.phase
+        self._set_phase(session, result.phase)
         self._record_decision(
             session,
             self._practice.name,
@@ -441,8 +448,7 @@ class MultiAgentOrchestrator:
     def diagnose(self, session_id: str) -> DiagnosisReport:
         session = self._store.load(session_id)
         self._require_paper(session)
-        if not session.grades:
-            raise ValueError("session must be graded before diagnosis")
+        PhaseGuard.assert_ready_for("diagnose", session)
         result, degraded = run_with_quality_gate(
             lambda: self._diagnosis.run(
                 self._ctx(session, phase=SessionPhase.DIAGNOSE)
@@ -466,7 +472,7 @@ class MultiAgentOrchestrator:
                 "diagnosis_enrichment"
             ]
         session.plan = None
-        session.phase = result.phase
+        self._set_phase(session, result.phase)
         self._record_decision(
             session,
             self._diagnosis.name,
@@ -481,8 +487,7 @@ class MultiAgentOrchestrator:
     @with_session_lock
     def plan(self, session_id: str) -> LearningPlanReport:
         session = self._store.load(session_id)
-        if session.diagnosis is None:
-            raise ValueError("session must be diagnosed before planning")
+        PhaseGuard.assert_ready_for("plan", session)
         result, degraded = run_with_quality_gate(
             lambda: self._planning.run(
                 self._ctx(
@@ -510,7 +515,7 @@ class MultiAgentOrchestrator:
             session.metadata["scientific_plan"] = result.payload["scientific_plan"]
         for entry in result.payload.get("plan_history_append", []):
             session.plan_history.append(entry)
-        session.phase = result.phase
+        self._set_phase(session, result.phase)
         self._record_decision(
             session,
             self._planning.name,
@@ -526,8 +531,7 @@ class MultiAgentOrchestrator:
     def request_replan(self, session_id: str) -> LearningPlanReport:
         """Re-run planning with current portrait/diagnosis; supersede prior plan."""
         session = self._store.load(session_id)
-        if session.diagnosis is None:
-            raise ValueError("session must be diagnosed before replanning")
+        PhaseGuard.assert_ready_for("replan", session)
         result = self._planning.run(
             self._ctx(
                 session,
@@ -550,7 +554,7 @@ class MultiAgentOrchestrator:
             session.metadata["scientific_plan"] = result.payload["scientific_plan"]
         for entry in result.payload.get("plan_history_append", []):
             session.plan_history.append(entry)
-        session.phase = result.phase
+        self._set_phase(session, result.phase)
         self._record_decision(
             session,
             self._planning.name,
@@ -564,6 +568,7 @@ class MultiAgentOrchestrator:
     def tutor_start(self, session_id: str, item_id: str) -> TutorTurn:
         """Begin Socratic tutoring for an assessment/practice item (grades optional)."""
         session = self._store.load(session_id)
+        PhaseGuard.assert_ready_for("tutor", session)
         paper = self._require_paper(session)
         item = next((i for i in paper.items if i.id == item_id), None)
         if item is None:
@@ -589,6 +594,7 @@ class MultiAgentOrchestrator:
         self, session_id: str, item_id: str, user_message: str
     ) -> TutorTurn:
         session = self._store.load(session_id)
+        PhaseGuard.assert_ready_for("tutor", session)
         paper = self._require_paper(session)
         item = next((row for row in paper.items if row.id == item_id), None)
         if item is None:
@@ -598,7 +604,12 @@ class MultiAgentOrchestrator:
             raise ValueError("tutoring has not started for this item")
         used = session.hint_interactions.get(item_id, [])
         if len(used) >= MAX_HINTS_PER_ITEM:
-            raise ValueError("hints exhausted for this item")
+            from ilearn.core.user_errors import UserFriendlyError
+
+            raise UserFriendlyError(
+                "E-014",
+                technical_detail="hints exhausted for this item",
+            )
         enrichment = session.metadata.get("diagnosis_enrichment")
         diagnosis_ctx = (
             enrichment if isinstance(enrichment, dict) else None
@@ -668,15 +679,19 @@ class MultiAgentOrchestrator:
     @with_session_lock
     def start_practice_loop(self, session_id: str) -> AssessmentPaper:
         session = self._store.load(session_id)
-        if session.diagnosis is None:
-            raise ValueError("session must be diagnosed before starting practice loop")
+        PhaseGuard.assert_ready_for("practice_loop", session)
         weak_ids = [
             mastery.knowledge_id
             for mastery in session.diagnosis.knowledge_mastery
             if mastery.level == "weak"
         ][:5]
         if not weak_ids:
-            raise ValueError("practice loop requires weak knowledge ids")
+            from ilearn.core.user_errors import UserFriendlyError
+
+            raise UserFriendlyError(
+                "E-015",
+                technical_detail="practice loop requires weak knowledge ids",
+            )
 
         result = self._assessment.run(
             self._ctx(
@@ -706,7 +721,7 @@ class MultiAgentOrchestrator:
         session.image_answers = []
         session.grades = []
         session.loop_count += 1
-        session.phase = result.phase
+        self._set_phase(session, result.phase)
         self._store.save(session)
         return session.paper
 
@@ -717,5 +732,10 @@ class MultiAgentOrchestrator:
     @staticmethod
     def _require_paper(session: SessionState) -> AssessmentPaper:
         if session.paper is None:
-            raise ValueError("session must have an assessment paper")
+            from ilearn.core.user_errors import UserFriendlyError
+
+            raise UserFriendlyError(
+                "E-011",
+                technical_detail="session must have an assessment paper",
+            )
         return session.paper

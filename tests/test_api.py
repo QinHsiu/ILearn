@@ -295,4 +295,5 @@ def test_assessment_tutor_hints_exhausted_returns_400(tmp_path):
         json={"item_id": item_id, "user_message": "第四次"},
     )
     assert fourth.status_code == 400
-    assert "exhausted" in fourth.json()["detail"].lower()
+    body = fourth.json()
+    assert body.get("error_code") == "E-014" or "提示" in str(body.get("detail") or body.get("message") or "")

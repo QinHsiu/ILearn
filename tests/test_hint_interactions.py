@@ -4,6 +4,7 @@ import pytest
 
 from ilearn.agents.orchestrator import MultiAgentOrchestrator
 from ilearn.core.schemas import HintInteraction, MAX_HINTS_PER_ITEM, StudentProfile
+from ilearn.core.user_errors import UserFriendlyError
 from ilearn.providers.curriculum import PilotBeijingRenjiaoProvider
 from ilearn.storage.sessions import SessionStore
 
@@ -47,5 +48,5 @@ def test_tutor_hint_limit_three(tmp_path):
         orch.tutor_step(sid, item_id, f"困惑{i}")
     session = orch._store.load(sid)
     assert len(session.hint_interactions[item_id]) == MAX_HINTS_PER_ITEM
-    with pytest.raises(ValueError, match="exhausted"):
+    with pytest.raises(UserFriendlyError, match="提示"):
         orch.tutor_step(sid, item_id, "第四次")
