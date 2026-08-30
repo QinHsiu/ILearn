@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 from typing import Any
 
 from openai import OpenAI, OpenAIError
@@ -51,10 +50,13 @@ class LLMClient:
 
     @classmethod
     def from_env(cls) -> LLMClient:
+        from ilearn.core.settings import load_settings
+
+        settings = load_settings()
         return cls(
-            base_url=os.getenv("ILEARN_LLM_BASE_URL") or None,
-            api_key=os.getenv("ILEARN_LLM_API_KEY") or None,
-            model=os.getenv("ILEARN_LLM_MODEL") or None,
+            base_url=settings.llm_base_url or None,
+            api_key=settings.llm_api_key or None,
+            model=settings.llm_model or None,
         )
 
     def available(self) -> bool:
@@ -62,7 +64,9 @@ class LLMClient:
 
     def vision_available(self) -> bool:
         """Return whether an authenticated vision-capable model is configured."""
-        return self.available() and bool(os.getenv("ILEARN_VISION_MODEL") or self.model)
+        from ilearn.core.settings import load_settings
+
+        return self.available() and bool(load_settings().vision_model or self.model)
 
     def _get_client(self) -> OpenAI:
         if not self.available():
@@ -114,11 +118,13 @@ class LLMClient:
         if not self.vision_available():
             raise LLMError("vision client is not available")
 
+        from ilearn.core.settings import load_settings
+
         last_error: Exception | None = None
         for _ in range(2):
             try:
                 response = self._get_client().chat.completions.create(
-                    model=os.getenv("ILEARN_VISION_MODEL") or self.model,
+                    model=load_settings().vision_model or self.model,
                     messages=[
                         {"role": "system", "content": system},
                         {

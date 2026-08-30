@@ -5,8 +5,8 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0830 认知图谱 / 风格适配 / 动态几何 |
-| **基线** | 474 tests（离线可跑） |
+| **标签** | Edition 0830_2 平台硬化（配置/日志/缓存/限流/校验） |
+| **基线** | 487 tests（离线可跑） |
 | **日期** | 2026-08-30 |
 
 ---
@@ -40,6 +40,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0826（课标数据扩充）：** `ilearn/data/build_pilot.py` 统一重建管线；RCAE / MM-K12 / TAL-SCQ5K / **templates** 导入；知识点 **13 → 1294**（RCAE）；legacy 13 kp 例题 **≥8/个**（MM-K12 + TAL 中文 + 模板变式）；`data/pilot/ATTRIBUTION.md`
 - **Edition 0827（多模态课标绑定）：** `CurriculumRef` + `CurriculumGate`；独立 `multimodal_bank.json`（不并入 `example_bank`）；MV-MATH 导入（bindings crosswalk + Channel B 中文题干）；锚点卷 **2–4** 道多模态、完整卷 **≤4** 道（仍为 **20** 题）；`GET /pilot-assets/{path}`；前端 `Assessment.tsx` 题干配图 + 章节横幅
 - **Edition 0830（认知层次 + 风格 + 几何）：** `CognitiveSkillGraph`（分数三单元 ≥30 技能点）+ 诊断根因 enrichment；`LearningStyleInferer` + Planning 材料适配；JSXGraph `DynamicGeometryQuestion` + `PracticeAgent.analyze_geo_interaction`；`scripts/export_processed_bank.py` 导出清洗题库
+- **Edition 0830_2 A（平台硬化）：** `ILearnSettings`；同步日志/`RetryHandler`；图谱 JSON 进程缓存；滑动窗口限流中间件；submit 入参校验（允许空答案）
 
 ---
 
@@ -63,6 +64,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0826 curriculum data expansion | `build_pilot` 管线；RCAE/MM-K12/TAL/templates 导入；知识点 13→1294；legacy kp ≥8 例题 | **439** |
 | Edition 0827 multimodal curriculum binding | `CurriculumRef`/`CurriculumGate`；MV-MATH→`multimodal_bank`；锚点 2–4 / 完整卷 ≤4 多模态；`/pilot-assets`；Assessment 配图 UI | **459** |
 | Edition 0830 cognitive / style / geometry | 认知技能图谱、风格推断与规划适配、JSXGraph 交互几何、processed 导出 | **474** |
+| Edition 0830_2 platform hardening A | Settings/日志/缓存/限流/submit 校验 | **487** |
 
 ---
 

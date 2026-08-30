@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -44,7 +43,9 @@ class CognitiveSkillGraph:
         self._load()
 
     def _load(self) -> None:
-        raw: Any = json.loads(self.path.read_text(encoding="utf-8"))
+        from ilearn.core.cache import load_json_cached
+
+        raw: Any = load_json_cached(self.path)
         skills = raw["skills"] if isinstance(raw, dict) and "skills" in raw else raw
         for item in skills:
             dim = CognitiveDimension(item["dimension"])

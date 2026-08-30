@@ -72,8 +72,9 @@ class KnowledgeGraph:
 
     def _load_graph(self) -> dict[str, Any]:
         if self.graph_path.exists():
-            with self.graph_path.open(encoding="utf-8") as handle:
-                return json.load(handle)
+            from ilearn.core.cache import load_json_cached
+
+            return load_json_cached(self.graph_path)
         return json.loads(json.dumps(_DEFAULT_GRAPH))
 
     def get_prerequisites(self, knowledge_point: str) -> list[str]:

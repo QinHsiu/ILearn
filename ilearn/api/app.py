@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -18,6 +17,9 @@ from ilearn.core.export_markdown import (
 )
 from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.pdf_export import markdown_to_pdf
+from ilearn.core.rate_limiter import RateLimiter, RateLimitMiddleware
+from ilearn.core.settings import clear_settings_cache, get_settings
+from ilearn.core.validators import validate_submit_answers
 from ilearn.api.auth import create_auth_router
 from ilearn.api.dashboard import create_dashboard_router
 from ilearn.core.schemas import (
@@ -46,18 +48,6 @@ _WEB_ORIGINS = (
     "http://127.0.0.1:8501",
 )
 _FRONTEND_DIST = _PROJECT_ROOT / "frontend" / "dist"
-_DEFAULT_AUTH_CREDENTIALS = {
-    "parent": {
-        "username": "parent-demo",
-        "password": "parent-demo-password",
-        "user_id": "parent-demo",
-    },
-    "teacher": {
-        "username": "teacher-demo",
-        "password": "teacher-demo-password",
-        "user_id": "teacher-demo",
-    },
-}
 
 
 class CreateSessionResponse(BaseModel):
@@ -134,41 +124,25 @@ def create_app(
 ) -> FastAPI:
     """Build a FastAPI app wired to the ILearn orchestrator."""
     load_dotenv()
+    clear_settings_cache()
+    settings = get_settings()
     auth_credentials = credentials or {
         "parent": {
-            "username": os.getenv(
-                "ILEARN_PARENT_USERNAME",
-                _DEFAULT_AUTH_CREDENTIALS["parent"]["username"],
-            ),
-            "password": os.getenv(
-                "ILEARN_PARENT_PASSWORD",
-                _DEFAULT_AUTH_CREDENTIALS["parent"]["password"],
-            ),
-            "user_id": os.getenv(
-                "ILEARN_PARENT_USER_ID",
-                _DEFAULT_AUTH_CREDENTIALS["parent"]["user_id"],
-            ),
+            "username": settings.parent_username,
+            "password": settings.parent_password,
+            "user_id": settings.parent_user_id,
         },
         "teacher": {
-            "username": os.getenv(
-                "ILEARN_TEACHER_USERNAME",
-                _DEFAULT_AUTH_CREDENTIALS["teacher"]["username"],
-            ),
-            "password": os.getenv(
-                "ILEARN_TEACHER_PASSWORD",
-                _DEFAULT_AUTH_CREDENTIALS["teacher"]["password"],
-            ),
-            "user_id": os.getenv(
-                "ILEARN_TEACHER_USER_ID",
-                _DEFAULT_AUTH_CREDENTIALS["teacher"]["user_id"],
-            ),
+            "username": settings.teacher_username,
+            "password": settings.teacher_password,
+            "user_id": settings.teacher_user_id,
         },
     }
     if llm is None:
         llm = LLMClient.from_env()
     if not llm.available():
         llm = None
-    store = SessionStore(sessions_dir or _DEFAULT_SESSIONS_DIR)
+    store = SessionStore(sessions_dir or settings.sessions_dir or _DEFAULT_SESSIONS_DIR)
     relationships = RelationshipStore(
         relationships_path or _PROJECT_ROOT / "data" / "relationships.json",
         store,
@@ -187,6 +161,12 @@ def create_app(
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    if settings.rate_limit_enabled:
+        limiter = RateLimiter(
+            max_requests=settings.rate_limit_max_requests,
+            window_seconds=settings.rate_limit_window_seconds,
+        )
+        app.add_middleware(RateLimitMiddleware, limiter=limiter)
 
     @app.exception_handler(FileNotFoundError)
     async def handle_not_found(_request, exc: FileNotFoundError) -> JSONResponse:
@@ -301,8 +281,9 @@ def create_app(
 
     @app.post("/sessions/{session_id}/submit", response_model=SessionState)
     def submit(session_id: str, body: SubmitRequest) -> SessionState:
+        answers = validate_submit_answers(body.answers)
         return orchestrator.submit(
-            session_id, body.answers, item_meta=body.item_meta
+            session_id, answers, item_meta=body.item_meta
         )
 
     @app.post("/sessions/{session_id}/grade", response_model=list[GradeResult])
