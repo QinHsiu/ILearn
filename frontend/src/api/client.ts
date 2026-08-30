@@ -310,6 +310,15 @@ export const api = {
   getPhase(sessionId: string) {
     return request<{ phase: string; loop_count: number }>(`/sessions/${sessionId}/phase`)
   },
+  getSession(sessionId: string) {
+    return request<SessionState>(`/sessions/${sessionId}`)
+  },
+  heartbeat(sessionId: string) {
+    return request<{ ok: boolean; phase: string; server_time: string }>(
+      `/sessions/${sessionId}/heartbeat`,
+      { method: 'POST' },
+    )
+  },
   async downloadExport(sessionId: string, kind: 'assessment' | 'report', filename: string) {
     const path =
       kind === 'assessment'

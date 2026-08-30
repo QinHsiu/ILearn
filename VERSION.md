@@ -5,8 +5,8 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0830_8 学科适配器缺口 + 证据迁移 + 多轮题目修订 |
-| **基线** | 529 tests（离线可跑） |
+| **标签** | Edition 0830_9 A2 地区错误 + 会话同步 |
+| **基线** | 535 tests（离线可跑）+ 36 vitest |
 | **日期** | 2026-08-30 |
 
 ---
@@ -47,6 +47,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0830_6 D（置信度 + 提示闭环）：** KP 图谱环检测（默认告警/`strict_cycles` 硬失败）；`diagnosis_confidence`；`solved_after_hint` 回写；Tutor 挫败语气；提示效果摘要
 - **Edition 0830_7 D（状态机 + 能力透明）：** `PhaseGuard`/`phase_history`；`FeatureRegistry` + `GET /capabilities`；`UserFriendlyError` 错误码
 - **Edition 0830_8（缺口收口）：** 数学 `SubjectAdapter` facade（4–6）；`EvidenceMigrator` 会话 load/list；`revise_paper` 最多 3 轮 + 安全回退题
+- **Edition 0830_9 A2（地区错误 + 会话同步）：** `normalize_region` / 软课标；创建会话 E-004；`GET /sessions/{id}` + heartbeat；前端 `useSessionSync`（可见性拉取、30s 心跳、未保存 beforeunload）
 
 ---
 
@@ -77,6 +78,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0830_6 confidence D | KP 环检测、诊断置信度、提示效果回写、挫败语气 | **514** |
 | Edition 0830_7 phase/capabilities D | PhaseGuard、能力注册表、友好错误码 | **522** |
 | Edition 0830_8 gap close | 数学 SubjectAdapter、证据迁移、多轮题目修订与安全回退 | **529** |
+| Edition 0830_9 A2 地区错误 + 会话同步 | E-004、软课标/地区、GET session + heartbeat、useSessionSync | **535** pytest + **36** vitest |
 
 ---
 
