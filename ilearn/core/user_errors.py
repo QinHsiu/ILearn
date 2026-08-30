@@ -18,6 +18,10 @@ ERROR_REGISTRY: dict[str, dict[str, str]] = {
         "user_action": "报告生成较慢，请稍后刷新查看。",
         "technical_prefix": "PDF",
     },
+    "E-004": {
+        "user_action": "当前地区课标数据暂未覆盖，请切换至北京或上海地区。",
+        "technical_prefix": "RegionNotSupported",
+    },
     "E-010": {
         "user_action": "操作顺序不正确，请按测评流程继续。",
         "technical_prefix": "illegal phase transition",
@@ -84,6 +88,13 @@ def map_exception_message(message: str) -> UserFriendlyError | None:
                 technical_detail=text,
                 user_action=meta.get("user_action"),
             )
+    if "region" in lowered and (
+        "unsupported" in lowered
+        or "不支持" in text
+        or "暂未覆盖" in text
+        or "regionnotsupported" in lowered
+    ):
+        return UserFriendlyError("E-004", technical_detail=text)
     # Curriculum / grade fail-closed
     if "grade" in lowered and ("not" in lowered or "unsupported" in lowered or "支持" in text):
         return UserFriendlyError("E-001", technical_detail=text)
