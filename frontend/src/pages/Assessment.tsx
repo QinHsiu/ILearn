@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   api,
   type AdaptiveAssessmentResponse,
@@ -68,6 +68,8 @@ export default function Assessment({
   const [meta, setMeta] = useState<string>('')
   const [inferredChapter, setInferredChapter] = useState<string | null>(null)
   const [sourceLabel, setSourceLabel] = useState<string | null>(null)
+  const onErrorRef = useRef(onError)
+  onErrorRef.current = onError
 
   useEffect(() => {
     let cancelled = false
@@ -84,7 +86,7 @@ export default function Assessment({
         setSourceLabel(firstMultimodalSourceLabel(res.paper.items))
         setMeta(buildMetaLine(res))
       } catch (err) {
-        onError?.(err instanceof Error ? err.message : String(err))
+        onErrorRef.current?.(err instanceof Error ? err.message : String(err))
       } finally {
         if (!cancelled) setBusy(false)
       }
@@ -93,7 +95,7 @@ export default function Assessment({
     return () => {
       cancelled = true
     }
-  }, [sessionId, onError])
+  }, [sessionId])
 
   async function submitAnchor() {
     if (!paper) return
@@ -113,7 +115,7 @@ export default function Assessment({
       setSourceLabel(firstMultimodalSourceLabel(res.paper.items))
       setMeta(buildMetaLine(res))
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : String(err))
+      onErrorRef.current?.(err instanceof Error ? err.message : String(err))
     } finally {
       setBusy(false)
     }
@@ -125,7 +127,7 @@ export default function Assessment({
     try {
       await onComplete({ paper, answers })
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : String(err))
+      onErrorRef.current?.(err instanceof Error ? err.message : String(err))
     } finally {
       setBusy(false)
     }

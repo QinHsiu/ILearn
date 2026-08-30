@@ -20,6 +20,7 @@ from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.pdf_export import markdown_to_pdf
 from ilearn.core.rate_limiter import RateLimiter, RateLimitMiddleware
 from ilearn.core.settings import clear_settings_cache, get_settings
+from ilearn.core.subject_adapter import normalize_region
 from ilearn.core.user_errors import UserFriendlyError, map_exception_message
 from ilearn.core.validators import validate_submit_answers
 from ilearn.api.auth import create_auth_router
@@ -68,6 +69,12 @@ class ImageSubmitRequest(BaseModel):
 class PhaseResponse(BaseModel):
     phase: str
     loop_count: int
+
+
+class HeartbeatResponse(BaseModel):
+    ok: bool
+    phase: str
+    server_time: str
 
 
 class ReportResponse(BaseModel):
@@ -224,6 +231,13 @@ def create_app(
 
     @app.post("/sessions", response_model=CreateSessionResponse)
     def create_session(profile: StudentProfile) -> CreateSessionResponse:
+        canonical = normalize_region(profile.region)
+        if canonical is None:
+            raise UserFriendlyError(
+                "E-004",
+                technical_detail=f"RegionNotSupported: {profile.region}",
+            )
+        profile = profile.model_copy(update={"region": canonical})
         session_id = orchestrator.create_session(profile)
         return CreateSessionResponse(session_id=session_id)
 
@@ -232,6 +246,14 @@ def create_app(
         if not (nickname or "").strip():
             raise ValueError("nickname query parameter is required")
         return orchestrator.list_sessions(nickname)
+
+    @app.get("/sessions/{session_id}", response_model=SessionState)
+    def get_session(session_id: str) -> SessionState:
+        return orchestrator.get_session(session_id)
+
+    @app.post("/sessions/{session_id}/heartbeat", response_model=HeartbeatResponse)
+    def heartbeat(session_id: str) -> HeartbeatResponse:
+        return HeartbeatResponse.model_validate(orchestrator.heartbeat(session_id))
 
     @app.delete("/sessions/{session_id}", status_code=204)
     def delete_session(session_id: str) -> Response:

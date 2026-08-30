@@ -14,6 +14,7 @@ from ilearn.agents.planning import PlanningAgent
 from ilearn.agents.practice import PracticeAgent, evidence_from_grades
 from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
+from ilearn.core.datetime_utils import utc_now
 from ilearn.core.item_validators import revise_paper, validate_paper as validate_item_paper
 from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
@@ -110,6 +111,21 @@ class MultiAgentOrchestrator:
 
     def create_session(self, profile: StudentProfile) -> str:
         return self._store.create(profile).session_id
+
+    @with_session_lock
+    def get_session(self, session_id: str) -> SessionState:
+        return self._store.load(session_id)
+
+    @with_session_lock
+    def heartbeat(self, session_id: str) -> dict:
+        session = self._store.load(session_id)
+        session.metadata["last_heartbeat"] = utc_now().isoformat()
+        self._store.save(session)
+        return {
+            "ok": True,
+            "phase": session.phase.value if hasattr(session.phase, "value") else str(session.phase),
+            "server_time": utc_now().isoformat(),
+        }
 
     @staticmethod
     def _set_phase(session: SessionState, target: SessionPhase) -> None:

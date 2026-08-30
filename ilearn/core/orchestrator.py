@@ -33,6 +33,12 @@ class Orchestrator:
     def create_session(self, profile: StudentProfile) -> str:
         return self._inner.create_session(profile)
 
+    def get_session(self, session_id: str) -> SessionState:
+        return self._inner.get_session(session_id)
+
+    def heartbeat(self, session_id: str) -> dict:
+        return self._inner.heartbeat(session_id)
+
     def list_sessions(self, nickname: str) -> list[SessionSummary]:
         return [
             SessionSummary(

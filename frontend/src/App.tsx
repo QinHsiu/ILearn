@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from './api/client'
 import type {
@@ -20,6 +20,8 @@ import LoginPage from './pages/LoginPage'
 import Assessment from './pages/Assessment'
 import type { AuthRole } from './api/client'
 import { useRole } from './hooks/useRole'
+import { useSessionSync } from './hooks/useSessionSync'
+import { nextStepOnSync, stepFromSession } from './lib/sessionStep'
 import { applyTheme } from './theme'
 import './styles.css'
 import './dashboard.css'
@@ -41,6 +43,12 @@ const ERROR_LABELS: Record<string, string> = {
   misread: '审题偏差',
   method_wrong: '方法不当',
   incomplete: '过程不完整',
+}
+
+function answersFromSession(nextSession: SessionState): Record<string, string> {
+  return Object.fromEntries(
+    (nextSession.answers || []).map((answer) => [answer.item_id, answer.answer_text]),
+  )
 }
 
 function wrongItemEntries(session: SessionState) {
@@ -104,6 +112,7 @@ function StudentApp() {
     Record<string, ImageAnswer & { preview: string; name: string }>
   >({})
   const [report, setReport] = useState<ReportResponse | null>(null)
+  const [session, setSession] = useState<SessionState | null>(null)
   const [historyNickname, setHistoryNickname] = useState('')
   const [focusItemId, setFocusItemId] = useState<string | null>(null)
   const [exporting, setExporting] = useState<'assessment' | 'report' | null>(null)
@@ -117,7 +126,10 @@ function StudentApp() {
     learning_difficulty: false,
   })
 
-  const session = report?.session
+  const lastSyncedAnswersRef = useRef<Record<string, string>>({})
+  const answersRef = useRef(answers)
+  answersRef.current = answers
+
   const wrongItems = useMemo(
     () => (session ? wrongItemEntries(session) : []),
     [session],
@@ -127,16 +139,45 @@ function StudentApp() {
     applyTheme(profile.grade, profile.gender || 'unspecified')
   }, [profile.grade, profile.gender])
 
+  const onSessionSync = useCallback((nextSession: SessionState) => {
+    setSession(nextSession)
+    setPaper(nextSession.paper || null)
+    const nextAnswers = answersFromSession(nextSession)
+    setAnswers(nextAnswers)
+    lastSyncedAnswersRef.current = nextAnswers
+    if (nextSession.profile) {
+      setProfile(nextSession.profile)
+      setHistoryNickname(nextSession.profile.nickname || '')
+      applyTheme(nextSession.profile.grade, nextSession.profile.gender || 'unspecified')
+    }
+    setStep((prev) => nextStepOnSync(prev, nextSession))
+  }, [])
+
+  const hasUnsavedChanges = useCallback(() => {
+    const current = answersRef.current
+    const synced = lastSyncedAnswersRef.current
+    const keys = new Set([...Object.keys(current), ...Object.keys(synced)])
+    for (const key of keys) {
+      if ((current[key] || '') !== (synced[key] || '')) return true
+    }
+    return false
+  }, [])
+
+  const onAssessmentError = useCallback((message: string) => {
+    setError(message)
+  }, [])
+
+  useSessionSync({ sessionId, onSync: onSessionSync, hasUnsavedChanges })
+
   async function onResume(id: string) {
     const nextReport = await api.getReport(id)
     const nextSession = nextReport.session
     setSessionId(id)
+    setSession(nextSession)
     setPaper(nextSession.paper || null)
-    setAnswers(
-      Object.fromEntries(
-        (nextSession.answers || []).map((answer) => [answer.item_id, answer.answer_text]),
-      ),
-    )
+    const nextAnswers = answersFromSession(nextSession)
+    setAnswers(nextAnswers)
+    lastSyncedAnswersRef.current = nextAnswers
     setImageUploads({})
     setReport(nextReport)
     if (nextSession.profile) {
@@ -144,10 +185,7 @@ function StudentApp() {
       setHistoryNickname(nextSession.profile.nickname || '')
       applyTheme(nextSession.profile.grade, nextSession.profile.gender || 'unspecified')
     }
-    if (nextSession.plan) setStep(3)
-    else if (nextSession.grades?.length) setStep(2)
-    else if (nextSession.paper) setStep(1)
-    else setStep(0)
+    setStep(stepFromSession(nextSession))
   }
 
   async function onStart(e: FormEvent) {
@@ -167,8 +205,10 @@ function StudentApp() {
       if (nick) payload.nickname = nick
       const created = await api.createSession(payload)
       setSessionId(created.session_id)
+      setSession(null)
       setPaper(null)
       setAnswers({})
+      lastSyncedAnswersRef.current = {}
       setImageUploads({})
       setReport(null)
       setStep(1)
@@ -189,6 +229,7 @@ function StudentApp() {
     try {
       setPaper(payload.paper)
       setAnswers(payload.answers)
+      lastSyncedAnswersRef.current = { ...payload.answers }
       const submitPayload: Record<string, string> = {}
       for (const item of payload.paper.items) {
         submitPayload[item.id] = (payload.answers[item.id] || '').trim()
@@ -197,6 +238,8 @@ function StudentApp() {
       await api.run(sessionId)
       const nextReport = await api.getReport(sessionId)
       setReport(nextReport)
+      setSession(nextReport.session)
+      lastSyncedAnswersRef.current = answersFromSession(nextReport.session)
       setFocusItemId(null)
       setStep(2)
     } catch (err) {
@@ -215,6 +258,7 @@ function StudentApp() {
       await api.replan(sessionId)
       const nextReport = await api.getReport(sessionId)
       setReport(nextReport)
+      setSession(nextReport.session)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -377,13 +421,15 @@ function StudentApp() {
           sessionId={sessionId}
           profile={profile}
           onComplete={onAdaptiveComplete}
-          onError={(message) => setError(message)}
+          onError={onAssessmentError}
           onBack={() => {
             setStep(0)
             setSessionId(null)
+            setSession(null)
             setPaper(null)
             setReport(null)
             setAnswers({})
+            lastSyncedAnswersRef.current = {}
             setImageUploads({})
             setFocusItemId(null)
           }}
@@ -502,9 +548,11 @@ function StudentApp() {
               onClick={() => {
                 setStep(0)
                 setSessionId(null)
+                setSession(null)
                 setPaper(null)
                 setReport(null)
                 setAnswers({})
+                lastSyncedAnswersRef.current = {}
                 setImageUploads({})
               }}
             >
