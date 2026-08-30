@@ -154,6 +154,18 @@ class PlanningAgent:
         """Build Feynman / review / spaced / Socratic tasks (PlanDay unchanged)."""
         del student_profile  # reserved for future personalization
         enrichment = enrichment or {}
+        data_status = enrichment.get("data_status") or "ok"
+        if data_status in {"insufficient_data", "limited_data"}:
+            return {
+                "tasks": [],
+                "review_schedule": [],
+                "learning_methods": [],
+                "estimated_total_hours": 0.0,
+                "status": "pending",
+                "message": "诊断数据不足，无法生成个性化计划。请先完成更多题目。",
+                "recommendation": "建议完成至少5道题目后重新生成计划。",
+            }
+
         weak_skills = list(enrichment.get("weak_skills") or [])
         if not weak_skills:
             weak_skills = [
@@ -162,12 +174,23 @@ class PlanningAgent:
                 if row.level == "weak"
             ]
         gaps = list(enrichment.get("prerequisite_gaps") or [])
+        if not weak_skills and not gaps:
+            return {
+                "tasks": [],
+                "review_schedule": [],
+                "learning_methods": ["maintenance"],
+                "estimated_total_hours": 0.0,
+                "status": "completed",
+                "message": "暂无薄弱知识点，继续保持当前学习节奏！",
+                "recommendation": "建议挑战更高难度题目。",
+            }
 
         plan: dict[str, Any] = {
             "tasks": [],
             "review_schedule": [],
             "learning_methods": [],
             "estimated_total_hours": 0.0,
+            "status": "ready",
         }
 
         for skill in weak_skills:
@@ -257,6 +280,10 @@ class PlanningAgent:
             lines.append("")
         hours = scientific.get("estimated_total_hours") or 0
         lines.append(f"\u9884\u4f30\u603b\u7528\u65f6\uff1a{hours:.1f} \u5c0f\u65f6")
+        if scientific.get("message"):
+            lines.extend(["", f"- {scientific['message']}"])
+        if scientific.get("recommendation"):
+            lines.append(f"- {scientific['recommendation']}")
         style = scientific.get("learning_style")
         adaptation = scientific.get("style_adaptation") or {}
         if style or adaptation:

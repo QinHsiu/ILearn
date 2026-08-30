@@ -27,6 +27,7 @@ from ilearn.core.quality_gate import (
     valid_plan_result,
 )
 from ilearn.core.report import render_full_report
+from ilearn.core.session_lock import with_session_lock
 from ilearn.core.schemas import (
     MAX_HINTS_PER_ITEM,
     AgentDecision,
@@ -126,6 +127,7 @@ class MultiAgentOrchestrator:
             )
         )
 
+    @with_session_lock
     def current_phase(self, session_id: str) -> SessionPhase:
         return self._store.load(session_id).phase
 
@@ -184,6 +186,7 @@ class MultiAgentOrchestrator:
         )
         return revised_paper, summary
 
+    @with_session_lock
     def generate_assessment(self, session_id: str) -> AssessmentPaper:
         session = self._store.load(session_id)
         citation_result = self._curriculum_agent.run(self._ctx(session))
@@ -242,6 +245,7 @@ class MultiAgentOrchestrator:
     def _adaptive_paper_dump(paper: AssessmentPaper) -> dict:
         return paper.model_dump(mode="json")
 
+    @with_session_lock
     def start_adaptive_assessment(
         self,
         session_id: str,
@@ -277,6 +281,7 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return payload
 
+    @with_session_lock
     def continue_adaptive_assessment(
         self,
         session_id: str,
@@ -337,6 +342,7 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return payload
 
+    @with_session_lock
     def submit(
         self,
         session_id: str,
@@ -368,6 +374,7 @@ class MultiAgentOrchestrator:
         session.phase = SessionPhase.GRADE
         return self._store.save(session)
 
+    @with_session_lock
     def grade(self, session_id: str) -> list[GradeResult]:
         session = self._store.load(session_id)
         paper = self._require_paper(session)
@@ -402,6 +409,7 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return session.grades
 
+    @with_session_lock
     def diagnose(self, session_id: str) -> DiagnosisReport:
         session = self._store.load(session_id)
         self._require_paper(session)
@@ -442,6 +450,7 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return session.diagnosis
 
+    @with_session_lock
     def plan(self, session_id: str) -> LearningPlanReport:
         session = self._store.load(session_id)
         if session.diagnosis is None:
@@ -485,6 +494,7 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return session.plan
 
+    @with_session_lock
     def request_replan(self, session_id: str) -> LearningPlanReport:
         """Re-run planning with current portrait/diagnosis; supersede prior plan."""
         session = self._store.load(session_id)
@@ -522,6 +532,7 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return session.plan
 
+    @with_session_lock
     def tutor_start(self, session_id: str, item_id: str) -> TutorTurn:
         """Begin Socratic tutoring for an assessment/practice item (grades optional)."""
         session = self._store.load(session_id)
@@ -543,6 +554,7 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return turn
 
+    @with_session_lock
     def tutor_step(
         self, session_id: str, item_id: str, user_message: str
     ) -> TutorTurn:
@@ -610,6 +622,7 @@ class MultiAgentOrchestrator:
             return turn.model_copy(update={"message": SAFE_FALLBACK})
         return turn
 
+    @with_session_lock
     def run_after_submit(self, session_id: str) -> SessionState:
         self.grade(session_id)
         self.diagnose(session_id)
@@ -619,6 +632,7 @@ class MultiAgentOrchestrator:
             self.start_practice_loop(session_id)
         return self._store.load(session_id)
 
+    @with_session_lock
     def start_practice_loop(self, session_id: str) -> AssessmentPaper:
         session = self._store.load(session_id)
         if session.diagnosis is None:
@@ -663,6 +677,7 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return session.paper
 
+    @with_session_lock
     def report(self, session_id: str) -> str:
         return render_full_report(self._store.load(session_id))
 
