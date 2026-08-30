@@ -163,6 +163,10 @@ function StudentApp() {
     return false
   }, [])
 
+  const onAssessmentError = useCallback((message: string) => {
+    setError(message)
+  }, [])
+
   useSessionSync({ sessionId, onSync: onSessionSync, hasUnsavedChanges })
 
   async function onResume(id: string) {
@@ -417,7 +421,7 @@ function StudentApp() {
           sessionId={sessionId}
           profile={profile}
           onComplete={onAdaptiveComplete}
-          onError={(message) => setError(message)}
+          onError={onAssessmentError}
           onBack={() => {
             setStep(0)
             setSessionId(null)
