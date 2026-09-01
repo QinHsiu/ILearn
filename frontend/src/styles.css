@@ -120,6 +120,61 @@ textarea {
   border-top-color: color-mix(in srgb, var(--accent) 55%, var(--line));
 }
 
+.app-shell.student-shell {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 3rem;
+  background: var(--il-paper);
+  border-radius: 0;
+}
+
+.student-chrome {
+  margin-bottom: 1.5rem;
+  border-radius: 0;
+}
+
+.student-chrome-eyebrow {
+  margin: 0 0 0.65rem;
+  color: var(--il-muted);
+  font: 0.7rem/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.student-chrome .brand {
+  margin-bottom: 0.35rem;
+}
+
+.student-chrome-nick {
+  margin: 0.45rem 0 0;
+  color: var(--il-muted);
+  font-size: 0.95rem;
+}
+
+.student-steps {
+  margin-bottom: 1.5rem;
+  border-radius: 0;
+}
+
+.student-step {
+  padding: 0.55rem 0;
+  color: var(--il-muted);
+  font-size: 0.85rem;
+  border-bottom: 2px solid var(--il-line);
+  border-radius: 0;
+}
+
+.student-step.is-active {
+  border-bottom: 2px solid var(--il-blue);
+  color: var(--il-ink);
+  font-weight: 600;
+}
+
+.student-step.is-done {
+  border-bottom-color: color-mix(in srgb, var(--il-blue) 55%, var(--il-line));
+  color: var(--il-ink);
+}
+
 .panel {
   background: color-mix(in srgb, var(--card) 92%, white);
   border: 1px solid var(--line);
@@ -822,6 +877,10 @@ html[data-band='senior'] .brand {
   .app-shell {
     width: min(100% - 1.25rem, 920px);
     padding-top: 1rem;
+  }
+
+  .app-shell.student-shell {
+    width: min(100% - 1.25rem, 1100px);
   }
 
   .dashboard-shell .brand-row {

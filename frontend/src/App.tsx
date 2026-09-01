@@ -315,23 +315,21 @@ function StudentApp() {
   const correct = grades.filter((g) => g.final_correct).length
 
   return (
-    <div className="app-shell">
-      <header className="brand-row">
+    <div className="app-shell student-shell">
+      <header className="student-chrome">
+        <p className="student-chrome-eyebrow">ILearn / STUDENT</p>
         <h1 className="brand">ILearn</h1>
-        <div className="brand-copy">
-          {(profile.nickname || '').trim() ? (
-            <p className="brand-sub">你好，{(profile.nickname || '').trim()}</p>
-          ) : null}
-          <p className="brand-sub">课标在环的个性化学习向导</p>
-          <h2 className="student-mode">学生学习 / NEXT STEP</h2>
-        </div>
+        <h2 className="student-mode">学生学习 / NEXT STEP</h2>
+        {(profile.nickname || '').trim() ? (
+          <p className="student-chrome-nick">你好，{(profile.nickname || '').trim()}</p>
+        ) : null}
       </header>
 
-      <nav className="stepper" aria-label="向导步骤">
+      <nav className="stepper student-steps" aria-label="向导步骤">
         {STEPS.map((label, index) => (
           <div
             key={label}
-            className={`step ${index === step ? 'active' : ''} ${index < step ? 'done' : ''}`}
+            className={`student-step ${index === step ? 'is-active' : ''} ${index < step ? 'is-done' : ''}`}
           >
             {label}
           </div>

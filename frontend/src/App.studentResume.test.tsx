@@ -73,4 +73,13 @@ describe('StudentApp deep-link resume', () => {
     expect(screen.getByRole('heading', { name: '建档' })).toBeInTheDocument()
     expect(api.createSession).not.toHaveBeenCalled()
   })
+
+  it('renders Swiss student-shell chrome and stepper', () => {
+    setSearch('/?student=1')
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: '学生学习 / NEXT STEP' })).toBeInTheDocument()
+    expect(document.querySelector('.student-shell')).toBeTruthy()
+    expect(screen.getByRole('navigation', { name: '向导步骤' })).toHaveClass('student-steps')
+  })
 })
