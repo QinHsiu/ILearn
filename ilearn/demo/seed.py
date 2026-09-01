@@ -166,6 +166,14 @@ def seed_demo_session(unit: dict, *, session_id: str | None = None) -> SessionSt
             },
             "estimated_duration": unit.get("estimated_duration"),
             "nickname": overrides.get("nickname") or profile.nickname,
+            "student_summary": {
+                "current_task": "巩固：小数乘小数",
+                "completed_tasks": 2,
+                "total_tasks": 5,
+                "stars_earned": 5,
+                "next_challenge": "挑战：运算律推广到小数",
+                "narrative": "今天又进步啦，继续加油！",
+            },
         },
     )
 

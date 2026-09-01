@@ -10,6 +10,14 @@ from ilearn.demo.seed import seed_demo_session
 from ilearn.demo.units import load_demo_unit
 
 
+def test_demo_seed_includes_student_summary():
+    session = seed_demo_session(load_demo_unit("math_5_1"))
+    raw = session.metadata.get("student_summary")
+    assert isinstance(raw, dict)
+    s = build_student_summary(session)
+    assert s.completed_tasks == 2 and s.total_tasks == 5 and s.stars_earned == 5
+
+
 def test_build_student_summary_uses_metadata_when_present():
     session = seed_demo_session(load_demo_unit("math_5_1"))
     session.metadata["student_summary"] = {
