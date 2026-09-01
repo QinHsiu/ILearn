@@ -7,6 +7,11 @@ from typing import Any
 
 from ilearn.agents.protocol import AgentContext, AgentResult, SessionPhase
 from ilearn.core.learning_style import LearningStyleInferer
+from ilearn.core.knowledge_labels import (
+    mastery_name_map,
+    resolve_knowledge_label,
+    resolve_knowledge_labels,
+)
 from ilearn.core.planning import Planner
 from ilearn.core.schemas import (
     DiagnosisReport,
@@ -48,9 +53,48 @@ _ERROR_CORRECTION: dict[str, str] = {
     "incomplete": "针对步骤不完整：按标准步骤模板重写解题过程。",
 }
 
+_ERROR_TAG_LABELS: dict[str, str] = {
+    "concept_gap": "概念理解不清",
+    "calc_error": "计算过程易错",
+    "misread": "审题不够仔细",
+    "method_wrong": "解题方法选择不当",
+    "incomplete": "解题步骤不完整",
+}
+
+_TASK_TYPE_LABELS: dict[str, str] = {
+    "feynman": "费曼讲解",
+    "review": "前置复习",
+    "error_correction": "错题纠正",
+    "socratic_dialogue": "苏格拉底对话",
+}
+
+_STYLE_LABELS: dict[str, str] = {
+    "visual": "视觉型",
+    "auditory": "听觉型",
+    "kinesthetic": "动觉型",
+    "reading": "读写型",
+}
+
+_MATERIAL_LABELS: dict[str, str] = {
+    "diagram": "图解材料",
+    "chart": "图表材料",
+    "interactive_geometry": "交互几何",
+    "audio_explanation": "音频讲解",
+    "read_aloud": "朗读材料",
+    "simulation": "模拟操作",
+    "drag_drop": "拖拽练习",
+    "manipulative": "动手教具",
+    "worked_example": "例题示范",
+    "text_summary": "文字总结",
+}
+
 
 def _error_correction_instruction(tag: str) -> str:
-    return _ERROR_CORRECTION.get(tag, f"针对错误类型「{tag}」完成2道纠错练习。")
+    label = _ERROR_TAG_LABELS.get(tag, "常见错误")
+    base = _ERROR_CORRECTION.get(tag)
+    if base:
+        return base
+    return f"针对「{label}」完成2道纠错练习。"
 
 
 def max_practice_loops(profile: StudentProfile) -> int:
@@ -186,6 +230,11 @@ class PlanningAgent:
                 if row.level == "weak"
             ]
         gaps = list(enrichment.get("prerequisite_gaps") or [])
+        names = mastery_name_map(diagnosis)
+        weak_labels = resolve_knowledge_labels(weak_skills, mastery_names=names)
+        gap_labels = resolve_knowledge_labels(gaps, mastery_names=names)
+        weak_pairs = list(zip(weak_skills, weak_labels, strict=True))
+        gap_pairs = list(zip(gaps, gap_labels, strict=True))
         if not weak_skills and not gaps:
             return {
                 "tasks": [],
@@ -205,27 +254,29 @@ class PlanningAgent:
             "status": "ready",
         }
 
-        for skill in weak_skills:
+        for skill, skill_label in weak_pairs:
             plan["tasks"].append(
                 {
                     "type": "feynman",
                     "skill": skill,
+                    "skill_label": skill_label,
                     "instruction": (
                         f"\u8bf7\u5c1d\u8bd5\u7528\u4f60\u81ea\u5df1\u7684\u8bdd\u5411\u522b\u4eba\u89e3\u91ca"
-                        f"\u201c{skill}\u201d\u7684\u6982\u5ff5\uff0c\u5e76\u5f55\u4e0b\u4f60\u7684\u8bb2\u89e3\u3002"
+                        f"\u201c{skill_label}\u201d\u7684\u6982\u5ff5\uff0c\u5e76\u5f55\u4e0b\u4f60\u7684\u8bb2\u89e3\u3002"
                     ),
                     "estimated_time": 10,
                 }
             )
             plan["learning_methods"].append("feynman")
 
-        for gap in gaps:
+        for gap, gap_label in gap_pairs:
             plan["tasks"].append(
                 {
                     "type": "review",
                     "skill": gap,
+                    "skill_label": gap_label,
                     "instruction": (
-                        f"\u590d\u4e60\u201c{gap}\u201d\uff0c\u5b8c\u62103\u9053\u5de9\u56fa\u9898\u3002"
+                        f"\u590d\u4e60\u201c{gap_label}\u201d\uff0c\u5b8c\u62103\u9053\u5de9\u56fa\u9898\u3002"
                     ),
                     "estimated_time": 8,
                 }
@@ -233,10 +284,12 @@ class PlanningAgent:
 
         attribution = enrichment.get("error_attribution") or {}
         for tag in list(attribution.get("top_tags") or [])[:2]:
+            tag_label = _ERROR_TAG_LABELS.get(str(tag), "常见错误")
             plan["tasks"].append(
                 {
                     "type": "error_correction",
-                    "skill": tag,
+                    "skill": str(tag),
+                    "skill_label": tag_label,
                     "instruction": _error_correction_instruction(str(tag)),
                     "estimated_time": 8,
                 }
@@ -244,24 +297,26 @@ class PlanningAgent:
             plan["learning_methods"].append("error_correction")
 
         today = datetime.date.today()
-        for skill in weak_skills:
+        for skill, skill_label in weak_pairs:
             for index, day in enumerate(_REVIEW_INTERVALS):
                 plan["review_schedule"].append(
                     {
                         "skill": skill,
+                        "skill_label": skill_label,
                         "scheduled_date": (today + datetime.timedelta(days=day)).isoformat(),
                         "type": "spaced_repetition",
                         "session": index + 1,
                     }
                 )
 
-        for skill in weak_skills[:3]:
+        for skill, skill_label in weak_pairs[:3]:
             plan["tasks"].append(
                 {
                     "type": "socratic_dialogue",
                     "skill": skill,
+                    "skill_label": skill_label,
                     "instruction": (
-                        "\u4e0e\u82cf\u683c\u62c9\u5e95\u52a9\u6559\u8fdb\u884c\u4e00\u6b21\u5bf9\u8bdd\uff0c"
+                        f"\u4e0e\u82cf\u683c\u62c9\u5e95\u52a9\u6559\u5c31\u201c{skill_label}\u201d\u8fdb\u884c\u4e00\u6b21\u5bf9\u8bdd\uff0c"
                         "\u56de\u7b54\u5f15\u5bfc\u6027\u95ee\u9898\u3002"
                     ),
                     "estimated_time": 15,
@@ -287,17 +342,29 @@ class PlanningAgent:
         if tasks:
             lines.append("### \u4efb\u52a1")
             for task in tasks:
-                lines.append(
-                    f"- [{task.get('type')}] {task.get('skill')}: {task.get('instruction')}"
+                task_type = str(task.get("type") or "")
+                type_label = _TASK_TYPE_LABELS.get(task_type, "学习任务")
+                skill_label = str(
+                    task.get("skill_label")
+                    or resolve_knowledge_label(str(task.get("skill") or ""))
                 )
+                instruction = str(task.get("instruction") or "").strip()
+                lines.append(f"- **{type_label}** · {skill_label}：{instruction}")
             lines.append("")
         schedule = scientific.get("review_schedule") or []
         if schedule:
             lines.append("### \u95f4\u9694\u590d\u4e60")
             for row in schedule[:10]:
+                skill_label = str(
+                    row.get("skill_label")
+                    or resolve_knowledge_label(str(row.get("skill") or ""))
+                )
+                session_no = row.get("session")
+                session_text = (
+                    f"第 {session_no} 次复习" if session_no is not None else "复习"
+                )
                 lines.append(
-                    f"- {row.get('scheduled_date')} · {row.get('skill')} "
-                    f"(session {row.get('session')})"
+                    f"- {row.get('scheduled_date')} · {skill_label}（{session_text}）"
                 )
             if len(schedule) > 10:
                 lines.append(f"- \u2026\u5171 {len(schedule)} \u4e2a\u590d\u4e60\u8282\u70b9")
@@ -313,11 +380,15 @@ class PlanningAgent:
         if style or adaptation:
             lines.extend(["", "## \u5b66\u4e60\u98ce\u683c\u9002\u914d", ""])
             if style:
-                lines.append(f"- \u63a8\u65ad\u98ce\u683c\uff1a{style}")
+                style_label = _STYLE_LABELS.get(str(style), str(style))
+                lines.append(f"- \u63a8\u65ad\u98ce\u683c\uff1a{style_label}")
             suggestion = adaptation.get("suggestion")
             if suggestion:
                 lines.append(f"- {suggestion}")
             materials = adaptation.get("material_type") or []
             if materials:
-                lines.append("- \u63a8\u8350\u6750\u6599\uff1a" + ", ".join(materials))
+                material_labels = [
+                    _MATERIAL_LABELS.get(str(item), "学习材料") for item in materials
+                ]
+                lines.append("- \u63a8\u8350\u6750\u6599\uff1a" + "\u3001".join(material_labels))
         return "\n".join(lines)

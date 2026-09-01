@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from ilearn.core.datetime_utils import utc_now
+from ilearn.core.knowledge_labels import mastery_name_map, resolve_knowledge_label
 from ilearn.core.schemas import SessionState
 
 
@@ -19,6 +20,10 @@ class AnswerRecord:
     student_answer: str
     is_correct: bool
     has_image: bool = False
+    time_spent_seconds: float = 0.0
+    hint_count: int = 0
+    hint_opened: bool = False
+    solved_after_hint: bool | None = None
 
 
 @dataclass
@@ -66,6 +71,9 @@ def build_assessment_export_data(session: SessionState) -> ExportReportData:
     answers_by_id = {a.item_id: a for a in session.answers}
     grades_by_id = {g.item_id: g for g in session.grades}
     image_ids = {img.item_id for img in session.image_answers}
+    item_meta_raw = session.metadata.get("item_meta") if isinstance(session.metadata, dict) else {}
+    item_meta = item_meta_raw if isinstance(item_meta_raw, dict) else {}
+    hints_by_qid = session.hint_interactions or {}
 
     answer_records: list[AnswerRecord] = []
     for idx, item in enumerate(session.paper.items, start=1):
@@ -73,6 +81,16 @@ def build_assessment_export_data(session: SessionState) -> ExportReportData:
         if grade is None:
             continue
         student = answers_by_id.get(item.id)
+        meta = item_meta.get(item.id) if isinstance(item_meta.get(item.id), dict) else {}
+        elapsed_ms = float(meta.get("elapsed_ms") or 0)
+        hints = list(hints_by_qid.get(item.id) or [])
+        solved_after = None
+        for hint in hints:
+            if hint.solved_after_hint is True:
+                solved_after = True
+                break
+        if hints and solved_after is None:
+            solved_after = bool(grade.final_correct)
         answer_records.append(
             AnswerRecord(
                 question_id=item.id,
@@ -83,6 +101,10 @@ def build_assessment_export_data(session: SessionState) -> ExportReportData:
                 student_answer=(student.answer_text if student else "") or "",
                 is_correct=bool(grade.final_correct),
                 has_image=item.id in image_ids,
+                time_spent_seconds=round(elapsed_ms / 1000.0, 1),
+                hint_count=len(hints),
+                hint_opened=bool(meta.get("hint_used")) or bool(hints),
+                solved_after_hint=solved_after,
             )
         )
 
@@ -95,8 +117,9 @@ def build_assessment_export_data(session: SessionState) -> ExportReportData:
     mastered: list[str] = []
     weak: list[str] = []
     if session.diagnosis is not None:
+        names = mastery_name_map(session.diagnosis)
         for km in session.diagnosis.knowledge_mastery:
-            label = km.knowledge_name or km.knowledge_id
+            label = resolve_knowledge_label(km.knowledge_id, mastery_names=names)
             if km.level == "mastered":
                 mastered.append(label)
             elif km.level == "weak":

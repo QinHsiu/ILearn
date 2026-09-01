@@ -55,6 +55,15 @@ export type GradeResult = {
   grading_degraded?: boolean
 }
 
+export type HintInteraction = {
+  item_id: string
+  turn: number
+  user_input: string
+  ai_hint: string
+  has_image?: boolean
+  solved_after_hint?: boolean | null
+}
+
 export type StudentAnswer = {
   item_id: string
   answer_text: string
@@ -68,6 +77,7 @@ export type SessionState = {
   paper?: AssessmentPaper | null
   answers?: StudentAnswer[]
   grades?: GradeResult[] | null
+  hint_interactions?: Record<string, HintInteraction[]>
   diagnosis?: {
     knowledge_mastery?: Array<{
       knowledge_id: string

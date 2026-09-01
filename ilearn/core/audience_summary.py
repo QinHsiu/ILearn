@@ -9,6 +9,11 @@ from typing import Any, Literal
 from pydantic import BaseModel
 
 from ilearn.core.effectiveness import compute_metrics
+from ilearn.core.knowledge_labels import (
+    mastery_name_map,
+    resolve_knowledge_label,
+    resolve_knowledge_labels,
+)
 from ilearn.core.schemas import DiagnosisReport, SessionState
 
 Audience = Literal["parent", "teacher"]
@@ -30,13 +35,20 @@ def generate_audience_summary(
 ) -> str:
     """Turn diagnosis/enrichment into actionable Chinese advice."""
     enrichment = enrichment or {}
-    weak = list(enrichment.get("weak_skills") or [])
+    names = mastery_name_map(diagnosis)
+    weak = resolve_knowledge_labels(
+        list(enrichment.get("weak_skills") or []),
+        mastery_names=names,
+    )
     if diagnosis is not None and not weak:
-        weak = [
-            row.knowledge_id
-            for row in diagnosis.knowledge_mastery
-            if row.level == "weak"
-        ]
+        weak = resolve_knowledge_labels(
+            [
+                row.knowledge_id
+                for row in diagnosis.knowledge_mastery
+                if row.level == "weak"
+            ],
+            mastery_names=names,
+        )
     attribution = enrichment.get("error_attribution") or {}
     top_errors = list(attribution.get("top_tags") or [])
 
@@ -53,7 +65,10 @@ def generate_audience_summary(
         if top_errors:
             labels = "、".join(_ERROR_LABELS.get(t, t) for t in top_errors[:3])
             lines.append(f"• 近期主要失分倾向：{labels}。练习时请先让孩子口述思路再动笔。")
-        gaps = list(enrichment.get("prerequisite_gaps") or [])
+        gaps = resolve_knowledge_labels(
+            list(enrichment.get("prerequisite_gaps") or []),
+            mastery_names=names,
+        )
         if gaps:
             lines.append(
                 "• 建议先复习前置内容：" + "、".join(gaps[:3]) + "，再继续当前单元。"
@@ -160,9 +175,13 @@ def build_student_summary(session: SessionState) -> StudentSummary:
 
     next_challenge = "挑战下一关练习"
     if session.diagnosis is not None:
+        names = mastery_name_map(session.diagnosis)
         for row in session.diagnosis.knowledge_mastery:
             if row.level == "weak":
-                next_challenge = row.knowledge_name or row.knowledge_id
+                next_challenge = resolve_knowledge_label(
+                    row.knowledge_id,
+                    mastery_names=names,
+                )
                 break
 
     narrative = f"已完成 {completed_tasks}/{total_tasks} 个任务，继续加油！"
@@ -211,6 +230,7 @@ def build_teacher_summary(session: SessionState) -> TeacherSummary:
             WeaknessStat(skill=str(skill), affected_students=affected) for skill in common
         ]
     else:
+        names = mastery_name_map(session.diagnosis)
         weak_rows = [
             row
             for row in (
@@ -220,7 +240,7 @@ def build_teacher_summary(session: SessionState) -> TeacherSummary:
         ][:3]
         top_weaknesses = [
             WeaknessStat(
-                skill=row.knowledge_name or row.knowledge_id,
+                skill=resolve_knowledge_label(row.knowledge_id, mastery_names=names),
                 affected_students=1,
             )
             for row in weak_rows
@@ -286,13 +306,20 @@ def build_parent_summary(session: SessionState) -> ParentSummary:
     current_mastery = current / 100.0
     mastery_change = metrics.mastery_gain / 100.0
 
-    weak_skills = [str(s) for s in (enrichment.get("weak_skills") or [])]
+    names = mastery_name_map(session.diagnosis)
+    weak_skills = resolve_knowledge_labels(
+        [str(s) for s in (enrichment.get("weak_skills") or [])],
+        mastery_names=names,
+    )
     if not weak_skills and session.diagnosis is not None:
-        weak_skills = [
-            row.knowledge_id
-            for row in session.diagnosis.knowledge_mastery
-            if row.level == "weak"
-        ]
+        weak_skills = resolve_knowledge_labels(
+            [
+                row.knowledge_id
+                for row in session.diagnosis.knowledge_mastery
+                if row.level == "weak"
+            ],
+            mastery_names=names,
+        )
     weak_skills = weak_skills[:5]
 
     phase = session.phase

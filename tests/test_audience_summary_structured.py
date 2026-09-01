@@ -29,6 +29,7 @@ def test_build_parent_summary_from_demo_seed():
     assert abs(s.current_mastery - 0.78) < 1e-6
     assert abs(s.mastery_change - 0.18) < 1e-6
     assert s.weak_skills
+    assert all("kp_" not in skill and "_" not in skill for skill in s.weak_skills)
     assert s.learning_phase == "plan"
     assert s.daily_practice_tips
     assert s.next_milestone

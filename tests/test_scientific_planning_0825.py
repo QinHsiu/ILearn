@@ -53,6 +53,9 @@ def test_planning_appends_scientific_section_and_payload():
     plan = result.payload["plan"]
     scientific = result.payload["scientific_plan"]
     assert "\u79d1\u5b66\u5b66\u4e60\u65b9\u6cd5" in plan.markdown
+    assert "分数乘法" in plan.markdown
+    assert "frac_mult" not in plan.markdown
+    assert "同分母分数加法" in plan.markdown
     assert any(t["type"] == "feynman" for t in scientific["tasks"])
     assert any(t["type"] == "review" for t in scientific["tasks"])
     assert scientific["review_schedule"]

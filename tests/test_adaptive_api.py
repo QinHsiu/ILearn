@@ -87,3 +87,52 @@ def test_adaptive_continue_sets_session_paper_for_submit(tmp_path):
     submit = c.post(f"/sessions/{sid}/submit", json={"answers": answers})
     assert submit.status_code == 200
     assert len(submit.json()["answers"]) == 20
+
+
+def test_adaptive_anchor_allows_socratic_tutor(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post(
+        "/sessions", json={"region": BEIJING, "grade": 5, "age": 11}
+    ).json()["session_id"]
+
+    start = c.post(f"/sessions/{sid}/assessment/adaptive/start", json={})
+    assert start.status_code == 200
+    item_id = start.json()["paper"]["items"][0]["id"]
+
+    tutor = c.post(f"/sessions/{sid}/tutor", json={"item_id": item_id})
+    assert tutor.status_code == 200
+    assert tutor.json().get("message")
+
+
+def test_replan_after_practice_loop_keeps_practice_phase(tmp_path):
+    c = _client(tmp_path)
+    sid = c.post(
+        "/sessions", json={"region": BEIJING, "grade": 5, "age": 11}
+    ).json()["session_id"]
+    start = c.post(f"/sessions/{sid}/assessment/adaptive/start", json={}).json()
+    cont = c.post(
+        f"/sessions/{sid}/assessment/adaptive/continue",
+        json={
+            "anchor_results": [
+                {
+                    "item_id": item["id"],
+                    "knowledge_ids": item.get("knowledge_ids") or [],
+                    "is_correct": False,
+                }
+                for item in start["paper"]["items"]
+            ]
+        },
+    ).json()
+    answers = {item["id"]: "" for item in cont["paper"]["items"]}
+    c.post(f"/sessions/{sid}/submit", json={"answers": answers})
+    run = c.post(f"/sessions/{sid}/run")
+    assert run.status_code == 200
+    assert run.json()["phase"] == "practice"
+    assert run.json()["loop_count"] == 1
+
+    replan = c.post(f"/sessions/{sid}/replan")
+    assert replan.status_code == 200
+    assert "markdown" in replan.json()
+    phase = c.get(f"/sessions/{sid}/phase").json()
+    assert phase["phase"] == "practice"
+    assert phase["loop_count"] == 1

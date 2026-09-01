@@ -39,8 +39,9 @@ export default function StudentSummaryPanel({ sessionId }: StudentSummaryPanelPr
   }
 
   return (
-    <section aria-label="学生任务摘要">
-      <div className="summary-grid">
+    <section className="student-summary-panel" aria-label="学生任务摘要">
+      <p className="student-summary-eyebrow">TASK / PROGRESS</p>
+      <div className="summary-grid student-summary-grid">
         <article className="summary-block">
           <span>当前任务</span>
           <strong>{data.current_task}</strong>
@@ -60,7 +61,7 @@ export default function StudentSummaryPanel({ sessionId }: StudentSummaryPanelPr
           <strong>{data.next_challenge}</strong>
         </article>
       </div>
-      {data.narrative ? <p>{data.narrative}</p> : null}
+      {data.narrative ? <p className="student-summary-narrative">{data.narrative}</p> : null}
     </section>
   )
 }

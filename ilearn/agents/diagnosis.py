@@ -10,6 +10,7 @@ from ilearn.core.cognitive_profile import (
     CognitiveDimension,
     CognitiveSkillGraph,
     SkillNode,
+    dimension_label,
 )
 from ilearn.core.diagnosis import Diagnoser, PortraitDimensionUpdater, PortraitUpdater
 from ilearn.core.knowledge_graph import KnowledgeGraph
@@ -275,10 +276,14 @@ class DiagnosisAgent:
         error_attribution = aggregate_error_attribution(grades)
         from ilearn.core.diagnosis_explainer import DiagnosisExplainer
 
+        from ilearn.core.knowledge_labels import mastery_name_map
+
+        names = mastery_name_map(diagnosis)
         attribution_explanations = DiagnosisExplainer.build_explanations(
             weak_skills=weak_skills,
             error_attribution=error_attribution,
             cognitive_findings=cognitive_findings,
+            mastery_names=names,
         )
         unknown_skills = self._collect_unknown_skills(evidence_log)
         return {
@@ -318,15 +323,19 @@ class DiagnosisAgent:
                 return {
                     "root_cause": "前置技能缺失",
                     "gap_skill": prereq,
+                    "gap_skill_label": name,
                     "recommendation": f"请先复习{name}",
-                    "dimension": prereq_node.dimension.value if prereq_node else None,
+                    "dimension": dimension_label(
+                        prereq_node.dimension if prereq_node else None
+                    ),
                 }
 
         return {
-            "root_cause": f"{node.dimension.value}层次不足",
+            "root_cause": f"{dimension_label(node.dimension)}层次不足",
             "gap_skill": node.skill_id,
+            "gap_skill_label": node.name,
             "recommendation": self._get_dimension_advice(node.dimension),
-            "dimension": node.dimension.value,
+            "dimension": dimension_label(node.dimension),
         }
 
     def _resolve_skill_node(
@@ -420,16 +429,20 @@ class DiagnosisAgent:
 
     @staticmethod
     def _generate_learning_advice(weak_skills: list[str], gaps: list[str]) -> str:
+        from ilearn.core.knowledge_labels import resolve_knowledge_labels
+
         advice: list[str] = []
-        if gaps:
+        gap_labels = resolve_knowledge_labels(gaps)
+        weak_labels = resolve_knowledge_labels(weak_skills)
+        if gap_labels:
             advice.append(
                 "\u5efa\u8bae\u5148\u5de9\u56fa\u524d\u7f6e\u77e5\u8bc6\u70b9\uff1a"
-                + ", ".join(gaps)
+                + "、".join(gap_labels)
             )
-        if weak_skills:
+        if weak_labels:
             advice.append(
                 "\u8584\u5f31\u70b9\u4e3a\uff1a"
-                + ", ".join(weak_skills)
+                + "、".join(weak_labels)
                 + "\uff0c\u5efa\u8bae\u91c7\u7528\u8d39\u66fc\u5b66\u4e60\u6cd5\uff0c"
                 "\u5c1d\u8bd5\u8bb2\u7ed9\u4ed6\u4eba\u542c\u3002"
             )

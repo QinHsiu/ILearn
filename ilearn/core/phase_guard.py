@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from ilearn.core.schemas import SessionPhase, SessionState
+from ilearn.core.session_paper import has_assessment_paper
 from ilearn.core.user_errors import UserFriendlyError
 
 # Legal edges matching the sync orchestrator (not the idealized async sketch).
@@ -71,8 +72,15 @@ class PhaseGuard:
     @classmethod
     def assert_ready_for(cls, action: str, session: SessionState) -> None:
         """Data completeness checks before orchestrator actions."""
-        if action in {"submit", "grade", "tutor"}:
+        if action in {"submit", "grade"}:
             if session.paper is None:
+                raise UserFriendlyError(
+                    "E-011",
+                    technical_detail="missing assessment paper",
+                    user_action="请先生成测评卷，再继续作答或辅导。",
+                )
+        if action == "tutor":
+            if not has_assessment_paper(session):
                 raise UserFriendlyError(
                     "E-011",
                     technical_detail="missing assessment paper",

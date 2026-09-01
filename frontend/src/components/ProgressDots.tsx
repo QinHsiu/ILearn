@@ -26,8 +26,13 @@ export default function ProgressDots({
             className={`progress-dot${isCurrent ? ' current' : ''}${isAnswered ? ' answered' : ''}`}
             onClick={() => onSelect(idx)}
             title={`第 ${idx + 1} 题${isAnswered ? '（已答）' : ''}`}
+            aria-label={`第 ${idx + 1} 题${isAnswered ? '，已答' : ''}`}
             aria-current={isCurrent ? 'true' : undefined}
-          />
+          >
+            <span className="progress-dot-num" aria-hidden="true">
+              {idx + 1}
+            </span>
+          </button>
         )
       })}
     </div>

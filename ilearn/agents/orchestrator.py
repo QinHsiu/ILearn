@@ -28,6 +28,7 @@ from ilearn.core.quality_gate import (
     valid_plan_result,
 )
 from ilearn.core.phase_guard import PhaseGuard
+from ilearn.core.session_paper import paper_for_tutor
 from ilearn.core.report import render_full_report
 from ilearn.core.session_lock import with_session_lock
 from ilearn.core.schemas import (
@@ -546,6 +547,27 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return session.plan
 
+    @staticmethod
+    def _phase_after_planning(
+        session: SessionState,
+        agent_phase: SessionPhase,
+        *,
+        replan: bool = False,
+    ) -> SessionPhase:
+        """Map planning agent phase to a legal session phase."""
+        if agent_phase != SessionPhase.PRACTICE_LOOP:
+            return agent_phase
+        if replan:
+            # Replan updates plan content only; do not restart consolidation.
+            if session.phase in (
+                SessionPhase.PRACTICE,
+                SessionPhase.PRACTICE_LOOP,
+                SessionPhase.PLAN,
+            ):
+                return session.phase
+            return SessionPhase.PLAN
+        return SessionPhase.PRACTICE_LOOP
+
     @with_session_lock
     def request_replan(self, session_id: str) -> LearningPlanReport:
         """Re-run planning with current portrait/diagnosis; supersede prior plan."""
@@ -573,7 +595,11 @@ class MultiAgentOrchestrator:
             session.metadata["scientific_plan"] = result.payload["scientific_plan"]
         for entry in result.payload.get("plan_history_append", []):
             session.plan_history.append(entry)
-        self._set_phase(session, result.phase)
+        target_phase = self._phase_after_planning(
+            session, result.phase, replan=True
+        )
+        if target_phase != session.phase:
+            self._set_phase(session, target_phase)
         self._record_decision(
             session,
             self._planning.name,
@@ -588,7 +614,7 @@ class MultiAgentOrchestrator:
         """Begin Socratic tutoring for an assessment/practice item (grades optional)."""
         session = self._store.load(session_id)
         PhaseGuard.assert_ready_for("tutor", session)
-        paper = self._require_paper(session)
+        paper = self._require_paper_for_tutor(session)
         item = next((i for i in paper.items if i.id == item_id), None)
         if item is None:
             raise ValueError(f"unknown item id: {item_id}")
@@ -614,7 +640,7 @@ class MultiAgentOrchestrator:
     ) -> TutorTurn:
         session = self._store.load(session_id)
         PhaseGuard.assert_ready_for("tutor", session)
-        paper = self._require_paper(session)
+        paper = self._require_paper_for_tutor(session)
         item = next((row for row in paper.items if row.id == item_id), None)
         if item is None:
             raise ValueError(f"unknown item id: {item_id}")
@@ -758,3 +784,15 @@ class MultiAgentOrchestrator:
                 technical_detail="session must have an assessment paper",
             )
         return session.paper
+
+    @staticmethod
+    def _require_paper_for_tutor(session: SessionState) -> AssessmentPaper:
+        paper = paper_for_tutor(session)
+        if paper is None:
+            from ilearn.core.user_errors import UserFriendlyError
+
+            raise UserFriendlyError(
+                "E-011",
+                technical_detail="session must have an assessment paper",
+            )
+        return paper

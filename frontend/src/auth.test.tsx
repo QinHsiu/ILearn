@@ -38,9 +38,16 @@ describe('landing and login routes', () => {
     expect(screen.getByRole('heading', { name: '把学习看清楚，再决定下一步' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /家长端.*孩子成长/ })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /老师端.*班级运营/ })).toBeInTheDocument()
-    expect(screen.getByText('诊断 — 识别知识点掌握情况')).toBeInTheDocument()
-    expect(screen.getByText('计划 — 生成下一步学习路径')).toBeInTheDocument()
-    expect(screen.getByText('反馈 — 根据练习结果持续调整')).toBeInTheDocument()
+    expect(screen.getByText('/ 00 · START HERE')).toBeInTheDocument()
+    expect(screen.getByText('/ 01 · CHOOSE ROLE')).toBeInTheDocument()
+    expect(screen.getByText('/ 02 · HOW IT WORKS')).toBeInTheDocument()
+    expect(screen.getByText('/ 03 · DEMO UNIT')).toBeInTheDocument()
+    expect(screen.getByText('诊断')).toBeInTheDocument()
+    expect(screen.getByText('识别知识点掌握情况')).toBeInTheDocument()
+    expect(screen.getByText('计划')).toBeInTheDocument()
+    expect(screen.getByText('生成下一步学习路径')).toBeInTheDocument()
+    expect(screen.getByText('反馈')).toBeInTheDocument()
+    expect(screen.getByText('根据练习结果持续调整')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /学生端.*下一步学习/ })).toHaveAttribute(
       'href',
       '?student=1',

@@ -17,6 +17,27 @@ class CognitiveDimension(Enum):
     CREATE = "create"
 
 
+DIMENSION_LABELS: dict[CognitiveDimension, str] = {
+    CognitiveDimension.REMEMBER: "记忆",
+    CognitiveDimension.UNDERSTAND: "理解",
+    CognitiveDimension.APPLY: "应用",
+    CognitiveDimension.ANALYZE: "分析",
+    CognitiveDimension.EVALUATE: "评价",
+    CognitiveDimension.CREATE: "创造",
+}
+
+
+def dimension_label(dimension: CognitiveDimension | str | None) -> str:
+    if dimension is None:
+        return "认知"
+    if isinstance(dimension, CognitiveDimension):
+        return DIMENSION_LABELS.get(dimension, dimension.value)
+    try:
+        return DIMENSION_LABELS[CognitiveDimension(str(dimension))]
+    except ValueError:
+        return str(dimension)
+
+
 @dataclass
 class SkillNode:
     """Skill node finer than a knowledge point, tagged with Bloom dimension."""

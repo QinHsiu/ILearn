@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from ilearn.core.schemas import ItemSourceRef, SessionState
-from ilearn.core.audience_summary import generate_audience_summary
+from ilearn.core.audience_summary import generate_audience_summary, _ERROR_LABELS
+from ilearn.core.knowledge_labels import mastery_name_map, resolve_knowledge_label, resolve_knowledge_labels
 
 _ABILITY_LABELS: dict[str, str] = {
     "logic": "逻辑推理",
@@ -69,6 +70,7 @@ def render_full_report(session: SessionState) -> str:
     else:
         lines.extend(["### 知识掌握", ""])
         if diagnosis.knowledge_mastery:
+            names = mastery_name_map(diagnosis)
             lines.append("| 知识点 | 得分率 | 掌握等级 | 关联题目 |")
             lines.append("| --- | ---: | --- | --- |")
             for km in sorted(
@@ -77,8 +79,9 @@ def render_full_report(session: SessionState) -> str:
             ):
                 item_refs = "、".join(km.item_ids)
                 level = _LEVEL_LABELS.get(km.level, km.level)
+                label = resolve_knowledge_label(km.knowledge_id, mastery_names=names)
                 lines.append(
-                    f"| {km.knowledge_id} | {km.score_rate:.0%} | {level} | {item_refs} |"
+                    f"| {label} | {km.score_rate:.0%} | {level} | {item_refs} |"
                 )
         else:
             lines.append("_暂无知识点数据。_")
@@ -93,9 +96,11 @@ def render_full_report(session: SessionState) -> str:
 
         lines.extend(["", "### 优先干预（Top-5）", ""])
         if diagnosis.interventions:
+            names = mastery_name_map(diagnosis)
             for item in diagnosis.interventions:
+                kid_label = resolve_knowledge_label(item.knowledge_id, mastery_names=names)
                 lines.append(
-                    f"{item.priority}. **{item.title}**（{item.knowledge_id}）"
+                    f"{item.priority}. **{item.title}**（{kid_label}）"
                 )
                 lines.append(f"   - 原因：{item.why}")
                 lines.append(f"   - 优先修复：{item.what_to_fix_first}")
@@ -118,7 +123,8 @@ def render_full_report(session: SessionState) -> str:
             lines.extend(["", "### 错误类型归因", ""])
             counts = attribution.get("counts") or {}
             for tag in attribution["top_tags"]:
-                lines.append(f"- **{tag}：** {counts.get(tag, 0)} 次")
+                label = _ERROR_LABELS.get(str(tag), str(tag))
+                lines.append(f"- **{label}：** {counts.get(tag, 0)} 次")
         explanations = enrichment.get("attribution_explanations") or []
         if explanations:
             lines.extend(["", "### 诊断解释", ""])
@@ -126,8 +132,13 @@ def render_full_report(session: SessionState) -> str:
                 lines.append(f"- {text}")
         unknown = enrichment.get("unknown_skills") or []
         if unknown:
-            lines.extend(["", "### 未识别技能", ""])
-            lines.append("、".join(str(s) for s in unknown))
+            names = mastery_name_map(diagnosis)
+            unknown_labels = resolve_knowledge_labels(
+                [str(s) for s in unknown],
+                mastery_names=names,
+            )
+            lines.extend(["", "### 待确认技能", ""])
+            lines.append("、".join(unknown_labels))
         conf = enrichment.get("diagnosis_confidence") or {}
         if conf.get("score") is not None:
             lines.extend(

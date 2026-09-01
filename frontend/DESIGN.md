@@ -29,21 +29,23 @@ decorative color combinations.
 
 ## 3. Typography
 
-- Display: `Inter Tight`, fallback `Arial Narrow`, sans-serif.
-- Body: `Inter`, fallback `system-ui`, sans-serif.
-- Chinese body: `Noto Sans SC`, fallback `Microsoft YaHei`, sans-serif.
-- Data labels: `JetBrains Mono`, fallback monospace.
-- Landing headline: clamp between 3.5rem and 8rem with tight tracking.
-- Body copy: 15–18px with 1.55 line height.
-- Metadata labels: 11px uppercase/letter-spaced where Latin is used.
+- Brand / Latin wordmark: `Instrument Serif` (italic), fallback Times New Roman.
+- Display (Chinese headlines / role titles): `LXGW WenKai` (霞鹜文楷), fallback
+  Songti SC / serif. Prefer weight 400 — heavy weights flatten the kai texture.
+- Body: `Noto Sans SC` 300–500, fallback Microsoft YaHei.
+- Data labels: `JetBrains Mono`.
+- Chinese display tracking: ~0.06–0.08em; line-height ~1.3–1.35.
+- Body tracking: ~0.03–0.04em; line-height ~1.8 on marketing lede.
+- Load `Instrument Serif` + `Noto Sans SC` + Mono from Google Fonts; load
+  LXGW WenKai from jsDelivr webfont CSS.
 
 ## 4. Layout
 
-- Main landing shell: max-width 1440px, centered, 16-column grid.
-- Desktop gutters: 32px; mobile gutters: 20px.
-- Header uses a 16-column grid with brand at columns 1–4 and metadata at
-  columns 13–16.
-- Hero uses columns 1–10 for the statement and 11–16 for the role entry rail.
+- Main landing shell: max-width 1280px, centered (`margin: 0 auto`), 12-column grid.
+- Desktop gutters: ~24px; mobile gutters: ~14–16px.
+- Header: brand block left, edition meta right-aligned.
+- Hero uses columns 1–6 for the statement; role entry rail uses columns 7–12
+  (equal visual weight; avoid a skinny right rail that reads as empty space).
 - Workflow strip spans all columns and uses three equal cells.
 - Dashboard pages reuse the same paper, ink, blue, line, and square geometry.
 

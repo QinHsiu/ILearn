@@ -72,8 +72,15 @@ def _session() -> SessionState:
                     turn=1,
                     user_input="不会",
                     ai_hint="先想乘法口诀",
+                    solved_after_hint=False,
                 )
             ]
+        },
+        metadata={
+            "item_meta": {
+                "q1": {"elapsed_ms": 45000, "hint_used": False},
+                "q2": {"elapsed_ms": 90000, "hint_used": True},
+            }
         },
     )
 
@@ -92,8 +99,11 @@ def test_assessment_review_includes_cover_accuracy_and_answers():
 
 def test_assessment_review_includes_hint_summary():
     md = render_assessment_review_markdown(_session())
-    assert "提示" in md
-    assert "1" in md
+    assert "苏格拉底" in md
+    assert "1 次" in md
+    assert "单题用时" in md or "用时" in md
+    assert "仍错" in md
+    assert "辅导后" in md
 
 
 def test_assessment_review_requires_paper_and_grades():

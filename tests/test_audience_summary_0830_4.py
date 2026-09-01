@@ -21,7 +21,8 @@ def test_parent_summary_with_weak_skills():
         {"weak_skills": ["frac_mult"], "error_attribution": {"top_tags": ["calc_error"]}},
         audience="parent",
     )
-    assert "frac_mult" in text
+    assert "分数乘法" in text
+    assert "frac_mult" not in text
     assert "计算" in text
 
 

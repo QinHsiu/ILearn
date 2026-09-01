@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 from ilearn.core.datetime_utils import utc_now
+from ilearn.core.knowledge_labels import resolve_knowledge_label
 
 from ilearn.core.review import ReviewState, sm2_update
 from ilearn.core.mastery import apply_evidence_to_mastery
@@ -170,7 +171,7 @@ class Diagnoser:
                     knowledge_name=(
                         knowledge_by_id[knowledge_id].name
                         if knowledge_id in knowledge_by_id
-                        else knowledge_id
+                        else resolve_knowledge_label(knowledge_id)
                     ),
                     score_rate=score_rate,
                     error_tag_counts=dict(error_tag_counts),

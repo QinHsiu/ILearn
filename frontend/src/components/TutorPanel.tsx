@@ -44,26 +44,34 @@ export default function TutorPanel({ sessionId, itemId }: TutorPanelProps) {
 
   return (
     <div className="tutor-panel">
+      <header className="tutor-panel-head">
+        <p className="tutor-panel-eyebrow">TUTOR / SOCRATIC</p>
+        <h3>苏格拉底助教</h3>
+        <p className="lede">不直接给答案，用提问帮你找到卡住的地方。每题可引导多次。</p>
+      </header>
       <div className="actions">
-        <button className="btn secondary" type="button" onClick={() => void start()} disabled={busy}>
-          {busy ? '辅导中…' : '开始辅导'}
+        <button className="btn" type="button" onClick={() => void start()} disabled={busy}>
+          {busy && turns.length === 0 ? '辅导中…' : turns.length ? '重新开始辅导' : '开始辅导'}
         </button>
       </div>
-      {turns.map((turn, index) => (
-        <div className="tutor-turn" key={`${turn.phase}-${index}`}>
-          <div>{turn.message}</div>
-          <small>阶段：{turn.phase}</small>
-        </div>
-      ))}
+      <div className="tutor-turns">
+        {turns.map((turn, index) => (
+          <div className="tutor-turn" key={`${turn.phase}-${index}`}>
+            <p className="tutor-turn-message">{turn.message}</p>
+            <p className="tutor-turn-phase">阶段 · {turn.phase}</p>
+          </div>
+        ))}
+      </div>
       {turns.length > 0 && (
-        <div className="field">
-          <label htmlFor={`tutor-${itemId}`}>告诉老师你的想法</label>
+        <div className="field tutor-reply">
+          <label htmlFor={`tutor-${itemId}`}>告诉助教你的想法</label>
           <textarea
             id={`tutor-${itemId}`}
             value={userMessage}
             onChange={(event) => setUserMessage(event.target.value)}
             placeholder="输入你的思路或困惑"
             disabled={busy}
+            rows={3}
           />
           <button
             className="btn"
@@ -75,7 +83,11 @@ export default function TutorPanel({ sessionId, itemId }: TutorPanelProps) {
           </button>
         </div>
       )}
-      {error ? <p className="error">{error}</p> : null}
+      {error ? (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   )
 }
