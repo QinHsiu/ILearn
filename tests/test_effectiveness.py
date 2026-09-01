@@ -28,7 +28,7 @@ def test_compute_metrics_formulas_on_demo_seed():
     session = seed_demo_session(load_demo_unit("math_5_1"))
     m = compute_metrics(session)
     assert m.pre_assessment_score == 60.0
-    assert m.post_assessment_score is None
+    assert m.post_assessment_score == 78.0
     assert m.mastery_gain == 18.0
     assert m.weakness_remaining_count == 2
     assert m.weakness_resolved_count == 1

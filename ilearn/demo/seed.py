@@ -127,6 +127,9 @@ def seed_demo_session(unit: dict, *, session_id: str | None = None) -> SessionSt
         ),
     )
     overrides = unit.get("profile_overrides") or {}
+    pre_score = 100.0 * sum(1 for g in grades if g.final_correct) / max(len(grades), 1)
+    gain = float(unit.get("demo_mastery_gain", 18.0))
+    post_score = max(0.0, min(100.0, pre_score + gain))
     return SessionState(
         session_id=sid,
         profile=profile,
@@ -141,6 +144,7 @@ def seed_demo_session(unit: dict, *, session_id: str | None = None) -> SessionSt
             "demo_unit": unit["id"],
             "demo_class_data": unit.get("demo_class_data") or {},
             "demo_mastery_gain": unit.get("demo_mastery_gain", 18.0),
+            "post_assessment_score": post_score,
             "demo_weaknesses_resolved": unit.get("demo_weaknesses_resolved", 1),
             "initial_mastery": unit.get("initial_mastery") or {},
             "parent_view_count": 3,
