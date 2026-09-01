@@ -1,4 +1,5 @@
 from ilearn.core.effectiveness import compute_metrics, TeachingEffectivenessMetrics
+from ilearn.core.schemas import SessionState
 from ilearn.demo.units import load_demo_unit
 from ilearn.demo.seed import seed_demo_session
 from fastapi.testclient import TestClient
@@ -39,6 +40,15 @@ def test_compute_metrics_formulas_on_demo_seed():
     assert m.teacher_notes_count == 2
 
 
+def test_compute_metrics_mastery_gain_uses_post_minus_pre():
+    session = seed_demo_session(load_demo_unit("math_5_1"))
+    session.metadata["post_assessment_score"] = 85.0
+    m = compute_metrics(session)
+    assert m.pre_assessment_score == 60.0
+    assert m.post_assessment_score == 85.0
+    assert m.mastery_gain == 25.0
+
+
 def test_effectiveness_endpoint(tmp_path: Path):
     client = TestClient(
         create_app(
@@ -49,6 +59,8 @@ def test_effectiveness_endpoint(tmp_path: Path):
         )
     )
     sid = client.post("/demo/units/math_5_1/session").json()["session_id"]
+    loaded = SessionState.model_validate(client.get(f"/sessions/{sid}").json())
+    expected = compute_metrics(loaded)
     r = client.get(f"/sessions/{sid}/effectiveness")
     assert r.status_code == 200
     body = r.json()
@@ -58,6 +70,12 @@ def test_effectiveness_endpoint(tmp_path: Path):
     assert "grading_time" in vs
     assert "personalized" in vs
     assert "feedback_delay" in vs
+    metrics = body["metrics"]
+    assert metrics["total_questions"] == 20
+    assert metrics["pre_assessment_score"] == expected.pre_assessment_score
+    assert metrics["mastery_gain"] == expected.mastery_gain
+    assert metrics["completion_rate"] == expected.completion_rate
+    assert metrics["time_saved_percent"] == expected.time_saved_percent
 
 
 def test_effectiveness_missing_session(tmp_path: Path):
