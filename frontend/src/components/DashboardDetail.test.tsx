@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import DashboardDetail from './DashboardDetail'
 import { api } from '../api/client'
-import type { DashboardStudentDetail } from '../api/client'
+import type { DashboardStudentDetail, ParentSummary, TeacherSummary } from '../api/client'
 import { EFFECTIVENESS } from '../test/effectivenessFixture'
 
 vi.mock('../api/client', async () => {
@@ -13,9 +13,33 @@ vi.mock('../api/client', async () => {
       ...actual.api,
       getEffectiveness: vi.fn(),
       exportEffectivenessPdf: vi.fn(),
+      getTeacherSummary: vi.fn(),
+      getParentSummary: vi.fn(),
     },
   }
 })
+
+const TEACHER_SUMMARY: TeacherSummary = {
+  class_name: 'demo_class_5a',
+  student_count: 35,
+  avg_mastery: 0.62,
+  top_weaknesses: [{ skill: '小数乘小数', affected_students: 11 }],
+  need_intervention_students: [{ name: '小红', weakness: '小数乘小数', session_id: 's1' }],
+  auto_graded_rate: 0.85,
+  estimated_time_saved_minutes: 12,
+  narrative: '班级需重点补小数乘小数。',
+}
+
+const PARENT_SUMMARY: ParentSummary = {
+  child_name: '小明',
+  current_mastery: 0.72,
+  mastery_change: 0.18,
+  weak_skills: ['小数乘小数'],
+  learning_phase: 'plan',
+  daily_practice_tips: ['每天花约 5 分钟完成 2 道生活情境乘法题。'],
+  next_milestone: '完成本单元薄弱点巩固',
+  narrative: '孩子正在巩固小数乘法。',
+}
 
 const baseDetail: DashboardStudentDetail = {
   session_id: 's1',
@@ -51,6 +75,8 @@ describe('DashboardDetail demo panels', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(api.getEffectiveness).mockResolvedValue(EFFECTIVENESS)
+    vi.mocked(api.getTeacherSummary).mockResolvedValue(TEACHER_SUMMARY)
+    vi.mocked(api.getParentSummary).mockResolvedValue(PARENT_SUMMARY)
   })
 
   it('shows demo_class_data on the teacher surface when demo_unit is set', async () => {
@@ -67,6 +93,7 @@ describe('DashboardDetail demo panels', () => {
   })
 
   it('shows parent_summary on the parent surface when demo_unit is set', () => {
+    vi.mocked(api.getParentSummary).mockRejectedValue(new Error('summary unavailable'))
     render(<DashboardDetail detail={demoDetail} surface="parent" />)
 
     expect(screen.getByRole('heading', { name: '家庭辅导建议' })).toBeInTheDocument()
@@ -75,12 +102,29 @@ describe('DashboardDetail demo panels', () => {
     expect(screen.queryByText('掌握度提升')).not.toBeInTheDocument()
   })
 
-  it('does not show demo panels when demo_unit is absent', () => {
+  it('shows structured teacher summary when session_id is present', async () => {
+    render(<DashboardDetail detail={demoDetail} surface="teacher" />)
+
+    expect(await screen.findByText(/结构化备课摘要/)).toBeInTheDocument()
+    expect(screen.getByText(/demo_class_5a/)).toBeInTheDocument()
+    expect(api.getTeacherSummary).toHaveBeenCalledWith('s1')
+  })
+
+  it('shows structured parent summary when session_id is present', async () => {
+    render(<DashboardDetail detail={demoDetail} surface="parent" />)
+
+    expect(await screen.findByText(/结构化家庭摘要/)).toBeInTheDocument()
+    expect(screen.getByText(/下一步里程碑/)).toBeInTheDocument()
+    expect(api.getParentSummary).toHaveBeenCalledWith('s1')
+  })
+
+  it('does not show demo panels when demo_unit is absent', async () => {
     render(<DashboardDetail detail={baseDetail} surface="teacher" />)
 
     expect(screen.queryByRole('heading', { name: '备课概览' })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: '家庭辅导建议' })).not.toBeInTheDocument()
     expect(screen.getByText('知识点掌握')).toBeInTheDocument()
     expect(api.getEffectiveness).not.toHaveBeenCalled()
+    expect(await screen.findByText(/结构化备课摘要/)).toBeInTheDocument()
   })
 })

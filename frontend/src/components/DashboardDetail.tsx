@@ -1,4 +1,11 @@
-import type { DashboardStudentDetail, DemoClassData } from '../api/client'
+import { useEffect, useState } from 'react'
+import type {
+  DashboardStudentDetail,
+  DemoClassData,
+  ParentSummary,
+  TeacherSummary,
+} from '../api/client'
+import { api } from '../api/client'
 import MarkdownView from '../MarkdownView'
 import EffectivenessDashboard from './EffectivenessDashboard'
 
@@ -28,6 +35,17 @@ export default function DashboardDetail({ detail, surface = 'teacher' }: Dashboa
   const classData = unitId ? demoClassData(detail) : null
   const enrichment = detail.metadata?.diagnosis_enrichment
   const unitName = unitId ? DEMO_UNIT_NAMES[unitId] || unitId : null
+  const [teacherSummary, setTeacherSummary] = useState<TeacherSummary | null>(null)
+  const [parentSummary, setParentSummary] = useState<ParentSummary | null>(null)
+
+  useEffect(() => {
+    if (!detail.session_id) return
+    if (surface === 'teacher') {
+      void api.getTeacherSummary(detail.session_id).then(setTeacherSummary).catch(() => setTeacherSummary(null))
+    } else {
+      void api.getParentSummary(detail.session_id).then(setParentSummary).catch(() => setParentSummary(null))
+    }
+  }, [detail.session_id, surface])
 
   return (
     <section className="dashboard-detail panel">
@@ -70,13 +88,67 @@ export default function DashboardDetail({ detail, surface = 'teacher' }: Dashboa
           <EffectivenessDashboard sessionId={detail.session_id} />
         </div>
       ) : null}
-      {unitId && surface === 'parent' ? (
+      {surface === 'teacher' && teacherSummary ? (
+        <div className="structured-summary-panel">
+          <h3>结构化备课摘要</h3>
+          <p>
+            {teacherSummary.class_name} · {teacherSummary.student_count} 名学生
+          </p>
+          {teacherSummary.top_weaknesses.length ? (
+            <ul>
+              {teacherSummary.top_weaknesses.map((row) => (
+                <li key={row.skill}>
+                  {row.skill}（{row.affected_students}人薄弱）
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {teacherSummary.need_intervention_students.length ? (
+            <ul>
+              {teacherSummary.need_intervention_students.map((student) => (
+                <li key={`${student.session_id}-${student.name}`}>
+                  {student.name}：{student.weakness}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {teacherSummary.narrative ? <p>{teacherSummary.narrative}</p> : null}
+        </div>
+      ) : null}
+      {unitId && surface === 'parent' && !parentSummary ? (
         <div className="parent-demo-panel">
           <h3>家庭辅导建议</h3>
           {enrichment?.parent_summary ? <p>{enrichment.parent_summary}</p> : null}
           {enrichment?.learning_advice ? (
             <p className="parent-demo-tip">{enrichment.learning_advice}</p>
           ) : null}
+        </div>
+      ) : null}
+      {surface === 'parent' && parentSummary ? (
+        <div className="structured-summary-panel">
+          <h3>结构化家庭摘要</h3>
+          <div className="summary-grid">
+            <article className="summary-block">
+              <span>当前掌握度</span>
+              <strong>{Math.round(parentSummary.current_mastery * 100)}%</strong>
+            </article>
+            <article className="summary-block">
+              <span>掌握度变化</span>
+              <strong>
+                {parentSummary.mastery_change >= 0 ? '+' : ''}
+                {Math.round(parentSummary.mastery_change * 100)}%
+              </strong>
+            </article>
+          </div>
+          {parentSummary.daily_practice_tips.length ? (
+            <ul>
+              {parentSummary.daily_practice_tips.map((tip) => (
+                <li key={tip}>{tip}</li>
+              ))}
+            </ul>
+          ) : null}
+          <p>下一步里程碑：{parentSummary.next_milestone}</p>
+          {parentSummary.narrative ? <p>{parentSummary.narrative}</p> : null}
         </div>
       ) : null}
       <h3>知识点掌握</h3>
