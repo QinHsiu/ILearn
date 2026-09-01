@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { dashboardApi } from './client'
+import { api, dashboardApi } from './client'
 
 function jsonResponse(body: unknown, status = 200): Response {
   return {
@@ -113,6 +113,42 @@ describe('dashboardApi', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       '/dashboard/teacher/t1/class/c1/student/sess-1',
       expect.objectContaining({
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+      }),
+    )
+  })
+})
+
+describe('api.createDemoSession', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('POSTs /demo/units/{unitId}/session and returns links', async () => {
+    const body = {
+      session_id: 'sess-demo',
+      unit_name: '小数乘法',
+      links: {
+        student: '?student=1&session_id=sess-demo',
+        teacher:
+          '?login=1&role=teacher&user=demo_teacher&class_id=demo_class_5a&student_id=sess-demo',
+        parent: '?login=1&role=parent&user=demo_parent&student_id=sess-demo',
+      },
+    }
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse(body))
+
+    const result = await api.createDemoSession('math_5_1')
+
+    expect(result).toEqual(body)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/demo/units/math_5_1/session',
+      expect.objectContaining({
+        method: 'POST',
         headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
       }),
     )

@@ -144,6 +144,18 @@ export type DashboardClassSummary = {
 
 export type DashboardStudentDetail = SessionState
 
+export type DemoSessionLinks = {
+  student: string
+  teacher: string
+  parent: string
+}
+
+export type DemoSessionResponse = {
+  session_id: string
+  unit_name: string
+  links: DemoSessionLinks
+}
+
 export type AuthRole = 'parent' | 'teacher'
 
 export type LoginResponse = {
@@ -239,6 +251,11 @@ export const api = {
     return request<{ session_id: string }>('/sessions', {
       method: 'POST',
       body: JSON.stringify(profile),
+    })
+  },
+  createDemoSession(unitId: string) {
+    return request<DemoSessionResponse>(`/demo/units/${unitId}/session`, {
+      method: 'POST',
     })
   },
   generateAssessment(sessionId: string) {
