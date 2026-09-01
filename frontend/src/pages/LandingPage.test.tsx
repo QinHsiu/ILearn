@@ -52,4 +52,22 @@ describe('LandingPage demo CTA', () => {
     })
     expect(api.createDemoSession).toHaveBeenCalledWith('math_5_1')
   })
+
+  it('uses selected demo role link (parent)', async () => {
+    render(<LandingPage />)
+    fireEvent.click(screen.getByRole('radio', { name: /家长/ }))
+    fireEvent.click(screen.getByRole('button', { name: '体验小数乘法' }))
+    await waitFor(() => {
+      expect(window.location.href).toBe(DEMO.links.parent)
+    })
+  })
+
+  it('uses selected demo role link (student)', async () => {
+    render(<LandingPage />)
+    fireEvent.click(screen.getByRole('radio', { name: /学生/ }))
+    fireEvent.click(screen.getByRole('button', { name: '体验小数乘法' }))
+    await waitFor(() => {
+      expect(window.location.href).toBe(DEMO.links.student)
+    })
+  })
 })

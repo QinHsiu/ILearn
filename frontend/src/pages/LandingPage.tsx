@@ -34,13 +34,14 @@ const roleCards: Array<{
 export default function LandingPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [demoRole, setDemoRole] = useState<'teacher' | 'parent' | 'student'>('teacher')
 
   async function startDemo() {
     setBusy(true)
     setError(null)
     try {
       const demo = await api.createDemoSession('math_5_1')
-      window.location.href = demo.links.teacher
+      window.location.href = demo.links[demoRole]
     } catch (err) {
       setError(err instanceof Error ? err.message : '演示创建失败')
       setBusy(false)
@@ -99,6 +100,20 @@ export default function LandingPage() {
             <p className="demo-card-description">
               一键进入已预置诊断、计划与班级数据的闭环演示。
             </p>
+          </div>
+          <div role="radiogroup" aria-label="演示角色">
+            {(['teacher', 'parent', 'student'] as const).map((role) => (
+              <label key={role}>
+                <input
+                  type="radio"
+                  name="demo-role"
+                  value={role}
+                  checked={demoRole === role}
+                  onChange={() => setDemoRole(role)}
+                />
+                {role === 'teacher' ? '教师' : role === 'parent' ? '家长' : '学生'}
+              </label>
+            ))}
           </div>
           <button
             className="btn"
