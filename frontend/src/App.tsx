@@ -21,6 +21,7 @@ import Assessment from './pages/Assessment'
 import type { AuthRole } from './api/client'
 import { useRole } from './hooks/useRole'
 import { useSessionSync } from './hooks/useSessionSync'
+import { readDemoSessionId } from './lib/demoSessionQuery'
 import { nextStepOnSync, stepFromSession } from './lib/sessionStep'
 import { applyTheme } from './theme'
 import './styles.css'
@@ -169,7 +170,7 @@ function StudentApp() {
 
   useSessionSync({ sessionId, onSync: onSessionSync, hasUnsavedChanges })
 
-  async function onResume(id: string) {
+  const onResume = useCallback(async (id: string) => {
     const nextReport = await api.getReport(id)
     const nextSession = nextReport.session
     setSessionId(id)
@@ -186,7 +187,19 @@ function StudentApp() {
       applyTheme(nextSession.profile.grade, nextSession.profile.gender || 'unspecified')
     }
     setStep(stepFromSession(nextSession))
-  }
+  }, [])
+
+  const resumedFromQueryRef = useRef(false)
+  useEffect(() => {
+    if (resumedFromQueryRef.current) return
+    const id = readDemoSessionId(window.location.search)
+    if (!id) return
+    resumedFromQueryRef.current = true
+    setBusy(true)
+    void onResume(id)
+      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setBusy(false))
+  }, [onResume])
 
   async function onStart(e: FormEvent) {
     e.preventDefault()
