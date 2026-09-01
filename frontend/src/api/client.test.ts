@@ -231,6 +231,25 @@ describe('api.getTeacherSummary / getParentSummary', () => {
       expect.anything(),
     )
   })
+
+  it('GETs student summary', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        current_task: '小数乘法',
+        completed_tasks: 2,
+        total_tasks: 5,
+        stars_earned: 3,
+        next_challenge: '应用题',
+        narrative: '继续加油',
+      }),
+    )
+    await api.getStudentSummary('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/sessions/s1/summary/student'),
+      expect.anything(),
+    )
+  })
 })
 
 describe('api.exportEffectivenessPdf', () => {

@@ -234,6 +234,14 @@ export type ParentSummary = {
   next_milestone: string
   narrative: string
 }
+export type StudentSummary = {
+  current_task: string
+  completed_tasks: number
+  total_tasks: number
+  stars_earned: number
+  next_challenge: string
+  narrative: string
+}
 
 const MIME_BY_EXT: Record<string, ImageMime> = {
   png: 'image/png',
@@ -433,6 +441,9 @@ export const api = {
   },
   getParentSummary(sessionId: string) {
     return request<ParentSummary>(`/sessions/${sessionId}/summary/parent`)
+  },
+  getStudentSummary(sessionId: string) {
+    return request<StudentSummary>(`/sessions/${sessionId}/summary/student`)
   },
   heartbeat(sessionId: string) {
     return request<{ ok: boolean; phase: string; server_time: string }>(
