@@ -25,6 +25,7 @@ from ilearn.core.user_errors import UserFriendlyError, map_exception_message
 from ilearn.core.validators import validate_submit_answers
 from ilearn.api.auth import create_auth_router
 from ilearn.api.dashboard import create_dashboard_router
+from ilearn.api.demo import create_demo_router
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
@@ -163,6 +164,7 @@ def create_app(
     app = FastAPI(title="ILearn", version="0.1.0")
     app.include_router(create_auth_router(auth_credentials))
     app.include_router(create_dashboard_router(store, relationships))
+    app.include_router(create_demo_router(store, relationships))
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(_WEB_ORIGINS),
