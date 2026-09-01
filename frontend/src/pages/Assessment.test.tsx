@@ -79,9 +79,15 @@ describe('Assessment page', () => {
 
     await waitFor(() => expect(screen.getByText('锚点测评')).toBeInTheDocument())
     expect(api.adaptiveStart).toHaveBeenCalledWith('s1')
+    expect(screen.getByText('锚点')).toBeInTheDocument()
+    expect(screen.getByText(/01\s*\/\s*01/)).toBeInTheDocument()
+    expect(screen.getByText('1+1=?')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /第 1 题/ })).toBeInTheDocument()
 
     screen.getByRole('button', { name: '提交锚点，继续完整测评' }).click()
     await waitFor(() => expect(screen.getByText('完整测评')).toBeInTheDocument())
+    expect(screen.getByText('完整')).toBeInTheDocument()
+    expect(screen.getByText(/01\s*\/\s*20/)).toBeInTheDocument()
     expect(api.adaptiveContinue).toHaveBeenCalled()
   })
 
@@ -174,5 +180,21 @@ describe('Assessment page', () => {
       configurable: true,
       get: () => previousVisibility,
     })
+  })
+
+  it('shows countdown, handwriting upload, and Socratic entry on anchor paper', async () => {
+    vi.mocked(api.adaptiveStart).mockResolvedValue(ANCHOR_START)
+    render(
+      <Assessment
+        sessionId="s1"
+        profile={{ region: '北京', grade: 5, age: 11 }}
+        onComplete={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => expect(screen.getByText('锚点测评')).toBeInTheDocument())
+    expect(screen.getByText(/剩余/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/手写作答照片/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '求助苏格拉底' })).toBeInTheDocument()
   })
 })

@@ -6,6 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from ilearn.core.review import due_knowledge_ids
+from ilearn.core.knowledge_labels import looks_like_internal_id, resolve_knowledge_label
 from ilearn.core.replan import replan_adjustments, should_replan
 from ilearn.core.schemas import (
     DiagnosisReport,
@@ -99,7 +100,13 @@ class Planner:
             diagnosis=diagnosis,
         )
         markdown = self._render_plan_markdown(
-            profile, diagnosis, goal, milestones, days, daily_minutes
+            profile,
+            diagnosis,
+            goal,
+            milestones,
+            days,
+            daily_minutes,
+            knowledge_by_id,
         )
 
         return LearningPlanReport(
@@ -215,7 +222,9 @@ class Planner:
     @staticmethod
     def _knowledge_name(knowledge_id: str, knowledge_by_id: dict[str, object]) -> str:
         node = knowledge_by_id.get(knowledge_id)
-        return node.name if node is not None else knowledge_id
+        if node is not None:
+            return str(getattr(node, "name", knowledge_id))
+        return resolve_knowledge_label(knowledge_id)
 
     def _day_tasks(
         self,
@@ -251,6 +260,7 @@ class Planner:
         milestones: list[str],
         days: list[PlanDay],
         daily_minutes: int,
+        knowledge_by_id: dict[str, object],
     ) -> str:
         lines = [
             "# 学习计划",
@@ -271,7 +281,10 @@ class Planner:
         lines.extend(self._render_intervention_block(diagnosis))
         lines.extend(["", "## 每日安排", ""])
         for day in days:
-            focus_text = "、".join(day.focus_knowledge_ids) or "综合复习"
+            focus_names = [
+                self._knowledge_name(kid, knowledge_by_id) for kid in day.focus_knowledge_ids
+            ]
+            focus_text = "、".join(focus_names) or "综合复习"
             lines.append(f"### 第 {day.day} 天（约 {day.minutes} 分钟）")
             lines.append(f"- **重点：** {focus_text}")
             for task in day.tasks:
@@ -302,19 +315,25 @@ class Planner:
             if dominant
             else "待观察"
         )
+        focus_label = resolve_knowledge_label(top.knowledge_id)
+        if top.title and not looks_like_internal_id(top.title):
+            focus_label = top.title
+        fix_label = top.what_to_fix_first
+        if fix_label and looks_like_internal_id(str(fix_label)):
+            fix_label = "基础概念与关键步骤"
         return [
             "",
             "## 干预建议",
             "",
             "### 当前认知",
-            f"- 重点知识点：{top.title}",
+            f"- 重点知识点：{focus_label}",
             f"- 现状：{top.why}",
             "",
             "### 预测难点",
             f"- 主要错误类型：{tag_label}",
-            f"- 优先修复：{top.what_to_fix_first}",
+            f"- 优先修复：{fix_label or '基础概念与关键步骤'}",
             "",
             "### 教学方案",
-            f"- 建议先巩固「{top.title}」的基础概念与例题",
+            f"- 建议先巩固「{focus_label}」的基础概念与例题",
             f"- 针对{tag_label}进行专项练习与步骤核对",
         ]

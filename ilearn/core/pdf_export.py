@@ -7,6 +7,8 @@ import os
 import re
 from pathlib import Path
 
+from ilearn.core.markdown_layout import split_learning_report, split_plan_report
+
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _ASSETS_FONTS = _PROJECT_ROOT / "assets" / "fonts"
 
@@ -17,8 +19,64 @@ _TABLE_ROW = re.compile(r"^\|(.+)\|$")
 
 def markdown_to_html(markdown: str) -> str:
     """Minimal MD→HTML covering headings, lists, tables, paragraphs, bold."""
+    body = _markdown_lines_to_html(markdown.replace("\r\n", "\n").split("\n"))
+    css = _pdf_css()
+    return (
+        "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+        f"<style>{css}</style></head><body>{''.join(body)}</body></html>"
+    )
+
+
+def markdown_to_html_two_column(left: str, right: str) -> str:
+    left_body = _markdown_lines_to_html(left.replace("\r\n", "\n").split("\n"))
+    right_body = _markdown_lines_to_html(right.replace("\r\n", "\n").split("\n"))
+    css = _pdf_css() + _two_column_css()
+    content = (
+        "<div class='report-columns'>"
+        f"<div class='report-col report-col-left'>{''.join(left_body)}</div>"
+        f"<div class='report-col report-col-right'>{''.join(right_body)}</div>"
+        "</div>"
+    )
+    return (
+        "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+        f"<style>{css}</style></head><body>{content}</body></html>"
+    )
+
+
+def markdown_to_pdf_report(markdown: str) -> bytes:
+    """Render a learning report PDF; uses two columns (or two pages on fallback)."""
+    left, right = split_learning_report(markdown)
+    if not right:
+        return markdown_to_pdf(markdown)
+    if _weasyprint_usable():
+        try:
+            from weasyprint import HTML  # type: ignore
+
+            html_doc = markdown_to_html_two_column(left, right)
+            return HTML(string=html_doc, base_url=str(_PROJECT_ROOT)).write_pdf()
+        except Exception:
+            pass
+    return _fpdf_pdf_two_column(left, right)
+
+
+def markdown_to_pdf_plan(markdown: str) -> bytes:
+    """Render plan markdown with schedule vs methods split when possible."""
+    left, right = split_plan_report(markdown)
+    if not right:
+        return markdown_to_pdf(markdown)
+    if _weasyprint_usable():
+        try:
+            from weasyprint import HTML  # type: ignore
+
+            html_doc = markdown_to_html_two_column(left, right)
+            return HTML(string=html_doc, base_url=str(_PROJECT_ROOT)).write_pdf()
+        except Exception:
+            pass
+    return _fpdf_pdf_two_column(left, right)
+
+
+def _markdown_lines_to_html(lines: list[str]) -> list[str]:
     body: list[str] = []
-    lines = markdown.replace("\r\n", "\n").split("\n")
     i = 0
     in_ul = False
 
@@ -65,11 +123,7 @@ def markdown_to_html(markdown: str) -> str:
             body.append(f"<p>{_inline(trimmed)}</p>")
         i += 1
     flush_ul()
-    css = _pdf_css()
-    return (
-        "<!DOCTYPE html><html><head><meta charset='utf-8'>"
-        f"<style>{css}</style></head><body>{''.join(body)}</body></html>"
-    )
+    return body
 
 
 def _inline(text: str) -> str:
@@ -122,6 +176,16 @@ def _candidate_font_files() -> list[Path]:
         if path.is_file():
             found.append(path)
     return found
+
+
+def _two_column_css() -> str:
+    return (
+        ".report-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px;"
+        "align-items:start;}"
+        ".report-col{min-width:0;}"
+        "@media print{.report-columns{display:block;}"
+        ".report-col-left{page-break-after:always;margin-bottom:24px;}}"
+    )
 
 
 def _pdf_css() -> str:
@@ -185,32 +249,44 @@ def _weasyprint_pdf(markdown: str) -> bytes:
     return HTML(string=html_doc, base_url=str(_PROJECT_ROOT)).write_pdf()
 
 
-def _fpdf_pdf(markdown: str) -> bytes:
+def _fpdf_pdf_two_column(left: str, right: str) -> bytes:
     from fpdf import FPDF
 
     pdf = FPDF(format="A4", unit="mm")
     pdf.set_auto_page_break(auto=True, margin=16)
+    font_name = _fpdf_register_font(pdf)
     pdf.add_page()
+    _fpdf_write_markdown(pdf, font_name, left)
+    if right.strip():
+        pdf.add_page()
+        _fpdf_write_markdown(pdf, font_name, right)
+    out = pdf.output()
+    if isinstance(out, (bytes, bytearray)):
+        return bytes(out)
+    return str(out).encode("latin-1")
+
+
+def _fpdf_register_font(pdf) -> str:
     font_name = "Helvetica"
-    # Prefer .ttf/.otf — fpdf2 is unreliable with some .ttc collections.
     for path in _candidate_font_files():
         if path.suffix.lower() == ".ttc":
             continue
         try:
             pdf.add_font("ILearnCJK", fname=str(path))
-            font_name = "ILearnCJK"
-            break
+            return "ILearnCJK"
         except Exception:
             continue
     if font_name == "Helvetica":
         for path in _candidate_font_files():
             try:
                 pdf.add_font("ILearnCJK", fname=str(path))
-                font_name = "ILearnCJK"
-                break
+                return "ILearnCJK"
             except Exception:
                 continue
+    return font_name
 
+
+def _fpdf_write_markdown(pdf, font_name: str, markdown: str) -> None:
     def set_size(size: float) -> None:
         pdf.set_font(font_name, size=size)
 
@@ -246,6 +322,16 @@ def _fpdf_pdf(markdown: str) -> bytes:
             write_block("- " + _strip_md(um.group(1)))
             continue
         write_block(_strip_md(line.strip()))
+
+
+def _fpdf_pdf(markdown: str) -> bytes:
+    from fpdf import FPDF
+
+    pdf = FPDF(format="A4", unit="mm")
+    pdf.set_auto_page_break(auto=True, margin=16)
+    pdf.add_page()
+    font_name = _fpdf_register_font(pdf)
+    _fpdf_write_markdown(pdf, font_name, markdown)
     out = pdf.output()
     if isinstance(out, (bytes, bytearray)):
         return bytes(out)

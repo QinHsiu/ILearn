@@ -20,7 +20,8 @@ def test_diagnosis_explainer_attribution():
     text = DiagnosisExplainer.explain_attribution(
         "frac_add_same", "concept_gap", wrong_count=2
     )
-    assert "frac_add_same" in text
+    assert "同分母分数加法" in text
+    assert "frac_add_same" not in text
     assert "概念" in text
 
 
@@ -36,8 +37,9 @@ def test_build_explanations_includes_findings():
             }
         ],
     )
-    assert any("frac_meaning_001" in r for r in rows)
-    assert any("计算" in r or "calc" in r.lower() or "步骤" in r for r in rows)
+    assert any("理解分数单位" in r for r in rows)
+    assert not any("frac_meaning_001" in r for r in rows)
+    assert any("计算" in r or "步骤" in r for r in rows)
 
 
 def test_tiered_intervention_by_mastery():

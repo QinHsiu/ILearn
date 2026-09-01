@@ -34,6 +34,7 @@ def test_cognitive_diagnosis_dimension_gap_when_prereq_ok():
         {"skill_id": "fraction_002", "is_correct": False},
     ]
     out = agent.diagnose_with_cognitive_profile(evidence, skill_id="fraction_002")
-    assert "层次不足" in out["root_cause"]
+    assert out["root_cause"] == "应用层次不足"
     assert out["gap_skill"] == "fraction_002"
-    assert out["dimension"] == "apply"
+    assert out["gap_skill_label"] == "用分数表示部分"
+    assert out["dimension"] == "应用"

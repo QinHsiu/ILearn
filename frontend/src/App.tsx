@@ -9,8 +9,8 @@ import type {
   SessionState,
   StudentProfile,
 } from './api/client'
-import MarkdownView from './MarkdownView'
 import HistoryList from './components/HistoryList'
+import MarkdownView from './MarkdownView'
 import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
 import StudentSummaryPanel from './components/StudentSummaryPanel'
@@ -19,6 +19,7 @@ import TeacherDashboard from './pages/TeacherDashboard'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import Assessment from './pages/Assessment'
+import type { AssessmentCompletePayload } from './pages/Assessment'
 import type { AuthRole } from './api/client'
 import { useRole } from './hooks/useRole'
 import { useSessionSync } from './hooks/useSessionSync'
@@ -245,10 +246,7 @@ function StudentApp() {
     }
   }
 
-  async function onAdaptiveComplete(payload: {
-    paper: AssessmentPaper
-    answers: Record<string, string>
-  }) {
+  async function onAdaptiveComplete(payload: AssessmentCompletePayload) {
     if (!sessionId) return
     setBusy(true)
     setError(null)
@@ -260,7 +258,10 @@ function StudentApp() {
       for (const item of payload.paper.items) {
         submitPayload[item.id] = (payload.answers[item.id] || '').trim()
       }
-      await api.submit(sessionId, submitPayload)
+      await api.submit(sessionId, submitPayload, payload.itemMeta)
+      if (payload.images.length) {
+        await api.submitImages(sessionId, payload.images)
+      }
       await api.run(sessionId)
       const nextReport = await api.getReport(sessionId)
       setReport(nextReport)
@@ -337,15 +338,16 @@ function StudentApp() {
       </nav>
 
       {resumePending ? (
-        <section className="panel">
+        <section className="panel student-panel">
           <p className="lede">正在恢复会话…</p>
         </section>
       ) : null}
 
       {step === 0 && !resumePending && (
-        <section className="panel">
+        <section className="panel student-panel student-onboard">
+          <p className="student-panel-eyebrow">PROFILE / ONBOARD</p>
           <h2>建档</h2>
-          <p className="lede">填写学习者信息后生成诊断卷。请先启动 FastAPI（:8000）。</p>
+          <p className="lede">填写基本信息后，系统将为你生成适合的诊断卷。</p>
           <form onSubmit={onStart}>
             <div className="form-grid">
               <div className="field">
@@ -467,14 +469,67 @@ function StudentApp() {
       ) : null}
 
       {step === 2 && session && (
-        <section className="panel">
+        <section className="panel student-panel student-diagnosis">
+          <p className="student-panel-eyebrow">DIAGNOSIS / MASTERY</p>
           <h2>批改与学情</h2>
           <p className="lede">
             正确 {correct}/{grades.length}
             {session.loop_count ? ` · 巩固轮次 ${session.loop_count}` : ''}
           </p>
 
-          <h3 style={{ marginTop: '0.2rem' }}>知识点掌握</h3>
+          <h3 className="student-section-title">作答复盘</h3>
+          <table className="table answer-review-table">
+            <thead>
+              <tr>
+                <th>题号</th>
+                <th>对错</th>
+                <th>用时</th>
+                <th>苏格拉底</th>
+                <th>辅导后</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(session.paper?.items || []).map((item, index) => {
+                const grade = grades.find((row) => row.item_id === item.id)
+                if (!grade) return null
+                const meta =
+                  (session.metadata?.item_meta?.[item.id] as
+                    | { elapsed_ms?: number; hint_used?: boolean }
+                    | undefined) || {}
+                const hints = session.hint_interactions?.[item.id] || []
+                const hintCount = hints.length
+                const elapsedSec = Math.round(Number(meta.elapsed_ms || 0) / 1000)
+                const elapsedLabel =
+                  elapsedSec > 0
+                    ? `${Math.floor(elapsedSec / 60)}:${String(elapsedSec % 60).padStart(2, '0')}`
+                    : '—'
+                const afterHint = hints.some((h) => h.solved_after_hint === true)
+                  ? '做对'
+                  : hintCount > 0
+                    ? grade.final_correct
+                      ? '做对'
+                      : '仍错'
+                    : '—'
+                return (
+                  <tr key={item.id}>
+                    <td>第 {index + 1} 题</td>
+                    <td>{grade.final_correct ? '正确' : '错误'}</td>
+                    <td>{elapsedLabel}</td>
+                    <td>
+                      {hintCount > 0
+                        ? `${hintCount} 次`
+                        : meta.hint_used
+                          ? '已打开'
+                          : '未使用'}
+                    </td>
+                    <td>{afterHint}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+
+          <h3 className="student-section-title">知识点掌握</h3>
           <table className="table">
             <thead>
               <tr>
@@ -507,11 +562,13 @@ function StudentApp() {
           {wrongItems.length > 0 && (
             <>
               <CitationPanel items={wrongItems} />
-              {wrongItems.map((entry) =>
-                sessionId ? (
-                  <TutorPanel key={entry.itemId} sessionId={sessionId} itemId={entry.itemId} />
-                ) : null,
-              )}
+              <section className="student-tutor-block" aria-label="苏格拉底助教">
+                {wrongItems.map((entry) =>
+                  sessionId ? (
+                    <TutorPanel key={entry.itemId} sessionId={sessionId} itemId={entry.itemId} />
+                  ) : null,
+                )}
+              </section>
             </>
           )}
 
@@ -524,7 +581,8 @@ function StudentApp() {
       )}
 
       {step === 3 && session && (
-        <section className="panel">
+        <section className="panel student-panel student-plan">
+          <p className="student-panel-eyebrow">PLAN / NEXT STEP</p>
           <h2>学习计划</h2>
           <p className="lede">
             状态：{session.plan?.status || 'draft'}
@@ -545,7 +603,7 @@ function StudentApp() {
               </p>
             </details>
           ) : null}
-          <div className="plan-body">
+          <div className="plan-body student-report-body">
             <MarkdownView
               source={report?.markdown || session.plan?.markdown || '暂无计划内容'}
             />
