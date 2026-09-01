@@ -94,6 +94,56 @@ def compute_metrics(session: SessionState) -> TeachingEffectivenessMetrics:
     )
 
 
+def render_effectiveness_markdown(
+    metrics: TeachingEffectivenessMetrics, *, unit_name: str = ""
+) -> str:
+    """Markdown source for the teaching-effectiveness PDF."""
+    lines: list[str] = ["# ILearn 教学效果验证报告", ""]
+    if unit_name:
+        lines.extend(["## 教学单元", "", f"- **单元：** {unit_name}", ""])
+    post = (
+        metrics.post_assessment_score
+        if metrics.post_assessment_score is not None
+        else "—"
+    )
+    lines.extend(
+        [
+            "## 学习成效",
+            "",
+            f"- **前测得分：** {metrics.pre_assessment_score}",
+            f"- **后测得分：** {post}",
+            f"- **掌握度提升：** {metrics.mastery_gain}",
+            f"- **已解决薄弱点：** {metrics.weakness_resolved_count}",
+            f"- **仍存薄弱点：** {metrics.weakness_remaining_count}",
+            "",
+            "## 教师工作量",
+            "",
+            f"- **题目总数：** {metrics.total_questions}",
+            f"- **自动批改：** {metrics.auto_graded_count}",
+            f"- **人工复核：** {metrics.manual_review_count}",
+            f"- **ILearn 批改时间（分钟）：** {metrics.estimated_grading_time_minutes}",
+            f"- **传统批改时间（分钟）：** {metrics.traditional_grading_time_minutes}",
+            f"- **批改时间节省：** {metrics.time_saved_percent}%",
+            "",
+            "## 参与度",
+            "",
+            f"- **完成率：** {metrics.completion_rate}",
+            f"- **会话时长（秒）：** {metrics.session_duration_seconds}",
+            f"- **提示次数：** {metrics.hint_used_count}",
+            f"- **平均作答时间（秒）：** {metrics.avg_response_time_seconds}",
+            "",
+            "## 诊断与家校",
+            "",
+            f"- **诊断置信度：** {metrics.diagnosis_confidence}",
+            f"- **证据条数：** {metrics.evidence_count}",
+            f"- **家长查看次数：** {metrics.parent_view_count}",
+            f"- **教师备注次数：** {metrics.teacher_notes_count}",
+            "",
+        ]
+    )
+    return "\n".join(lines).strip()
+
+
 def effectiveness_payload(session: SessionState) -> dict[str, Any]:
     """JSON body for GET /sessions/{id}/effectiveness."""
     metrics = compute_metrics(session)

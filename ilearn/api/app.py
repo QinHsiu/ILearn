@@ -11,7 +11,12 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
-from ilearn.core.effectiveness import effectiveness_payload
+from ilearn.core.effectiveness import (
+    compute_metrics,
+    effectiveness_payload,
+    render_effectiveness_markdown,
+)
+from ilearn.demo.units import load_demo_unit
 from ilearn.core.export_markdown import (
     render_advice_report_markdown,
     render_assessment_review_markdown,
@@ -391,6 +396,27 @@ def create_app(
             media_type="application/pdf",
             headers={
                 "Content-Disposition": 'attachment; filename="ILearn-report.pdf"'
+            },
+        )
+
+    @app.get("/sessions/{session_id}/export/effectiveness.pdf")
+    def export_effectiveness_pdf(session_id: str) -> Response:
+        session = store.load(session_id)
+        metrics = compute_metrics(session)
+        unit_id = session.metadata.get("demo_unit")
+        unit_name = ""
+        if unit_id:
+            try:
+                unit_name = str(load_demo_unit(str(unit_id)).get("name") or "")
+            except FileNotFoundError:
+                unit_name = str(unit_id)
+        markdown = render_effectiveness_markdown(metrics, unit_name=unit_name)
+        pdf = markdown_to_pdf(markdown)
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'attachment; filename="ILearn-effectiveness.pdf"'
             },
         )
 

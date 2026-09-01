@@ -1,4 +1,8 @@
-from ilearn.core.effectiveness import compute_metrics, TeachingEffectivenessMetrics
+from ilearn.core.effectiveness import (
+    compute_metrics,
+    render_effectiveness_markdown,
+    TeachingEffectivenessMetrics,
+)
 from ilearn.core.schemas import SessionState
 from ilearn.demo.units import load_demo_unit
 from ilearn.demo.seed import seed_demo_session
@@ -89,3 +93,31 @@ def test_effectiveness_missing_session(tmp_path: Path):
     )
     r = client.get("/sessions/missing/effectiveness")
     assert r.status_code == 404
+
+
+def test_render_effectiveness_markdown_includes_unit_and_kpis():
+    session = seed_demo_session(load_demo_unit("math_5_1"))
+    metrics = compute_metrics(session)
+    md = render_effectiveness_markdown(metrics, unit_name="小数乘法")
+    assert "小数乘法" in md
+    assert "教学效果" in md
+    assert "18.0" in md
+    assert "83.75" in md
+    assert "100.0" in md
+    assert str(metrics.total_questions) in md
+
+
+def test_effectiveness_pdf(tmp_path: Path):
+    client = TestClient(
+        create_app(
+            sessions_dir=tmp_path,
+            pilot_data_dir=PILOT,
+            relationships_path=tmp_path / "relationships.json",
+            llm=None,
+        )
+    )
+    sid = client.post("/demo/units/math_5_1/session").json()["session_id"]
+    r = client.get(f"/sessions/{sid}/export/effectiveness.pdf")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("application/pdf")
+    assert len(r.content) > 100
