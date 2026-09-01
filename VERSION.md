@@ -5,8 +5,8 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0901_1 结构化演示摘要 |
-| **基线** | 549 tests（离线可跑）+ 62 vitest |
+| **标签** | Edition 0901_2 学生摘要 + 计划步面板 |
+| **基线** | 554 tests（离线可跑）+ 71 vitest |
 | **日期** | 2026-09-01 |
 
 ---
@@ -50,6 +50,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0830_9 A2（地区错误 + 会话同步）：** `normalize_region` / 软课标；创建会话 E-004；`GET /sessions/{id}` + heartbeat；前端 `useSessionSync`（可见性拉取、30s 心跳、未保存 beforeunload）
 - **Edition 0901（演示单元 + 教学效果）：** `math_5_1` 小数乘法预置闭环会话（C1 seed）；`POST /demo/units/{unit_id}/session`；`TeachingEffectivenessMetrics` + `GET /sessions/{id}/effectiveness` + PDF 导出；Landing「体验完整教学单元」CTA；`EffectivenessDashboard` + 教师/家长 demo 面板；`scripts/generate_demo_effectiveness.py`
 - **Edition 0901_1：** 结构化教师/家长摘要 API、Landing 演示角色选择、学生 `session_id` 深链 resume、效果页前后 ComparisonCards、demo seed 写入 `post_assessment_score`
+- **Edition 0901_2：** `StudentSummary` builder（seed overlay C）+ `GET /sessions/{id}/summary/student`；demo seed 写入 `metadata.student_summary`；学生计划步 `StudentSummaryPanel`（任务进度 / 星星 / 下一挑战）
 
 ---
 
@@ -83,6 +84,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0830_9 A2 地区错误 + 会话同步 | E-004、软课标/地区、GET session + heartbeat、useSessionSync | **535** pytest + **36** vitest |
 | Edition 0901 小数乘法演示单元 + 教学效果量化 | math_5_1 seed、demo session API、effectiveness 指标/GET/PDF、Landing CTA、EffectivenessDashboard、角色 demo 面板 | **544** pytest + **52** vitest |
 | Edition 0901_1 结构化演示摘要 | 结构化教师/家长摘要 API、Landing 演示角色选择、学生 `session_id` 深链 resume、效果页前后 ComparisonCards、demo seed 写入 `post_assessment_score` | **549** pytest + **62** vitest |
+| Edition 0901_2 学生摘要 + 计划步面板 | StudentSummary builder/overlay、GET summary/student、demo seed metadata、计划步 StudentSummaryPanel | **554** pytest + **71** vitest |
 
 ---
 
