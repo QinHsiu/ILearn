@@ -39,6 +39,35 @@ export default function EffectivenessDashboard({ sessionId }: EffectivenessDashb
 
   return (
     <div className="effectiveness-dashboard">
+      <section className="comparison-cards" aria-labelledby="comparison-cards-title">
+        <h3 id="comparison-cards-title">前后对比</h3>
+        <div className="comparison-cards-grid">
+          <article aria-label="掌握度前后对比" className="comparison-card metric-card">
+            <span>掌握度</span>
+            <strong>
+              {metrics.pre_assessment_score} → {metrics.post_assessment_score ?? '—'}
+            </strong>
+          </article>
+          <article aria-label="薄弱点对比" className="comparison-card metric-card">
+            <span>薄弱点</span>
+            <strong>
+              已解决 {metrics.weakness_resolved_count} / 仍存 {metrics.weakness_remaining_count}
+            </strong>
+          </article>
+          <article aria-label="批改耗时对比" className="comparison-card metric-card">
+            <span>批改耗时</span>
+            <strong>
+              {metrics.traditional_grading_time_minutes} → {metrics.estimated_grading_time_minutes}分钟
+            </strong>
+          </article>
+          <article aria-label="诊断依据" className="comparison-card metric-card">
+            <span>诊断依据</span>
+            <strong>
+              {Math.round(metrics.diagnosis_confidence * 100)}% · {metrics.evidence_count} 条证据
+            </strong>
+          </article>
+        </div>
+      </section>
       <div className="metrics-grid">
         <article className="metric-card">
           <span>掌握度提升</span>

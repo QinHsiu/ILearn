@@ -3,7 +3,7 @@ import type { EffectivenessResponse } from '../api/client'
 export const EFFECTIVENESS: EffectivenessResponse = {
   metrics: {
     pre_assessment_score: 60,
-    post_assessment_score: null,
+    post_assessment_score: 78,
     mastery_gain: 18,
     weakness_resolved_count: 1,
     weakness_remaining_count: 2,

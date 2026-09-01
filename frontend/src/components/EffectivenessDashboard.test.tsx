@@ -23,6 +23,16 @@ describe('EffectivenessDashboard', () => {
     vi.mocked(api.exportEffectivenessPdf).mockResolvedValue(undefined)
   })
 
+  it('renders before/after comparison cards', async () => {
+    render(<EffectivenessDashboard sessionId="s1" />)
+
+    expect(await screen.findByRole('heading', { name: '前后对比' })).toBeInTheDocument()
+    expect(screen.getByLabelText('掌握度前后对比')).toHaveTextContent(/60.*78/)
+    expect(screen.getByLabelText('薄弱点对比')).toHaveTextContent(/已解决 1/)
+    expect(screen.getByLabelText('批改耗时对比')).toHaveTextContent(/40.*6\.5/)
+    expect(screen.getByLabelText('诊断依据')).toHaveTextContent(/82%.*5/)
+  })
+
   it('renders four metric cards from fetched metrics', async () => {
     render(<EffectivenessDashboard sessionId="s1" />)
 

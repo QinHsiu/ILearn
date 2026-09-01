@@ -243,6 +243,16 @@
   }
 }
 
+.comparison-cards {
+  margin-bottom: 1.25rem;
+}
+
+.comparison-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -308,6 +318,7 @@
 }
 
 @media (max-width: 560px) {
+  .comparison-cards-grid,
   .metrics-grid {
     grid-template-columns: 1fr 1fr;
   }
