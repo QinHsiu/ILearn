@@ -92,14 +92,46 @@ describe('DashboardDetail demo panels', () => {
     expect(api.getEffectiveness).toHaveBeenCalledWith('s1')
   })
 
-  it('shows parent_summary on the parent surface when demo_unit is set', () => {
+  it('shows parent_summary on the parent surface when demo_unit is set', async () => {
     vi.mocked(api.getParentSummary).mockRejectedValue(new Error('summary unavailable'))
     render(<DashboardDetail detail={demoDetail} surface="parent" />)
 
-    expect(screen.getByRole('heading', { name: '家庭辅导建议' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '家庭辅导建议' })).toBeInTheDocument()
     expect(screen.getByText(/给家长的行动建议/)).toBeInTheDocument()
     expect(screen.getByText(/先口述小数位数再动笔/)).toBeInTheDocument()
     expect(screen.queryByText('掌握度提升')).not.toBeInTheDocument()
+  })
+
+  it('does not show parent enrichment fallback while summary is loading', () => {
+    vi.mocked(api.getParentSummary).mockImplementation(() => new Promise(() => {}))
+    render(<DashboardDetail detail={demoDetail} surface="parent" />)
+
+    expect(screen.queryByRole('heading', { name: '家庭辅导建议' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/结构化家庭摘要/)).not.toBeInTheDocument()
+  })
+
+  it('clears previous structured summary while the next session fetch is in flight', async () => {
+    const { rerender } = render(<DashboardDetail detail={demoDetail} surface="teacher" />)
+
+    expect(await screen.findByText(/结构化备课摘要/)).toBeInTheDocument()
+    expect(screen.getByText(/demo_class_5a/)).toBeInTheDocument()
+
+    vi.mocked(api.getTeacherSummary).mockImplementation(() => new Promise(() => {}))
+    rerender(
+      <DashboardDetail
+        detail={{
+          ...demoDetail,
+          session_id: 's2',
+          profile: { ...demoDetail.profile, nickname: '小红' },
+        }}
+        surface="teacher"
+      />,
+    )
+
+    expect(screen.queryByText(/结构化备课摘要/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/demo_class_5a/)).not.toBeInTheDocument()
+    expect(screen.getByText(/小红的学习详情/)).toBeInTheDocument()
+    expect(await screen.findByText('掌握度提升')).toBeInTheDocument()
   })
 
   it('shows structured teacher summary when session_id is present', async () => {

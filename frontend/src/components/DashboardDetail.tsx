@@ -37,13 +37,37 @@ export default function DashboardDetail({ detail, surface = 'teacher' }: Dashboa
   const unitName = unitId ? DEMO_UNIT_NAMES[unitId] || unitId : null
   const [teacherSummary, setTeacherSummary] = useState<TeacherSummary | null>(null)
   const [parentSummary, setParentSummary] = useState<ParentSummary | null>(null)
+  const [summaryLoad, setSummaryLoad] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
 
   useEffect(() => {
-    if (!detail.session_id) return
-    if (surface === 'teacher') {
-      void api.getTeacherSummary(detail.session_id).then(setTeacherSummary).catch(() => setTeacherSummary(null))
-    } else {
-      void api.getParentSummary(detail.session_id).then(setParentSummary).catch(() => setParentSummary(null))
+    setTeacherSummary(null)
+    setParentSummary(null)
+    if (!detail.session_id) {
+      setSummaryLoad('idle')
+      return
+    }
+    setSummaryLoad('loading')
+    let cancelled = false
+    const request =
+      surface === 'teacher'
+        ? api.getTeacherSummary(detail.session_id).then((data) => {
+            if (cancelled) return
+            setTeacherSummary(data)
+            setSummaryLoad('ready')
+          })
+        : api.getParentSummary(detail.session_id).then((data) => {
+            if (cancelled) return
+            setParentSummary(data)
+            setSummaryLoad('ready')
+          })
+    void request.catch(() => {
+      if (cancelled) return
+      setTeacherSummary(null)
+      setParentSummary(null)
+      setSummaryLoad('error')
+    })
+    return () => {
+      cancelled = true
     }
   }, [detail.session_id, surface])
 
@@ -115,7 +139,7 @@ export default function DashboardDetail({ detail, surface = 'teacher' }: Dashboa
           {teacherSummary.narrative ? <p>{teacherSummary.narrative}</p> : null}
         </div>
       ) : null}
-      {unitId && surface === 'parent' && !parentSummary ? (
+      {unitId && surface === 'parent' && summaryLoad === 'error' ? (
         <div className="parent-demo-panel">
           <h3>家庭辅导建议</h3>
           {enrichment?.parent_summary ? <p>{enrichment.parent_summary}</p> : null}
