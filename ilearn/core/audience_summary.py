@@ -124,6 +124,66 @@ class ParentSummary(BaseModel):
     narrative: str
 
 
+class StudentSummary(BaseModel):
+    current_task: str
+    completed_tasks: int
+    total_tasks: int
+    stars_earned: int
+    next_challenge: str
+    narrative: str
+
+
+def build_student_summary(session: SessionState) -> StudentSummary:
+    plan = session.plan
+    paper = session.paper
+
+    if plan is not None and plan.days:
+        total_tasks = max(len(plan.days), 1)
+    else:
+        total_tasks = max(len(paper.items) if paper else 0, 1)
+
+    completed_tasks = min(len(session.answers), total_tasks)
+
+    current_task = "完成今日练习"
+    if plan is not None:
+        if plan.goal:
+            current_task = plan.goal
+        elif plan.days:
+            for task in plan.days[0].tasks:
+                if task:
+                    current_task = task
+                    break
+
+    weaknesses_resolved = int(session.metadata.get("demo_weaknesses_resolved") or 0)
+    paper_bonus = 1 if paper and len(session.answers) >= len(paper.items) else 0
+    stars_earned = weaknesses_resolved * 2 + paper_bonus
+
+    next_challenge = "挑战下一关练习"
+    if session.diagnosis is not None:
+        for row in session.diagnosis.knowledge_mastery:
+            if row.level == "weak":
+                next_challenge = row.knowledge_name or row.knowledge_id
+                break
+
+    narrative = f"已完成 {completed_tasks}/{total_tasks} 个任务，继续加油！"
+
+    merged: dict[str, Any] = {
+        "current_task": current_task,
+        "completed_tasks": completed_tasks,
+        "total_tasks": total_tasks,
+        "stars_earned": stars_earned,
+        "next_challenge": next_challenge,
+        "narrative": narrative,
+    }
+    overlay = session.metadata.get("student_summary")
+    if isinstance(overlay, dict):
+        for key in StudentSummary.model_fields:
+            if key in overlay and overlay[key] is not None:
+                merged[key] = overlay[key]
+
+    return StudentSummary(**merged)
+
+
 def build_teacher_summary(session: SessionState) -> TeacherSummary:
     demo = bool(session.metadata.get("demo_unit"))
     class_data = session.metadata.get("demo_class_data") or {}
