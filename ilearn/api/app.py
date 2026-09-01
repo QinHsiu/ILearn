@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+from ilearn.core.effectiveness import effectiveness_payload
 from ilearn.core.export_markdown import (
     render_advice_report_markdown,
     render_assessment_review_markdown,
@@ -358,6 +359,11 @@ def create_app(
         session = store.load(session_id)
         markdown = orchestrator.report(session_id)
         return ReportResponse(markdown=markdown, session=session)
+
+    @app.get("/sessions/{session_id}/effectiveness")
+    def get_effectiveness(session_id: str) -> dict:
+        session = store.load(session_id)
+        return effectiveness_payload(session)
 
     @app.get("/sessions/{session_id}/export/assessment.pdf")
     def export_assessment_pdf(session_id: str) -> Response:
