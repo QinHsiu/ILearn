@@ -212,6 +212,29 @@ export type LoginResponse = {
   user_id: string
 }
 
+export type WeaknessStat = { skill: string; affected_students: number }
+export type InterventionStudent = { name: string; weakness: string; session_id: string }
+export type TeacherSummary = {
+  class_name: string
+  student_count: number
+  avg_mastery: number
+  top_weaknesses: WeaknessStat[]
+  need_intervention_students: InterventionStudent[]
+  auto_graded_rate: number
+  estimated_time_saved_minutes: number
+  narrative: string
+}
+export type ParentSummary = {
+  child_name: string
+  current_mastery: number
+  mastery_change: number
+  weak_skills: string[]
+  learning_phase: string
+  daily_practice_tips: string[]
+  next_milestone: string
+  narrative: string
+}
+
 const MIME_BY_EXT: Record<string, ImageMime> = {
   png: 'image/png',
   jpg: 'image/jpeg',
@@ -404,6 +427,12 @@ export const api = {
   },
   getEffectiveness(sessionId: string) {
     return request<EffectivenessResponse>(`/sessions/${sessionId}/effectiveness`)
+  },
+  getTeacherSummary(sessionId: string) {
+    return request<TeacherSummary>(`/sessions/${sessionId}/summary/teacher`)
+  },
+  getParentSummary(sessionId: string) {
+    return request<ParentSummary>(`/sessions/${sessionId}/summary/parent`)
   },
   heartbeat(sessionId: string) {
     return request<{ ok: boolean; phase: string; server_time: string }>(

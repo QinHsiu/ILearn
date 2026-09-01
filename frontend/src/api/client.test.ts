@@ -203,6 +203,36 @@ describe('api.getEffectiveness', () => {
   })
 })
 
+describe('api.getTeacherSummary / getParentSummary', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('GETs teacher summary', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ class_name: 'demo_class_5a', student_count: 35 }))
+    await api.getTeacherSummary('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/sessions/s1/summary/teacher'),
+      expect.anything(),
+    )
+  })
+
+  it('GETs parent summary', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ child_name: '小明' }))
+    await api.getParentSummary('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/sessions/s1/summary/parent'),
+      expect.anything(),
+    )
+  })
+})
+
 describe('api.exportEffectivenessPdf', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
