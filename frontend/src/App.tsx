@@ -13,6 +13,7 @@ import MarkdownView from './MarkdownView'
 import HistoryList from './components/HistoryList'
 import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
+import StudentSummaryPanel from './components/StudentSummaryPanel'
 import ParentDashboard from './pages/ParentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import LandingPage from './pages/LandingPage'
@@ -21,6 +22,7 @@ import Assessment from './pages/Assessment'
 import type { AuthRole } from './api/client'
 import { useRole } from './hooks/useRole'
 import { useSessionSync } from './hooks/useSessionSync'
+import { readDemoSessionId } from './lib/demoSessionQuery'
 import { nextStepOnSync, stepFromSession } from './lib/sessionStep'
 import { applyTheme } from './theme'
 import './styles.css'
@@ -103,7 +105,12 @@ export default function App() {
 
 function StudentApp() {
   const [step, setStep] = useState(0)
-  const [busy, setBusy] = useState(false)
+  const [resumePending, setResumePending] = useState(() =>
+    Boolean(readDemoSessionId(window.location.search)),
+  )
+  const [busy, setBusy] = useState(() =>
+    Boolean(readDemoSessionId(window.location.search)),
+  )
   const [error, setError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [paper, setPaper] = useState<AssessmentPaper | null>(null)
@@ -169,7 +176,7 @@ function StudentApp() {
 
   useSessionSync({ sessionId, onSync: onSessionSync, hasUnsavedChanges })
 
-  async function onResume(id: string) {
+  const onResume = useCallback(async (id: string) => {
     const nextReport = await api.getReport(id)
     const nextSession = nextReport.session
     setSessionId(id)
@@ -186,7 +193,26 @@ function StudentApp() {
       applyTheme(nextSession.profile.grade, nextSession.profile.gender || 'unspecified')
     }
     setStep(stepFromSession(nextSession))
-  }
+  }, [])
+
+  const resumedFromQueryRef = useRef(false)
+  useEffect(() => {
+    if (resumedFromQueryRef.current) return
+    const id = readDemoSessionId(window.location.search)
+    if (!id) {
+      setResumePending(false)
+      return
+    }
+    resumedFromQueryRef.current = true
+    setBusy(true)
+    setResumePending(true)
+    void onResume(id)
+      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => {
+        setBusy(false)
+        setResumePending(false)
+      })
+  }, [onResume])
 
   async function onStart(e: FormEvent) {
     e.preventDefault()
@@ -312,7 +338,13 @@ function StudentApp() {
         ))}
       </nav>
 
-      {step === 0 && (
+      {resumePending ? (
+        <section className="panel">
+          <p className="lede">正在恢复会话…</p>
+        </section>
+      ) : null}
+
+      {step === 0 && !resumePending && (
         <section className="panel">
           <h2>建档</h2>
           <p className="lede">填写学习者信息后生成诊断卷。请先启动 FastAPI（:8000）。</p>
@@ -500,6 +532,7 @@ function StudentApp() {
             状态：{session.plan?.status || 'draft'}
             {profile.nickname ? ` · ${profile.nickname}` : ''}
           </p>
+          {sessionId ? <StudentSummaryPanel sessionId={sessionId} /> : null}
           {session.metadata?.scientific_plan ? (
             <details className="scientific-plan-summary">
               <summary>科学学习方法摘要</summary>

@@ -89,7 +89,11 @@ export type SessionState = {
       weak_skills?: string[]
       prerequisite_gaps?: string[]
       learning_advice?: string
+      parent_summary?: string
+      teacher_summary?: string
     }
+    demo_unit?: string
+    demo_class_data?: DemoClassData
     scientific_plan?: {
       tasks?: Array<{ type?: string; skill?: string; instruction?: string }>
       review_schedule?: Array<{ skill?: string; scheduled_date?: string; session?: number }>
@@ -144,11 +148,99 @@ export type DashboardClassSummary = {
 
 export type DashboardStudentDetail = SessionState
 
+export type DemoSessionLinks = {
+  student: string
+  teacher: string
+  parent: string
+}
+
+export type DemoSessionResponse = {
+  session_id: string
+  unit_name: string
+  links: DemoSessionLinks
+}
+
+export type DemoClassData = {
+  class_size?: number
+  avg_mastery?: number
+  mastery_distribution?: number[]
+  common_weaknesses?: string[]
+}
+
+export type TeachingEffectivenessMetrics = {
+  pre_assessment_score: number
+  post_assessment_score: number | null
+  mastery_gain: number
+  weakness_resolved_count: number
+  weakness_remaining_count: number
+  total_questions: number
+  auto_graded_count: number
+  manual_review_count: number
+  estimated_grading_time_minutes: number
+  traditional_grading_time_minutes: number
+  time_saved_percent: number
+  session_duration_seconds: number
+  hint_used_count: number
+  avg_response_time_seconds: number
+  completion_rate: number
+  diagnosis_confidence: number
+  evidence_count: number
+  parent_view_count: number
+  teacher_notes_count: number
+}
+
+export type EffectivenessComparisonPair = {
+  traditional: string
+  ilearn: string
+}
+
+export type EffectivenessResponse = {
+  metrics: TeachingEffectivenessMetrics
+  comparison: {
+    traditional_vs_ilearn: {
+      grading_time: EffectivenessComparisonPair
+      personalized: EffectivenessComparisonPair
+      feedback_delay: EffectivenessComparisonPair
+    }
+  }
+}
+
 export type AuthRole = 'parent' | 'teacher'
 
 export type LoginResponse = {
   role: AuthRole
   user_id: string
+}
+
+export type WeaknessStat = { skill: string; affected_students: number }
+export type InterventionStudent = { name: string; weakness: string; session_id: string }
+export type TeacherSummary = {
+  class_name: string
+  student_count: number
+  avg_mastery: number
+  top_weaknesses: WeaknessStat[]
+  need_intervention_students: InterventionStudent[]
+  auto_graded_rate: number
+  estimated_time_saved_minutes: number
+  narrative: string
+}
+export type ParentSummary = {
+  child_name: string
+  current_mastery: number
+  mastery_change: number
+  weak_skills: string[]
+  learning_phase: string
+  daily_practice_tips: string[]
+  next_milestone: string
+  narrative: string
+}
+export type StudentSummary = {
+  current_task: string
+  completed_tasks: number
+  total_tasks: number
+  stars_earned: number
+  next_challenge: string
+  narrative: string
 }
 
 const MIME_BY_EXT: Record<string, ImageMime> = {
@@ -204,6 +296,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
+async function downloadBlob(path: string, filename: string): Promise<void> {
+  const response = await fetch(path)
+  if (!response.ok) {
+    let detail = `HTTP ${response.status}`
+    try {
+      const body = await response.json()
+      detail = body.detail || detail
+    } catch {
+      /* ignore */
+    }
+    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
+  }
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
 export type CurriculumRefSummary = {
   region?: string
   edition?: string
@@ -239,6 +354,11 @@ export const api = {
     return request<{ session_id: string }>('/sessions', {
       method: 'POST',
       body: JSON.stringify(profile),
+    })
+  },
+  createDemoSession(unitId: string) {
+    return request<DemoSessionResponse>(`/demo/units/${unitId}/session`, {
+      method: 'POST',
     })
   },
   generateAssessment(sessionId: string) {
@@ -313,37 +433,33 @@ export const api = {
   getSession(sessionId: string) {
     return request<SessionState>(`/sessions/${sessionId}`)
   },
+  getEffectiveness(sessionId: string) {
+    return request<EffectivenessResponse>(`/sessions/${sessionId}/effectiveness`)
+  },
+  getTeacherSummary(sessionId: string) {
+    return request<TeacherSummary>(`/sessions/${sessionId}/summary/teacher`)
+  },
+  getParentSummary(sessionId: string) {
+    return request<ParentSummary>(`/sessions/${sessionId}/summary/parent`)
+  },
+  getStudentSummary(sessionId: string) {
+    return request<StudentSummary>(`/sessions/${sessionId}/summary/student`)
+  },
   heartbeat(sessionId: string) {
     return request<{ ok: boolean; phase: string; server_time: string }>(
       `/sessions/${sessionId}/heartbeat`,
       { method: 'POST' },
     )
   },
-  async downloadExport(sessionId: string, kind: 'assessment' | 'report', filename: string) {
+  exportEffectivenessPdf(sessionId: string, filename = 'ILearn-effectiveness.pdf') {
+    return downloadBlob(`/sessions/${sessionId}/export/effectiveness.pdf`, filename)
+  },
+  downloadExport(sessionId: string, kind: 'assessment' | 'report', filename: string) {
     const path =
       kind === 'assessment'
         ? `/sessions/${sessionId}/export/assessment.pdf`
         : `/sessions/${sessionId}/export/report.pdf`
-    const response = await fetch(path)
-    if (!response.ok) {
-      let detail = `HTTP ${response.status}`
-      try {
-        const body = await response.json()
-        detail = body.detail || detail
-      } catch {
-        /* ignore */
-      }
-      throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
-    }
-    const blob = await response.blob()
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    return downloadBlob(path, filename)
   },
 }
 

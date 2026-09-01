@@ -103,7 +103,7 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
             <button className="btn" type="submit">绑定学生并刷新</button>
           </form>
         </section>
-        {selected ? <DashboardDetail detail={selected} /> : null}
+        {selected ? <DashboardDetail detail={selected} surface="teacher" /> : null}
       </main>
     </DashboardHome>
   )

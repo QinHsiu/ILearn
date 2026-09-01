@@ -1,0 +1,39 @@
+{
+  "id": "math_5_1",
+  "name": "小数乘法",
+  "grade": 5,
+  "region": "北京",
+  "publisher": "人教",
+  "estimated_duration": "45分钟",
+  "knowledge_ids": [
+    {"id": "kp_5fbf83ae12", "name": "小数乘整数"},
+    {"id": "kp_4433814116", "name": "小数乘小数"},
+    {"id": "dec_mult", "name": "积的近似数"},
+    {"id": "dec_mult", "name": "整数乘法运算律推广到小数"}
+  ],
+  "blueprint": {
+    "total_questions": 20,
+    "difficulty_distribution": {"easy": 10, "medium": 8, "hard": 2},
+    "item_types": {"choice": 7, "fill": 7, "constructed": 6}
+  },
+  "profile_overrides": {
+    "nickname": "小明",
+    "age": 11,
+    "gender": "male",
+    "subject": "math"
+  },
+  "initial_mastery": {
+    "小数乘整数": 0.85,
+    "小数乘小数": 0.45,
+    "积的近似数": 0.6,
+    "整数乘法运算律推广到小数": 0.3
+  },
+  "demo_class_data": {
+    "class_size": 35,
+    "avg_mastery": 0.62,
+    "mastery_distribution": [8, 12, 10, 5],
+    "common_weaknesses": ["小数乘小数", "运算律推广"]
+  },
+  "demo_mastery_gain": 18.0,
+  "demo_weaknesses_resolved": 1
+}

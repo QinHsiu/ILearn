@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { dashboardApi } from './client'
+import { api, dashboardApi } from './client'
 
 function jsonResponse(body: unknown, status = 200): Response {
   return {
@@ -116,5 +116,174 @@ describe('dashboardApi', () => {
         headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
       }),
     )
+  })
+})
+
+describe('api.createDemoSession', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('POSTs /demo/units/{unitId}/session and returns links', async () => {
+    const body = {
+      session_id: 'sess-demo',
+      unit_name: '小数乘法',
+      links: {
+        student: '?student=1&session_id=sess-demo',
+        teacher:
+          '?login=1&role=teacher&user=demo_teacher&class_id=demo_class_5a&student_id=sess-demo',
+        parent: '?login=1&role=parent&user=demo_parent&student_id=sess-demo',
+      },
+    }
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse(body))
+
+    const result = await api.createDemoSession('math_5_1')
+
+    expect(result).toEqual(body)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/demo/units/math_5_1/session',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+      }),
+    )
+  })
+})
+
+const EFFECTIVENESS = {
+  metrics: {
+    mastery_gain: 18,
+    time_saved_percent: 83.75,
+    completion_rate: 100,
+    diagnosis_confidence: 0.82,
+    weakness_resolved_count: 1,
+    traditional_grading_time_minutes: 40,
+    estimated_grading_time_minutes: 6.5,
+    total_questions: 20,
+    evidence_count: 5,
+    auto_graded_count: 14,
+    manual_review_count: 6,
+  },
+  comparison: {
+    traditional_vs_ilearn: {
+      grading_time: { traditional: '40.0分钟', ilearn: '6.5分钟' },
+      personalized: { traditional: '统一作业', ilearn: '自适应个性化' },
+      feedback_delay: { traditional: '1-2天', ilearn: '即时' },
+    },
+  },
+}
+
+describe('api.getEffectiveness', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('GETs /sessions/{id}/effectiveness', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse(EFFECTIVENESS))
+
+    const result = await api.getEffectiveness('sess-1')
+
+    expect(result).toEqual(EFFECTIVENESS)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/sess-1/effectiveness',
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+      }),
+    )
+  })
+})
+
+describe('api.getTeacherSummary / getParentSummary', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('GETs teacher summary', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ class_name: 'demo_class_5a', student_count: 35 }))
+    await api.getTeacherSummary('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/sessions/s1/summary/teacher'),
+      expect.anything(),
+    )
+  })
+
+  it('GETs parent summary', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ child_name: '小明' }))
+    await api.getParentSummary('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/sessions/s1/summary/parent'),
+      expect.anything(),
+    )
+  })
+
+  it('GETs student summary', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        current_task: '小数乘法',
+        completed_tasks: 2,
+        total_tasks: 5,
+        stars_earned: 3,
+        next_challenge: '应用题',
+        narrative: '继续加油',
+      }),
+    )
+    await api.getStudentSummary('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/sessions/s1/summary/student'),
+      expect.anything(),
+    )
+  })
+})
+
+describe('api.exportEffectivenessPdf', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('downloads the effectiveness PDF blob', async () => {
+    const blob = new Blob(['%PDF'], { type: 'application/pdf' })
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      blob: () => Promise.resolve(blob),
+    } as Response)
+    const createObjectURL = vi.fn(() => 'blob:effectiveness')
+    const revokeObjectURL = vi.fn()
+    Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: createObjectURL })
+    Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: revokeObjectURL })
+    const click = vi.fn()
+    const link = document.createElement('a')
+    link.click = click
+    vi.spyOn(document, 'createElement').mockReturnValue(link)
+
+    await api.exportEffectivenessPdf('sess-1')
+
+    expect(mockFetch).toHaveBeenCalledWith('/sessions/sess-1/export/effectiveness.pdf')
+    expect(link.download).toBe('ILearn-effectiveness.pdf')
+    expect(click).toHaveBeenCalled()
+    expect(createObjectURL).toHaveBeenCalled()
+    expect(revokeObjectURL).toHaveBeenCalled()
   })
 })

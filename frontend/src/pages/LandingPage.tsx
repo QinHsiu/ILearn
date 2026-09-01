@@ -1,4 +1,5 @@
-import type { AuthRole } from '../api/client'
+import { useState } from 'react'
+import { api, type AuthRole } from '../api/client'
 
 const roleCards: Array<{
   role: AuthRole | 'student'
@@ -31,6 +32,22 @@ const roleCards: Array<{
 ]
 
 export default function LandingPage() {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [demoRole, setDemoRole] = useState<'teacher' | 'parent' | 'student'>('teacher')
+
+  async function startDemo() {
+    setBusy(true)
+    setError(null)
+    try {
+      const demo = await api.createDemoSession('math_5_1')
+      window.location.href = demo.links[demoRole]
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '演示创建失败')
+      setBusy(false)
+    }
+  }
+
   return (
     <main className="landing-page">
       <header className="landing-header">
@@ -71,6 +88,47 @@ export default function LandingPage() {
           <li><span>计划 — 生成下一步学习路径</span></li>
           <li><span>反馈 — 根据练习结果持续调整</span></li>
         </ol>
+      </section>
+      <section className="demo-unit" aria-labelledby="demo-unit-title">
+        <p className="landing-index">/ 04 · DEMO UNIT</p>
+        <h2 id="demo-unit-title">体验完整教学单元</h2>
+        <article className="demo-card">
+          <span className="demo-card-marker">05</span>
+          <div>
+            <p className="demo-card-kicker">人教 · 五年级</p>
+            <h3 className="demo-card-title">小数乘法</h3>
+            <p className="demo-card-description">
+              一键进入已预置诊断、计划与班级数据的闭环演示。
+            </p>
+          </div>
+          <div role="radiogroup" aria-label="演示角色">
+            {(['teacher', 'parent', 'student'] as const).map((role) => (
+              <label key={role}>
+                <input
+                  type="radio"
+                  name="demo-role"
+                  value={role}
+                  checked={demoRole === role}
+                  onChange={() => setDemoRole(role)}
+                />
+                {role === 'teacher' ? '教师' : role === 'parent' ? '家长' : '学生'}
+              </label>
+            ))}
+          </div>
+          <button
+            className="btn"
+            type="button"
+            onClick={() => void startDemo()}
+            disabled={busy}
+          >
+            体验小数乘法
+          </button>
+          {error ? (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </article>
       </section>
     </main>
   )

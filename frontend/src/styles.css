@@ -998,6 +998,71 @@ html[data-band='senior'] .brand {
 .workflow-strip li:first-child { padding-left: 0; border-left: 0; }
 .workflow-strip li span { font: 0.7rem 'JetBrains Mono', monospace; color: var(--il-blue); }
 
+.demo-unit {
+  padding: 3rem 0 0;
+}
+
+.demo-unit h2 {
+  margin: 1rem 0 1.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.demo-card {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+  padding: 1.25rem;
+  border: 1px solid var(--il-ink);
+  background: var(--il-paper);
+}
+
+.demo-card-marker {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--il-blue);
+  color: #fff;
+  font: 0.75rem 'JetBrains Mono', monospace;
+}
+
+.demo-card-kicker {
+  margin: 0;
+  color: var(--il-muted);
+  font: 0.7rem/1.4 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demo-card-title {
+  margin: 0.2rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.demo-card-description {
+  margin: 0;
+  color: var(--il-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.demo-card .btn {
+  grid-column: 3;
+  grid-row: 1 / 4;
+  align-self: center;
+  background: var(--il-blue);
+}
+
+.demo-card .error {
+  grid-column: 2 / -1;
+}
+
 .login-grid { padding-top: 4rem; }
 .login-form { grid-column: 11 / -1; align-self: start; padding: 1.5rem; border-color: var(--il-ink); }
 .login-form h2 { margin: 0.75rem 0 1.5rem; font-size: 1.5rem; }
@@ -1019,6 +1084,8 @@ html[data-band='senior'] .brand {
   .landing-hero h1, .login-intro h1 { font-size: 3rem; }
   .workflow-strip ol { grid-template-columns: 1fr; gap: 1rem; }
   .workflow-strip li, .workflow-strip li:first-child { padding: 0; border-left: 0; }
+  .demo-card { grid-template-columns: 2.5rem 1fr; }
+  .demo-card .btn { grid-column: 1 / -1; grid-row: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

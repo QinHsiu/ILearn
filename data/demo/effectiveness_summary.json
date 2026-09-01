@@ -1,0 +1,30 @@
+{
+  "total_sessions": 1,
+  "avg_mastery_gain": 18.0,
+  "avg_time_saved": 83.75,
+  "avg_completion_rate": 100.0,
+  "total_weakness_resolved": 1,
+  "sessions": [
+    {
+      "pre_assessment_score": 60.0,
+      "post_assessment_score": null,
+      "mastery_gain": 18.0,
+      "weakness_resolved_count": 1,
+      "weakness_remaining_count": 2,
+      "total_questions": 20,
+      "auto_graded_count": 14,
+      "manual_review_count": 6,
+      "estimated_grading_time_minutes": 6.5,
+      "traditional_grading_time_minutes": 40.0,
+      "time_saved_percent": 83.75,
+      "session_duration_seconds": 1680,
+      "hint_used_count": 0,
+      "avg_response_time_seconds": 0.0,
+      "completion_rate": 100.0,
+      "diagnosis_confidence": 0.82,
+      "evidence_count": 20,
+      "parent_view_count": 3,
+      "teacher_notes_count": 2
+    }
+  ]
+}

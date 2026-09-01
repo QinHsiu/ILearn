@@ -11,6 +11,17 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+from ilearn.core.audience_summary import (
+    build_parent_summary,
+    build_student_summary,
+    build_teacher_summary,
+)
+from ilearn.core.effectiveness import (
+    compute_metrics,
+    effectiveness_payload,
+    render_effectiveness_markdown,
+)
+from ilearn.demo.units import load_demo_unit
 from ilearn.core.export_markdown import (
     render_advice_report_markdown,
     render_assessment_review_markdown,
@@ -25,6 +36,7 @@ from ilearn.core.user_errors import UserFriendlyError, map_exception_message
 from ilearn.core.validators import validate_submit_answers
 from ilearn.api.auth import create_auth_router
 from ilearn.api.dashboard import create_dashboard_router
+from ilearn.api.demo import create_demo_router
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
@@ -163,6 +175,7 @@ def create_app(
     app = FastAPI(title="ILearn", version="0.1.0")
     app.include_router(create_auth_router(auth_credentials))
     app.include_router(create_dashboard_router(store, relationships))
+    app.include_router(create_demo_router(store, relationships))
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(_WEB_ORIGINS),
@@ -357,6 +370,26 @@ def create_app(
         markdown = orchestrator.report(session_id)
         return ReportResponse(markdown=markdown, session=session)
 
+    @app.get("/sessions/{session_id}/effectiveness")
+    def get_effectiveness(session_id: str) -> dict:
+        session = store.load(session_id)
+        return effectiveness_payload(session)
+
+    @app.get("/sessions/{session_id}/summary/teacher")
+    def get_teacher_summary(session_id: str) -> dict:
+        session = store.load(session_id)
+        return build_teacher_summary(session).model_dump()
+
+    @app.get("/sessions/{session_id}/summary/parent")
+    def get_parent_summary(session_id: str) -> dict:
+        session = store.load(session_id)
+        return build_parent_summary(session).model_dump()
+
+    @app.get("/sessions/{session_id}/summary/student")
+    def get_student_summary(session_id: str) -> dict:
+        session = store.load(session_id)
+        return build_student_summary(session).model_dump()
+
     @app.get("/sessions/{session_id}/export/assessment.pdf")
     def export_assessment_pdf(session_id: str) -> Response:
         session = store.load(session_id)
@@ -383,6 +416,27 @@ def create_app(
             media_type="application/pdf",
             headers={
                 "Content-Disposition": 'attachment; filename="ILearn-report.pdf"'
+            },
+        )
+
+    @app.get("/sessions/{session_id}/export/effectiveness.pdf")
+    def export_effectiveness_pdf(session_id: str) -> Response:
+        session = store.load(session_id)
+        metrics = compute_metrics(session)
+        unit_id = session.metadata.get("demo_unit")
+        unit_name = ""
+        if unit_id:
+            try:
+                unit_name = str(load_demo_unit(str(unit_id)).get("name") or "")
+            except FileNotFoundError:
+                unit_name = str(unit_id)
+        markdown = render_effectiveness_markdown(metrics, unit_name=unit_name)
+        pdf = markdown_to_pdf(markdown)
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'attachment; filename="ILearn-effectiveness.pdf"'
             },
         )
 
