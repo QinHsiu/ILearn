@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+from ilearn.core.audience_summary import build_parent_summary, build_teacher_summary
 from ilearn.core.effectiveness import (
     compute_metrics,
     effectiveness_payload,
@@ -369,6 +370,16 @@ def create_app(
     def get_effectiveness(session_id: str) -> dict:
         session = store.load(session_id)
         return effectiveness_payload(session)
+
+    @app.get("/sessions/{session_id}/summary/teacher")
+    def get_teacher_summary(session_id: str) -> dict:
+        session = store.load(session_id)
+        return build_teacher_summary(session).model_dump()
+
+    @app.get("/sessions/{session_id}/summary/parent")
+    def get_parent_summary(session_id: str) -> dict:
+        session = store.load(session_id)
+        return build_parent_summary(session).model_dump()
 
     @app.get("/sessions/{session_id}/export/assessment.pdf")
     def export_assessment_pdf(session_id: str) -> Response:
