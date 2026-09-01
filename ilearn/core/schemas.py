@@ -41,6 +41,7 @@ class SessionPhase(str, Enum):
     DIAGNOSE = "diagnose"
     PLAN = "plan"
     PRACTICE_LOOP = "practice_loop"
+    IDLE = "idle"
 
 
 class StudentProfile(BaseModel):
