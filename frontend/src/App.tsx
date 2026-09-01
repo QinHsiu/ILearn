@@ -13,6 +13,7 @@ import MarkdownView from './MarkdownView'
 import HistoryList from './components/HistoryList'
 import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
+import StudentSummaryPanel from './components/StudentSummaryPanel'
 import ParentDashboard from './pages/ParentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import LandingPage from './pages/LandingPage'
@@ -531,6 +532,7 @@ function StudentApp() {
             状态：{session.plan?.status || 'draft'}
             {profile.nickname ? ` · ${profile.nickname}` : ''}
           </p>
+          {sessionId ? <StudentSummaryPanel sessionId={sessionId} /> : null}
           {session.metadata?.scientific_plan ? (
             <details className="scientific-plan-summary">
               <summary>科学学习方法摘要</summary>
