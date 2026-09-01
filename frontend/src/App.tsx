@@ -104,7 +104,12 @@ export default function App() {
 
 function StudentApp() {
   const [step, setStep] = useState(0)
-  const [busy, setBusy] = useState(false)
+  const [resumePending, setResumePending] = useState(() =>
+    Boolean(readDemoSessionId(window.location.search)),
+  )
+  const [busy, setBusy] = useState(() =>
+    Boolean(readDemoSessionId(window.location.search)),
+  )
   const [error, setError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [paper, setPaper] = useState<AssessmentPaper | null>(null)
@@ -193,12 +198,19 @@ function StudentApp() {
   useEffect(() => {
     if (resumedFromQueryRef.current) return
     const id = readDemoSessionId(window.location.search)
-    if (!id) return
+    if (!id) {
+      setResumePending(false)
+      return
+    }
     resumedFromQueryRef.current = true
     setBusy(true)
+    setResumePending(true)
     void onResume(id)
       .catch((err) => setError(err instanceof Error ? err.message : String(err)))
-      .finally(() => setBusy(false))
+      .finally(() => {
+        setBusy(false)
+        setResumePending(false)
+      })
   }, [onResume])
 
   async function onStart(e: FormEvent) {
@@ -325,7 +337,13 @@ function StudentApp() {
         ))}
       </nav>
 
-      {step === 0 && (
+      {resumePending ? (
+        <section className="panel">
+          <p className="lede">正在恢复会话…</p>
+        </section>
+      ) : null}
+
+      {step === 0 && !resumePending && (
         <section className="panel">
           <h2>建档</h2>
           <p className="lede">填写学习者信息后生成诊断卷。请先启动 FastAPI（:8000）。</p>
