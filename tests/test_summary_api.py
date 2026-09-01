@@ -33,6 +33,21 @@ def test_summary_teacher_and_parent(tmp_path: Path):
     assert "daily_practice_tips" in pr.json()
 
 
+def test_summary_student(tmp_path: Path):
+    client = _client(tmp_path)
+    sid = client.post("/demo/units/math_5_1/session").json()["session_id"]
+    r = client.get(f"/sessions/{sid}/summary/student")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total_tasks"] == 5
+    assert body["stars_earned"] == 5
+    assert "current_task" in body
+
+
+def test_summary_student_missing_404(tmp_path: Path):
+    assert _client(tmp_path).get("/sessions/missing/summary/student").status_code == 404
+
+
 def test_summary_missing_session_404(tmp_path: Path):
     client = _client(tmp_path)
     assert client.get("/sessions/missing/summary/teacher").status_code == 404
