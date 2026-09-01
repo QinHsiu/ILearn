@@ -154,3 +154,87 @@ describe('api.createDemoSession', () => {
     )
   })
 })
+
+const EFFECTIVENESS = {
+  metrics: {
+    mastery_gain: 18,
+    time_saved_percent: 83.75,
+    completion_rate: 100,
+    diagnosis_confidence: 0.82,
+    weakness_resolved_count: 1,
+    traditional_grading_time_minutes: 40,
+    estimated_grading_time_minutes: 6.5,
+    total_questions: 20,
+    evidence_count: 5,
+    auto_graded_count: 14,
+    manual_review_count: 6,
+  },
+  comparison: {
+    traditional_vs_ilearn: {
+      grading_time: { traditional: '40.0分钟', ilearn: '6.5分钟' },
+      personalized: { traditional: '统一作业', ilearn: '自适应个性化' },
+      feedback_delay: { traditional: '1-2天', ilearn: '即时' },
+    },
+  },
+}
+
+describe('api.getEffectiveness', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('GETs /sessions/{id}/effectiveness', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse(EFFECTIVENESS))
+
+    const result = await api.getEffectiveness('sess-1')
+
+    expect(result).toEqual(EFFECTIVENESS)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/sess-1/effectiveness',
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+      }),
+    )
+  })
+})
+
+describe('api.exportEffectivenessPdf', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('downloads the effectiveness PDF blob', async () => {
+    const blob = new Blob(['%PDF'], { type: 'application/pdf' })
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      blob: () => Promise.resolve(blob),
+    } as Response)
+    const createObjectURL = vi.fn(() => 'blob:effectiveness')
+    const revokeObjectURL = vi.fn()
+    Object.defineProperty(URL, 'createObjectURL', { configurable: true, writable: true, value: createObjectURL })
+    Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, writable: true, value: revokeObjectURL })
+    const click = vi.fn()
+    const link = document.createElement('a')
+    link.click = click
+    vi.spyOn(document, 'createElement').mockReturnValue(link)
+
+    await api.exportEffectivenessPdf('sess-1')
+
+    expect(mockFetch).toHaveBeenCalledWith('/sessions/sess-1/export/effectiveness.pdf')
+    expect(link.download).toBe('ILearn-effectiveness.pdf')
+    expect(click).toHaveBeenCalled()
+    expect(createObjectURL).toHaveBeenCalled()
+    expect(revokeObjectURL).toHaveBeenCalled()
+  })
+})
