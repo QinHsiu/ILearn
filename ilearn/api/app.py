@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -12,9 +13,9 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
 from ilearn.core.audience_summary import (
-    build_parent_summary,
-    build_student_summary,
-    build_teacher_summary,
+    build_parent_summary_safe,
+    build_student_summary_safe,
+    build_teacher_summary_safe,
 )
 from ilearn.core.effectiveness import (
     compute_metrics,
@@ -29,6 +30,7 @@ from ilearn.core.export_markdown import (
 from ilearn.core.feature_flags import FeatureRegistry
 from ilearn.core.orchestrator import Orchestrator
 from ilearn.core.pdf_export import (
+    PdfExportError,
     get_pdf_backend_info,
     markdown_to_pdf,
     markdown_to_pdf_report,
@@ -68,6 +70,7 @@ _WEB_ORIGINS = (
     "http://127.0.0.1:8501",
 )
 _FRONTEND_DIST = _PROJECT_ROOT / "frontend" / "dist"
+logger = logging.getLogger(__name__)
 
 
 class CreateSessionResponse(BaseModel):
@@ -251,6 +254,41 @@ def create_app(
             },
         )
 
+    def _load_session_optional(session_id: str) -> SessionState | None:
+        try:
+            return store.load(session_id)
+        except FileNotFoundError:
+            logger.warning("session not found for summary: %s", session_id)
+            return None
+
+    def _render_pdf_bytes(render: Callable[[], bytes]) -> bytes:
+        try:
+            return render()
+        except PdfExportError as exc:
+            logger.error("PDF export unavailable: %s", exc.message)
+            raise HTTPException(
+                status_code=503,
+                detail={"code": exc.code, "message": exc.message},
+            ) from exc
+        except ImportError as exc:
+            logger.warning("PDF dependency missing: %s", exc)
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": "PDF_UNAVAILABLE",
+                    "message": "PDF 渲染引擎未就绪，请检查系统依赖或稍后重试。",
+                },
+            ) from exc
+        except Exception as exc:
+            logger.exception("PDF generation failed")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "code": "PDF_GENERATION_FAILED",
+                    "message": f"报告生成失败，请重试。错误参考: {exc}",
+                },
+            ) from exc
+
     @app.get("/pilot-assets/{asset_path:path}", include_in_schema=True)
     def pilot_assets(asset_path: str) -> FileResponse:
         """Serve committed pilot images from data/pilot/assets/."""
@@ -402,18 +440,18 @@ def create_app(
 
     @app.get("/sessions/{session_id}/summary/teacher")
     def get_teacher_summary(session_id: str) -> dict:
-        session = store.load(session_id)
-        return build_teacher_summary(session).model_dump()
+        session = _load_session_optional(session_id)
+        return build_teacher_summary_safe(session).model_dump()
 
     @app.get("/sessions/{session_id}/summary/parent")
     def get_parent_summary(session_id: str) -> dict:
-        session = store.load(session_id)
-        return build_parent_summary(session).model_dump()
+        session = _load_session_optional(session_id)
+        return build_parent_summary_safe(session).model_dump()
 
     @app.get("/sessions/{session_id}/summary/student")
     def get_student_summary(session_id: str) -> dict:
-        session = store.load(session_id)
-        return build_student_summary(session).model_dump()
+        session = _load_session_optional(session_id)
+        return build_student_summary_safe(session).model_dump()
 
     @app.get("/sessions/{session_id}/export/assessment.pdf")
     def export_assessment_pdf(session_id: str) -> Response:
@@ -422,14 +460,14 @@ def create_app(
             markdown = render_assessment_review_markdown(session)
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
-        pdf = markdown_to_pdf(markdown)
+        pdf = _render_pdf_bytes(lambda: markdown_to_pdf(markdown))
         return _pdf_response(pdf, "ILearn-assessment.pdf")
 
     @app.get("/sessions/{session_id}/export/report.pdf")
     def export_report_pdf(session_id: str) -> Response:
         session = store.load(session_id)
         markdown = render_advice_report_markdown(session)
-        pdf = markdown_to_pdf_report(markdown)
+        pdf = _render_pdf_bytes(lambda: markdown_to_pdf_report(markdown))
         return _pdf_response(pdf, "ILearn-report.pdf")
 
     @app.get("/sessions/{session_id}/export/effectiveness.pdf")
@@ -444,7 +482,11 @@ def create_app(
             except FileNotFoundError:
                 unit_name = str(unit_id)
         markdown = render_effectiveness_markdown(metrics, unit_name=unit_name)
-        pdf = markdown_to_pdf(markdown)
+
+        def _render() -> bytes:
+            return markdown_to_pdf(markdown)
+
+        pdf = _render_pdf_bytes(_render)
         return _pdf_response(pdf, "ILearn-effectiveness.pdf")
 
     @app.post("/sessions/{session_id}/run", response_model=SessionState)

@@ -320,31 +320,54 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   })
   if (!response.ok) {
-    let detail = `HTTP ${response.status}`
+    let detail: unknown = `HTTP ${response.status}`
     try {
       const body = await response.json()
-      detail = body.detail || detail
+      detail = body.detail ?? detail
     } catch {
       /* ignore */
     }
-    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
+    throw new DownloadHttpError(response.status, detail)
   }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
 
-async function downloadBlob(path: string, filename: string): Promise<void> {
+export class DownloadHttpError extends Error {
+  status: number
+  detail: unknown
+
+  constructor(status: number, detail: unknown) {
+    const message =
+      typeof detail === 'string'
+        ? detail
+        : typeof detail === 'object' && detail !== null && 'message' in detail
+          ? String((detail as { message?: string }).message)
+          : `HTTP ${status}`
+    super(message)
+    this.name = 'DownloadHttpError'
+    this.status = status
+    this.detail = detail
+  }
+}
+
+export type PdfDownloadResult = {
+  backend: string | null
+}
+
+async function downloadBlob(path: string, filename: string): Promise<PdfDownloadResult> {
   const response = await fetch(path)
   if (!response.ok) {
-    let detail = `HTTP ${response.status}`
+    let detail: unknown = `HTTP ${response.status}`
     try {
       const body = await response.json()
-      detail = body.detail || detail
+      detail = body.detail ?? detail
     } catch {
       /* ignore */
     }
-    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
+    throw new DownloadHttpError(response.status, detail)
   }
+  const backend = response.headers.get('x-pdf-backend')
   const blob = await response.blob()
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -354,6 +377,7 @@ async function downloadBlob(path: string, filename: string): Promise<void> {
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
+  return { backend }
 }
 
 export type CurriculumRefSummary = {

@@ -16,6 +16,14 @@ const SAMPLE = `
 `
 
 describe('parseLearningPlan', () => {
+  it('returns empty plan for invalid markdown input', () => {
+    expect(parseLearningPlan(null)).toEqual({
+      skills: [],
+      tasks: [],
+      spacedRepetitions: [],
+    })
+  })
+
   it('parses task lines and spaced repetition from scientific plan markdown', () => {
     const parsed = parseLearningPlan(SAMPLE)
 
@@ -36,5 +44,11 @@ describe('parseLearningPlan', () => {
     })
     expect(parsed.skills).toContain('分数乘法')
     expect(parsed.skills).toContain('同分母分数加法')
+  })
+
+  it('accepts dot separators in task lines', () => {
+    const parsed = parseLearningPlan('- **费曼讲解**. 小数乘法：讲解概念。')
+    expect(parsed.tasks).toHaveLength(1)
+    expect(parsed.tasks[0].skill).toBe('小数乘法')
   })
 })

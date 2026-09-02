@@ -18,21 +18,32 @@ export type ParsedPlan = {
   spacedRepetitions: SpacedRepetition[]
 }
 
+const EMPTY_PLAN: ParsedPlan = { skills: [], tasks: [], spacedRepetitions: [] }
+
 function normalizeLine(line: string): string {
   let trimmed = line.trim()
   if (trimmed.startsWith('- ')) trimmed = trimmed.slice(2)
   return trimmed.replace(/\*\*/g, '').trim()
 }
 
-export function parseLearningPlan(markdownText: string): ParsedPlan {
+function stripInstructionSuffix(value: string): string {
+  const colon = value.search(/[：:]/)
+  return colon >= 0 ? value.slice(0, colon).trim() : value.trim()
+}
+
+export function parseLearningPlan(markdownText: string | null | undefined): ParsedPlan {
+  if (!markdownText || typeof markdownText !== 'string') {
+    return EMPTY_PLAN
+  }
+
   const tasks: LearningTask[] = []
   const spacedReps: SpacedRepetition[] = []
 
-  const feynmanRegex = /^费曼讲解\s*·\s*(.+?)：/
-  const reviewRegex = /^前置复习\s*·\s*(.+?)：/
-  const correctRegex = /^错题纠正\s*·\s*(.+?)：/
-  const socraticRegex = /^苏格拉底对话\s*·\s*(.+?)：/
-  const spacedRegex = /^(\d{4}-\d{2}-\d{2})\s*·\s*(.+?)（第\s*(\d+)\s*次复习）$/
+  const feynmanRegex = /费曼讲解\s*[·.]\s*(.+)/i
+  const reviewRegex = /前置复习\s*[·.]\s*(.+?)[：:]/i
+  const correctRegex = /错题纠正\s*[·.]\s*(.+)/i
+  const socraticRegex = /苏格拉底对话\s*[·.]\s*(.+)/i
+  const spacedRegex = /(\d{4}-\d{2}-\d{2})\s*[·.]\s*(.+?)\s*（第\s*(\d+)\s*次复习）/
 
   for (const line of markdownText.split('\n')) {
     const trimmed = normalizeLine(line)
@@ -41,13 +52,13 @@ export function parseLearningPlan(markdownText: string): ParsedPlan {
     if (trimmed.startsWith('任务') || trimmed.startsWith('间隔复习')) continue
     if (trimmed.startsWith('预估总用时')) continue
     if (trimmed.includes('个复习节点')) continue
-    if (trimmed.startsWith('- ')) continue
+    if (trimmed.startsWith('---')) continue
 
     const feynmanMatch = trimmed.match(feynmanRegex)
     if (feynmanMatch) {
       tasks.push({
         type: 'feynman',
-        skill: feynmanMatch[1].trim(),
+        skill: stripInstructionSuffix(feynmanMatch[1]),
         description: trimmed,
       })
       continue
@@ -77,7 +88,7 @@ export function parseLearningPlan(markdownText: string): ParsedPlan {
     if (socraticMatch) {
       tasks.push({
         type: 'socratic',
-        skill: socraticMatch[1].trim(),
+        skill: stripInstructionSuffix(socraticMatch[1]),
         description: trimmed,
       })
       continue
@@ -109,4 +120,20 @@ export function parseLearningPlan(markdownText: string): ParsedPlan {
 export function hasLearningMethodsData(markdown: string): boolean {
   const parsed = parseLearningPlan(markdown)
   return parsed.skills.length > 0 || parsed.spacedRepetitions.length > 0
+}
+
+export type SpacedDateStatus = {
+  label: string
+  color: string
+}
+
+export function spacedDateStatus(dateStr: string): SpacedDateStatus {
+  const today = new Date().toISOString().slice(0, 10)
+  if (dateStr === today) {
+    return { label: '今日', color: '#4CAF50' }
+  }
+  if (dateStr < today) {
+    return { label: '已完成', color: '#9E9E9E' }
+  }
+  return { label: '待执行', color: '#FF9800' }
 }

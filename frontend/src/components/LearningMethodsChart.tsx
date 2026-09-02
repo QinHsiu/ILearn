@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import {
   parseLearningPlan,
+  spacedDateStatus,
   type LearningTask,
   type LearningTaskType,
 } from '../lib/parseLearningPlan'
@@ -71,7 +72,12 @@ export default function LearningMethodsChart({
   }, [skills, taskMap])
 
   if (matrixSkills.length === 0 && spacedRepetitions.length === 0) {
-    return <div className="learning-methods-empty">暂无学习方法数据</div>
+    return (
+      <div className="learning-methods-empty learning-methods-empty-state">
+        <p>计划已生成，科学学习方法将随学习进度动态展示</p>
+        <p className="learning-methods-empty-hint">请先完成测评进入巩固环节</p>
+      </div>
+    )
   }
 
   return (
@@ -183,13 +189,23 @@ export default function LearningMethodsChart({
         <div className="spaced-timeline">
           <h4>间隔复习时间轴</h4>
           <div className="timeline-grid">
-            {spacedRepetitions.map((item, index) => (
-              <div key={`${item.date}-${item.skill}-${index}`} className="timeline-item">
-                <span className="timeline-date">{item.date}</span>
-                <span className="timeline-skill">{item.skill}</span>
-                <span className="timeline-rep">第{item.repetition}次</span>
-              </div>
-            ))}
+            {spacedRepetitions.map((item, index) => {
+              const status = spacedDateStatus(item.date)
+              return (
+                <div
+                  key={`${item.date}-${item.skill}-${index}`}
+                  className="timeline-item"
+                  style={{ borderLeftColor: status.color }}
+                >
+                  <span className="timeline-date">{item.date}</span>
+                  <span className="timeline-status" style={{ color: status.color }}>
+                    {status.label}
+                  </span>
+                  <span className="timeline-skill">{item.skill}</span>
+                  <span className="timeline-rep">第{item.repetition}次</span>
+                </div>
+              )
+            })}
           </div>
         </div>
       ) : null}

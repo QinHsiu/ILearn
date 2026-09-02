@@ -6,7 +6,7 @@ import html
 import os
 import re
 from pathlib import Path
-from typing import Literal
+from typing import Callable, Literal
 
 from ilearn.core.markdown_layout import split_learning_report, split_plan_report
 
@@ -16,6 +16,15 @@ _ASSETS_FONTS = _PROJECT_ROOT / "assets" / "fonts"
 PdfBackend = Literal["weasyprint", "fpdf2"]
 _PDF_BACKEND_ENV = "ILEARN_PDF_BACKEND"
 _last_pdf_backend: PdfBackend | None = None
+
+
+class PdfExportError(Exception):
+    """Raised when no PDF backend can render the document."""
+
+    def __init__(self, code: str, message: str) -> None:
+        self.code = code
+        self.message = message
+        super().__init__(message)
 
 _HEADING = re.compile(r"^(#{1,3})\s+(.*)$")
 _UL = re.compile(r"^-\s+(.*)$")
@@ -391,7 +400,7 @@ def markdown_to_pdf(markdown: str) -> bytes:
     forced = configured_pdf_backend()
     if forced == "fpdf2":
         _set_last_pdf_backend("fpdf2")
-        return _fpdf_pdf(markdown)
+        return _render_fpdf_or_raise(markdown)
     if forced == "weasyprint":
         try:
             out = _weasyprint_pdf(markdown)
@@ -399,7 +408,7 @@ def markdown_to_pdf(markdown: str) -> bytes:
             return out
         except Exception:
             _set_last_pdf_backend("fpdf2")
-            return _fpdf_pdf(markdown)
+            return _render_fpdf_or_raise(markdown)
     if _weasyprint_usable():
         try:
             out = _weasyprint_pdf(markdown)
@@ -408,7 +417,22 @@ def markdown_to_pdf(markdown: str) -> bytes:
         except Exception:
             pass
     _set_last_pdf_backend("fpdf2")
-    return _fpdf_pdf(markdown)
+    return _render_fpdf_or_raise(markdown)
+
+
+def _render_fpdf_or_raise(markdown: str) -> bytes:
+    try:
+        return _fpdf_pdf(markdown)
+    except ImportError as exc:
+        raise PdfExportError(
+            "PDF_UNAVAILABLE",
+            "PDF 渲染引擎未就绪，请检查系统依赖或稍后重试。",
+        ) from exc
+    except Exception as exc:
+        raise PdfExportError(
+            "PDF_GENERATION_FAILED",
+            f"报告生成失败，请重试。错误参考: {exc}",
+        ) from exc
 
 
 def _weasyprint_pdf(markdown: str) -> bytes:

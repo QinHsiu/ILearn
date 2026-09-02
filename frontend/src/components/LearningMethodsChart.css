@@ -226,6 +226,28 @@
   text-align: center;
 }
 
+.learning-methods-empty-state {
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px dashed #d0d5dd;
+}
+
+.learning-methods-empty-state p {
+  margin: 0;
+  color: #666;
+}
+
+.learning-methods-empty-hint {
+  margin-top: 8px !important;
+  font-size: 13px;
+  color: #999 !important;
+}
+
+.timeline-status {
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .learning-methods-hours {
   margin: 0 0 12px;
   font-size: 0.9rem;

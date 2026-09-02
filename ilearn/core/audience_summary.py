@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 import math
 from enum import Enum
 from typing import Any, Literal
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from ilearn.core.effectiveness import compute_metrics
 from ilearn.core.knowledge_labels import (
@@ -123,6 +126,80 @@ def _generate_parent_tips(
     if gaps:
         tips.append("建议先复习前置内容：" + "、".join(gaps[:3]) + "，再继续当前单元。")
     return tips
+
+
+def _display_skill_name(session: SessionState, raw: str) -> str:
+    """Resolve a single skill/knowledge token for any audience-facing surface."""
+    if not raw:
+        return _UNRESOLVED_SKILL_LABEL
+    return _resolve_session_skill_names(session, [str(raw)])[0]
+
+
+def default_parent_summary() -> ParentSummary:
+    return ParentSummary(
+        child_name="孩子",
+        current_mastery=0.5,
+        mastery_change=0.0,
+        weak_skills=["暂未检测到薄弱点"],
+        learning_phase="建档准备",
+        daily_practice_tips=["请先完成一次测评，系统将为您生成个性化建议。"],
+        next_milestone="完成首次测评",
+        narrative="请先完成测评，我们将为您生成专属学情摘要。",
+    )
+
+
+def default_teacher_summary() -> TeacherSummary:
+    return TeacherSummary(
+        class_name="当前班级",
+        student_count=0,
+        avg_mastery=0.0,
+        top_weaknesses=[],
+        need_intervention_students=[],
+        auto_graded_rate=0.0,
+        estimated_time_saved_minutes=0.0,
+        narrative="暂无班级学情数据，请先绑定学生会话。",
+    )
+
+
+def default_student_summary() -> StudentSummary:
+    return StudentSummary(
+        current_task="完成首次测评",
+        completed_tasks=0,
+        total_tasks=1,
+        stars_earned=0,
+        next_challenge="开始你的学习之旅",
+        narrative="完成测评后，这里会显示你的学习进度。",
+    )
+
+
+def build_parent_summary_safe(session: SessionState | None) -> ParentSummary:
+    if session is None:
+        return default_parent_summary()
+    try:
+        return build_parent_summary(session)
+    except Exception:
+        logger.exception("build_parent_summary failed")
+        return default_parent_summary()
+
+
+def build_teacher_summary_safe(session: SessionState | None) -> TeacherSummary:
+    if session is None:
+        return default_teacher_summary()
+    try:
+        return build_teacher_summary(session)
+    except Exception:
+        logger.exception("build_teacher_summary failed")
+        return default_teacher_summary()
+
+
+def build_student_summary_safe(session: SessionState | None) -> StudentSummary:
+    if session is None:
+        return default_student_summary()
+    try:
+        return build_student_summary(session)
+    except Exception:
+        logger.exception("build_student_summary failed")
+        return default_student_summary()
 
 
 def translate_to_parent_language(text: str) -> str:
@@ -345,7 +422,11 @@ def build_teacher_summary(session: SessionState) -> TeacherSummary:
     if common:
         affected = max(1, math.ceil(student_count * 0.3))
         top_weaknesses = [
-            WeaknessStat(skill=str(skill), affected_students=affected) for skill in common
+            WeaknessStat(
+                skill=_display_skill_name(session, str(skill)),
+                affected_students=affected,
+            )
+            for skill in common
         ]
     else:
         names = mastery_name_map(session.diagnosis)
@@ -358,7 +439,7 @@ def build_teacher_summary(session: SessionState) -> TeacherSummary:
         ][:3]
         top_weaknesses = [
             WeaknessStat(
-                skill=resolve_knowledge_label(row.knowledge_id, mastery_names=names),
+                skill=_display_skill_name(session, row.knowledge_id),
                 affected_students=1,
             )
             for row in weak_rows
@@ -370,7 +451,7 @@ def build_teacher_summary(session: SessionState) -> TeacherSummary:
     need_intervention_students = [
         InterventionStudent(
             name=child_name,
-            weakness=first_skill,
+            weakness=_display_skill_name(session, first_skill) if first_skill else "待确认",
             session_id=session.session_id,
         )
     ]
@@ -385,7 +466,7 @@ def build_teacher_summary(session: SessionState) -> TeacherSummary:
             need_intervention_students.append(
                 InterventionStudent(
                     name=name,
-                    weakness=skill,
+                    weakness=_display_skill_name(session, skill) if skill else "待确认",
                     session_id=session.session_id,
                 )
             )
