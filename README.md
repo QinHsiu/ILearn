@@ -11,6 +11,14 @@
 
 让每个孩子拥有课标对齐、数据驱动、持续进化的 AI 学习伙伴。
 
+## Demo 视频（GOAI 2026）
+
+GitHub **文件页 / raw 链接通常无法在线播放**（`Content-Type: application/octet-stream`，且 CDN 可能缓存旧文件）。请用下面方式打开：
+
+- **推荐下载/播放**： [Release · goai-demo · demo.mp4](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo.mp4)
+- Release 页：[goai-demo](https://github.com/QinHsiu/ILearn/releases/tag/goai-demo)
+- 仓库路径（仅存档）：[`runtime_evidence/demo.mp4`](https://github.com/QinHsiu/ILearn/blob/master/runtime_evidence/demo.mp4)
+
 ```text
 测评 → 批改 → 诊断 → 规划 → 巩固
   │       │       │       │       │
