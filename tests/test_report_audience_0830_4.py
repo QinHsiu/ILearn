@@ -40,4 +40,5 @@ def test_report_includes_parent_teacher_sections():
     assert "家长摘要测试" in md
     assert "教师可读摘要" in md
     assert "错误类型归因" in md
-    assert "calc_error" in md
+    assert "计算过程易错" in md
+    assert "calc_error" not in md

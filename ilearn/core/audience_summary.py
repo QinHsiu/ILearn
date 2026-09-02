@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from ilearn.core.effectiveness import compute_metrics
 from ilearn.core.knowledge_labels import (
+    looks_like_internal_id,
     mastery_name_map,
     resolve_knowledge_label,
     resolve_knowledge_labels,
@@ -38,6 +39,7 @@ _PARENT_TERM_TRANSLATIONS: dict[str, str] = {
     "测评": "小测验",
     "证据": "学习记录",
     "技能": "能力",
+    "能力": "本领",
     "思维": "动脑筋",
     "逻辑": "条理",
     "推理": "推理能力",
@@ -55,6 +57,72 @@ _PHASE_PARENT_LABELS: dict[str, str] = {
     "practice_loop": "巩固轮次",
     "idle": "待开始",
 }
+
+_PARENT_MILESTONE_BY_MASTERY: tuple[tuple[float, str], ...] = (
+    (0.5, "掌握核心概念"),
+    (0.75, "攻克薄弱环节"),
+    (1.01, "挑战综合应用题"),
+)
+
+_UNRESOLVED_SKILL_LABEL = "一个需要加强的知识点"
+
+
+def _sanitize_parent_skill_labels(labels: list[str]) -> list[str]:
+    """Ensure parent-facing lists never leak internal ids or slug tokens."""
+    cleaned: list[str] = []
+    for label in labels:
+        text = (label or "").strip()
+        if not text or looks_like_internal_id(text) or "kp_" in text:
+            cleaned.append(_UNRESOLVED_SKILL_LABEL)
+        else:
+            cleaned.append(text)
+    return list(dict.fromkeys(cleaned))
+
+
+def _resolve_session_skill_names(
+    session: SessionState,
+    raw_ids: list[str],
+) -> list[str]:
+    names = mastery_name_map(session.diagnosis)
+    resolved = resolve_knowledge_labels(
+        [str(item) for item in raw_ids],
+        mastery_names=names,
+    )
+    return _sanitize_parent_skill_labels(resolved)
+
+
+def _parent_next_milestone(current_mastery: float, plan_goal: str | None) -> str:
+    if plan_goal and plan_goal.strip():
+        return plan_goal.strip()
+    for threshold, label in _PARENT_MILESTONE_BY_MASTERY:
+        if current_mastery < threshold:
+            return label
+    return _PARENT_MILESTONE_BY_MASTERY[-1][1]
+
+
+def _generate_parent_tips(
+    session: SessionState,
+    resolved_skills: list[str],
+    enrichment: dict[str, Any],
+) -> list[str]:
+    if not resolved_skills:
+        return ["孩子表现不错！可以挑战一些更有趣的拓展题。"]
+    tips = [
+        f"针对「{name}」，可以每天花5分钟做1-2道相关练习。"
+        for name in resolved_skills[:3]
+    ]
+    attribution = enrichment.get("error_attribution") or {}
+    top_errors = list(attribution.get("top_tags") or [])[:2]
+    if top_errors:
+        labels = "、".join(_ERROR_LABELS.get(str(tag), str(tag)) for tag in top_errors)
+        tips.append(f"近期主要失分倾向：{labels}。练习时请先让孩子口述思路再动笔。")
+    gaps = _resolve_session_skill_names(
+        session,
+        [str(item) for item in (enrichment.get("prerequisite_gaps") or [])],
+    )
+    if gaps:
+        tips.append("建议先复习前置内容：" + "、".join(gaps[:3]) + "，再继续当前单元。")
+    return tips
 
 
 def translate_to_parent_language(text: str) -> str:
@@ -80,18 +148,22 @@ def generate_audience_summary(
     """Turn diagnosis/enrichment into actionable Chinese advice."""
     enrichment = enrichment or {}
     names = mastery_name_map(diagnosis)
-    weak = resolve_knowledge_labels(
-        list(enrichment.get("weak_skills") or []),
-        mastery_names=names,
+    weak = _sanitize_parent_skill_labels(
+        resolve_knowledge_labels(
+            list(enrichment.get("weak_skills") or []),
+            mastery_names=names,
+        )
     )
     if diagnosis is not None and not weak:
-        weak = resolve_knowledge_labels(
-            [
-                row.knowledge_id
-                for row in diagnosis.knowledge_mastery
-                if row.level == "weak"
-            ],
-            mastery_names=names,
+        weak = _sanitize_parent_skill_labels(
+            resolve_knowledge_labels(
+                [
+                    row.knowledge_id
+                    for row in diagnosis.knowledge_mastery
+                    if row.level == "weak"
+                ],
+                mastery_names=names,
+            )
         )
     attribution = enrichment.get("error_attribution") or {}
     top_errors = list(attribution.get("top_tags") or [])
@@ -109,9 +181,11 @@ def generate_audience_summary(
         if top_errors:
             labels = "、".join(_ERROR_LABELS.get(t, t) for t in top_errors[:3])
             lines.append(f"• 近期主要失分倾向：{labels}。练习时请先让孩子口述思路再动笔。")
-        gaps = resolve_knowledge_labels(
-            list(enrichment.get("prerequisite_gaps") or []),
-            mastery_names=names,
+        gaps = _sanitize_parent_skill_labels(
+            resolve_knowledge_labels(
+                list(enrichment.get("prerequisite_gaps") or []),
+                mastery_names=names,
+            )
         )
         if gaps:
             lines.append(
@@ -350,47 +424,44 @@ def build_parent_summary(session: SessionState) -> ParentSummary:
     current_mastery = current / 100.0
     mastery_change = metrics.mastery_gain / 100.0
 
-    names = mastery_name_map(session.diagnosis)
-    weak_skills = resolve_knowledge_labels(
-        [str(s) for s in (enrichment.get("weak_skills") or [])],
-        mastery_names=names,
-    )
-    if not weak_skills and session.diagnosis is not None:
-        weak_skills = resolve_knowledge_labels(
-            [
-                row.knowledge_id
-                for row in session.diagnosis.knowledge_mastery
-                if row.level == "weak"
-            ],
-            mastery_names=names,
-        )
-    weak_skills = weak_skills[:5]
+    raw_weak = [str(s) for s in (enrichment.get("weak_skills") or [])]
+    if not raw_weak and session.diagnosis is not None:
+        raw_weak = [
+            row.knowledge_id
+            for row in session.diagnosis.knowledge_mastery
+            if row.level == "weak"
+        ]
+    weak_skills = _resolve_session_skill_names(session, raw_weak)[:5]
 
     phase = session.phase
     phase_key = phase.value if isinstance(phase, Enum) else str(phase)
     learning_phase = _PHASE_PARENT_LABELS.get(phase_key, phase_key)
 
     parent_text = enrichment.get("parent_summary")
-    if not isinstance(parent_text, str) or not parent_text.strip():
-        parent_text = generate_audience_summary(
-            session.diagnosis, enrichment, audience="parent"
+    if isinstance(parent_text, str) and parent_text.strip():
+        parent_text = translate_to_parent_language(parent_text.strip())
+        daily_practice_tips = translate_list_to_parent_language(_split_tips(parent_text))
+    else:
+        resolved_for_tips = weak_skills[:3]
+        daily_practice_tips = translate_list_to_parent_language(
+            _generate_parent_tips(session, resolved_for_tips, enrichment)
         )
-    parent_text = translate_to_parent_language(parent_text)
-    daily_practice_tips = translate_list_to_parent_language(_split_tips(parent_text))
+        parent_text = "\n".join(
+            ["给家长的行动建议：", *[f"• {tip}" for tip in daily_practice_tips]]
+        )
+
     if not daily_practice_tips:
         daily_practice_tips = translate_list_to_parent_language(
-            _split_tips(
-                generate_audience_summary(session.diagnosis, enrichment, audience="parent")
-            )
+            _generate_parent_tips(session, weak_skills[:3], enrichment)
         )
 
     plan = session.plan
-    next_milestone = (
-        plan.goal
-        if plan is not None and getattr(plan, "goal", None)
-        else "完成本单元薄弱点巩固"
+    next_milestone = translate_to_parent_language(
+        _parent_next_milestone(
+            current_mastery,
+            plan.goal if plan is not None and getattr(plan, "goal", None) else None,
+        )
     )
-    next_milestone = translate_to_parent_language(str(next_milestone))
     weak_skills = translate_list_to_parent_language(weak_skills)
     narrative = parent_text
 

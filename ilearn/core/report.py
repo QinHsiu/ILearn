@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from ilearn.core.schemas import ItemSourceRef, SessionState
-from ilearn.core.audience_summary import generate_audience_summary, _ERROR_LABELS
+from ilearn.core.audience_summary import (
+    generate_audience_summary,
+    translate_to_parent_language,
+    _ERROR_LABELS,
+)
 from ilearn.core.knowledge_labels import mastery_name_map, resolve_knowledge_label, resolve_knowledge_labels
 
 _ABILITY_LABELS: dict[str, str] = {
@@ -113,6 +117,7 @@ def render_full_report(session: SessionState) -> str:
         parent_summary = enrichment.get("parent_summary") or generate_audience_summary(
             diagnosis, enrichment, audience="parent"
         )
+        parent_summary = translate_to_parent_language(str(parent_summary))
         teacher_summary = enrichment.get("teacher_summary") or generate_audience_summary(
             diagnosis, enrichment, audience="teacher"
         )

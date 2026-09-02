@@ -75,7 +75,7 @@ def test_list_all_metadata_projects_diagnosis(tmp_path):
     assert row.grade == 5
     assert row.region == "北京"
     assert row.overall_mastery == pytest.approx(0.6)  # float mean, not exact 0.6
-    assert row.weak_skills == ["fraction"]
+    assert row.weak_skills == ["一个需要加强的知识点"]
     assert row.skill_mastery == {"fraction": 0.4, "decimal": 0.8}
     assert row.phase == state.phase
     assert row.updated_at is not None

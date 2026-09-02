@@ -10,7 +10,7 @@ import type {
   StudentProfile,
 } from './api/client'
 import HistoryList from './components/HistoryList'
-import MarkdownView from './MarkdownView'
+import ReportColumnsView from './components/ReportColumnsView'
 import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
 import StudentSummaryPanel from './components/StudentSummaryPanel'
@@ -612,23 +612,14 @@ function StudentApp() {
             {profile.nickname ? ` · ${profile.nickname}` : ''}
           </p>
           {sessionId ? <StudentSummaryPanel sessionId={sessionId} /> : null}
-          {session.metadata?.scientific_plan ? (
-            <details className="scientific-plan-summary">
-              <summary>科学学习方法摘要</summary>
-              <p className="lede">
-                任务 {(session.metadata.scientific_plan.tasks || []).length} 项
-                {typeof session.metadata.scientific_plan.estimated_total_hours === 'number'
-                  ? ` · 约 ${session.metadata.scientific_plan.estimated_total_hours.toFixed(1)} 小时`
-                  : ''}
-                {(session.metadata.scientific_plan.review_schedule || []).length
-                  ? ` · 间隔复习 ${(session.metadata.scientific_plan.review_schedule || []).length} 个节点`
-                  : ''}
-              </p>
-            </details>
-          ) : null}
           <div className="plan-body student-report-body">
-            <MarkdownView
+            <ReportColumnsView
               source={report?.markdown || session.plan?.markdown || '暂无计划内容'}
+              estimatedHours={
+                typeof session.metadata?.scientific_plan?.estimated_total_hours === 'number'
+                  ? session.metadata.scientific_plan.estimated_total_hours
+                  : undefined
+              }
             />
           </div>
           <div className="actions">

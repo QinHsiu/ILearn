@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 _INTERNAL_ID = re.compile(r"^[a-z][a-z0-9_]*$")
-_GENERIC_FALLBACK = "相关知识点"
+_GENERIC_FALLBACK = "一个需要加强的知识点"
 
 
 def looks_like_internal_id(value: str) -> bool:

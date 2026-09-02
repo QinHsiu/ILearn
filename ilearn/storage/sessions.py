@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from ilearn.core.knowledge_labels import mastery_name_map, resolve_knowledge_labels
 from ilearn.core.migration import EvidenceMigrator
 from ilearn.core.schemas import SessionMetadata, SessionState, StudentProfile
 
@@ -31,11 +32,13 @@ def _to_metadata(state: SessionState, path: Path) -> SessionMetadata:
     if state.diagnosis and state.diagnosis.knowledge_mastery:
         rows = state.diagnosis.knowledge_mastery
         skill_mastery = {row.knowledge_id: row.score_rate for row in rows}
-        weak_skills = [
+        raw_weak = [
             row.knowledge_id
             for row in rows
             if row.score_rate < _WEAK_SKILL_THRESHOLD
         ]
+        names = mastery_name_map(state.diagnosis)
+        weak_skills = resolve_knowledge_labels(raw_weak, mastery_names=names)
         overall_mastery = sum(row.score_rate for row in rows) / len(rows)
 
     updated_at = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)

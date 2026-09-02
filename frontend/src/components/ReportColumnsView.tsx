@@ -1,10 +1,13 @@
 import MarkdownView from '../MarkdownView'
+import LearningMethodsChart from './LearningMethodsChart'
+import { hasLearningMethodsData } from '../lib/parseLearningPlan'
 
 type ReportColumnsViewProps = {
   source: string
   splitHeading?: string
   leftLabel?: string
   rightLabel?: string
+  estimatedHours?: number
 }
 
 export default function ReportColumnsView({
@@ -12,6 +15,7 @@ export default function ReportColumnsView({
   splitHeading = '科学学习方法',
   leftLabel = '每日安排与目标',
   rightLabel = '科学学习方法',
+  estimatedHours,
 }: ReportColumnsViewProps) {
   const normalized = source.replace(/\r\n/g, '\n')
   const marker = `## ${splitHeading}`
@@ -29,6 +33,7 @@ export default function ReportColumnsView({
 
   const left = idx >= 0 ? normalized.slice(0, idx).trim() : ''
   const right = idx >= 0 ? normalized.slice(idx + 1).trim() : normalized.trim()
+  const showMethodsChart = hasLearningMethodsData(right)
 
   return (
     <div className="report-columns">
@@ -38,7 +43,11 @@ export default function ReportColumnsView({
       </section>
       <section className="report-col report-col-right" aria-label={rightLabel}>
         <p className="report-col-label">{rightLabel}</p>
-        <MarkdownView source={right || '暂无内容'} />
+        {showMethodsChart ? (
+          <LearningMethodsChart markdown={right} estimatedHours={estimatedHours} />
+        ) : (
+          <MarkdownView source={right || '暂无内容'} />
+        )}
       </section>
     </div>
   )

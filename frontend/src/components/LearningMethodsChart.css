@@ -1,0 +1,275 @@
+.learning-methods-chart {
+  background: var(--card, #ffffff);
+  border-radius: 12px;
+  padding: 20px 24px 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--line, #eaeef2);
+  margin-top: 0;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink, #1a2332);
+}
+
+.stats-badge {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--muted, #5f6b7a);
+  background: color-mix(in srgb, var(--line, #eaeef2) 35%, white);
+  padding: 6px 16px;
+  border-radius: 20px;
+  flex-wrap: wrap;
+}
+
+.stats-badge span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.matrix-container {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.method-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 600px;
+}
+
+.method-matrix th {
+  text-align: left;
+  padding: 10px 8px;
+  font-weight: 500;
+  color: #3d4a5c;
+  border-bottom: 2px solid var(--line, #eaeef2);
+  background: color-mix(in srgb, var(--line, #eaeef2) 25%, white);
+}
+
+.method-matrix td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #f0f2f5;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.skill-col {
+  text-align: left !important;
+  min-width: 120px;
+}
+
+.spaced-col {
+  min-width: 100px;
+}
+
+.skill-cell {
+  text-align: left !important;
+}
+
+.skill-name {
+  font-weight: 500;
+  color: var(--ink, #1a2332);
+  background: color-mix(in srgb, var(--line, #eaeef2) 35%, white);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.method-badge {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 16px;
+  transition: transform 0.15s;
+  cursor: default;
+}
+
+.method-badge:hover {
+  transform: scale(1.15);
+}
+
+.empty-dot {
+  color: #c5cdd8;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.spaced-cell {
+  min-width: 80px;
+}
+
+.spaced-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+.spaced-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e8edf5;
+  color: #2c3e50;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: default;
+  transition: 0.1s;
+  border: 1px solid transparent;
+}
+
+.spaced-dot:hover {
+  background: #d0d8e4;
+  border-color: var(--accent, #002fa7);
+}
+
+.legend {
+  display: flex;
+  gap: 20px;
+  padding: 8px 0 12px;
+  font-size: 13px;
+  color: var(--muted, #5f6b7a);
+  border-top: 1px solid #f0f2f5;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spaced-dot-example {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e8edf5;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.spaced-timeline {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--line, #eaeef2);
+}
+
+.spaced-timeline h4 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink, #1a2332);
+}
+
+.timeline-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.timeline-item {
+  background: #f8f9fb;
+  padding: 6px 14px 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 3px solid var(--accent, #002fa7);
+}
+
+.timeline-date {
+  font-weight: 500;
+  color: var(--ink, #1a2332);
+}
+
+.timeline-skill {
+  color: #3d4a5c;
+}
+
+.timeline-rep {
+  background: #e8edf5;
+  padding: 0 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--muted, #5f6b7a);
+}
+
+.learning-methods-empty {
+  color: var(--muted, #999);
+  padding: 20px;
+  text-align: center;
+}
+
+.learning-methods-hours {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: var(--muted, #5f6b7a);
+}
+
+@media (max-width: 700px) {
+  .learning-methods-chart {
+    padding: 12px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stats-badge {
+    justify-content: center;
+  }
+
+  .method-matrix {
+    font-size: 12px;
+    min-width: 400px;
+  }
+
+  .skill-name {
+    font-size: 12px;
+  }
+
+  .method-badge {
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    font-size: 13px;
+  }
+
+  .spaced-dot {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .timeline-item {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+}

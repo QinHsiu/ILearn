@@ -17,6 +17,9 @@ const PLAN = `# 学习计划
 
 ### 任务
 - **费曼讲解** · 小数乘法：讲解概念。
+
+### 间隔复习
+- 2026-09-03 · 小数乘法（第 1 次复习）
 `
 
 describe('ReportColumnsView', () => {
@@ -26,7 +29,9 @@ describe('ReportColumnsView', () => {
     expect(screen.getByLabelText('每日安排与目标')).toBeInTheDocument()
     expect(screen.getByLabelText('科学学习方法')).toBeInTheDocument()
     expect(screen.getByText('突破小数乘法。')).toBeInTheDocument()
-    expect(screen.getByText(/费曼讲解/)).toBeInTheDocument()
+    expect(screen.getByText('费曼讲解')).toBeInTheDocument()
+    expect(screen.getAllByText('小数乘法').length).toBeGreaterThan(0)
+    expect(screen.getByText('间隔复习时间轴')).toBeInTheDocument()
     expect(screen.queryByText(/\[feynman\]/)).not.toBeInTheDocument()
   })
 })
