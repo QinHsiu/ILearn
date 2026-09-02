@@ -23,6 +23,7 @@ export const EFFECTIVENESS: EffectivenessResponse = {
     teacher_notes_count: 2,
     is_simulated: true,
     data_source: '演示单元预置后测估算',
+    data_confidence: 'low',
   },
   comparison: {
     traditional_vs_ilearn: {

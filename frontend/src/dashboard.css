@@ -346,8 +346,100 @@
 
 .teacher-metric-cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
+}
+
+.teacher-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.75rem 0;
+}
+
+.teacher-tab {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--line);
+  background: var(--card, white);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+
+.teacher-tab.is-active {
+  border-color: var(--accent, #002fa7);
+  background: color-mix(in srgb, var(--accent, #002fa7) 10%, white);
+  font-weight: 600;
+}
+
+.teacher-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.teacher-overview-card h2 {
+  margin-top: 0;
+}
+
+.weakness-rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.weakness-rank-list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.weakness-rank {
+  font-weight: 700;
+  color: var(--accent, #002fa7);
+}
+
+.intervention-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.intervention-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.intervention-row strong {
+  display: block;
+}
+
+.intervention-row span {
+  font-size: 0.85rem;
+  color: var(--muted, #5a7a9a);
+}
+
+@media (max-width: 900px) {
+  .teacher-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .teacher-metric-cards {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .teacher-metric-cards .metric-card {

@@ -33,6 +33,7 @@ class TeachingEffectivenessMetrics(BaseModel):
     teacher_notes_count: int
     is_simulated: bool = False
     data_source: str = "computed"
+    data_confidence: str = "high"
 
 
 def compute_metrics(session: SessionState) -> TeachingEffectivenessMetrics:
@@ -71,7 +72,9 @@ def compute_metrics(session: SessionState) -> TeachingEffectivenessMetrics:
     paper_n = len(session.paper.items) if session.paper is not None else 0
     completion = 100.0 * len(session.answers) / max(paper_n, 1)
 
-    is_simulated, data_source = _effectiveness_data_provenance(session, post_score)
+    is_simulated, data_source, data_confidence = _effectiveness_data_provenance(
+        session, post_score
+    )
 
     return TeachingEffectivenessMetrics(
         pre_assessment_score=pre_score,
@@ -97,6 +100,7 @@ def compute_metrics(session: SessionState) -> TeachingEffectivenessMetrics:
         teacher_notes_count=int(session.metadata.get("teacher_notes_count") or 0),
         is_simulated=is_simulated,
         data_source=data_source,
+        data_confidence=data_confidence,
     )
 
 
@@ -217,15 +221,15 @@ def _optional_float(value: object) -> float | None:
 
 def _effectiveness_data_provenance(
     session: SessionState, post_score: float | None
-) -> tuple[bool, str]:
+) -> tuple[bool, str, str]:
     """Whether post-test / gain figures are demo estimates rather than measured."""
     if session.metadata.get("post_assessment_grades"):
-        return False, "post_assessment"
+        return False, "post_assessment", "high"
     if session.metadata.get("demo_unit"):
         if post_score is not None:
-            return True, "演示单元预置后测估算"
+            return True, "演示单元预置后测估算", "low"
         if session.metadata.get("demo_mastery_gain"):
-            return True, "演示单元掌握度增益估算"
+            return True, "演示单元掌握度增益估算", "low"
     if post_score is not None and not session.metadata.get("post_assessment_grades"):
-        return True, "元数据后测估算"
-    return False, "computed"
+        return True, "元数据后测估算", "medium"
+    return False, "computed", "high"

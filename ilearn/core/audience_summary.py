@@ -26,6 +26,50 @@ _ERROR_LABELS: dict[str, str] = {
     "incomplete": "解题步骤不完整",
 }
 
+_PARENT_TERM_TRANSLATIONS: dict[str, str] = {
+    "知识点": "学习内容",
+    "掌握度": "理解程度",
+    "认知": "思考",
+    "元认知": "学习方法",
+    "课标": "教学大纲",
+    "诊断": "学情分析",
+    "薄弱点": "需要加强的地方",
+    "巩固": "复习",
+    "测评": "小测验",
+    "证据": "学习记录",
+    "技能": "能力",
+    "思维": "动脑筋",
+    "逻辑": "条理",
+    "推理": "推理能力",
+    "运算": "计算",
+    "空间": "空间感",
+}
+
+_PHASE_PARENT_LABELS: dict[str, str] = {
+    "onboard": "建档准备",
+    "assess": "测评进行中",
+    "practice": "巩固练习",
+    "grade": "批改与学情",
+    "diagnose": "学情分析",
+    "plan": "学习计划阶段",
+    "practice_loop": "巩固轮次",
+    "idle": "待开始",
+}
+
+
+def translate_to_parent_language(text: str) -> str:
+    """Map ed-tech terms to parent-friendly everyday Chinese."""
+    if not text:
+        return text
+    result = text
+    for tech, friendly in _PARENT_TERM_TRANSLATIONS.items():
+        result = result.replace(tech, friendly)
+    return result
+
+
+def translate_list_to_parent_language(items: list[str]) -> list[str]:
+    return [translate_to_parent_language(item) for item in items]
+
 
 def generate_audience_summary(
     diagnosis: DiagnosisReport | None,
@@ -323,17 +367,21 @@ def build_parent_summary(session: SessionState) -> ParentSummary:
     weak_skills = weak_skills[:5]
 
     phase = session.phase
-    learning_phase = phase.value if isinstance(phase, Enum) else str(phase)
+    phase_key = phase.value if isinstance(phase, Enum) else str(phase)
+    learning_phase = _PHASE_PARENT_LABELS.get(phase_key, phase_key)
 
     parent_text = enrichment.get("parent_summary")
     if not isinstance(parent_text, str) or not parent_text.strip():
         parent_text = generate_audience_summary(
             session.diagnosis, enrichment, audience="parent"
         )
-    daily_practice_tips = _split_tips(parent_text)
+    parent_text = translate_to_parent_language(parent_text)
+    daily_practice_tips = translate_list_to_parent_language(_split_tips(parent_text))
     if not daily_practice_tips:
-        daily_practice_tips = _split_tips(
-            generate_audience_summary(session.diagnosis, enrichment, audience="parent")
+        daily_practice_tips = translate_list_to_parent_language(
+            _split_tips(
+                generate_audience_summary(session.diagnosis, enrichment, audience="parent")
+            )
         )
 
     plan = session.plan
@@ -342,9 +390,9 @@ def build_parent_summary(session: SessionState) -> ParentSummary:
         if plan is not None and getattr(plan, "goal", None)
         else "完成本单元薄弱点巩固"
     )
-    narrative = parent_text if parent_text else generate_audience_summary(
-        session.diagnosis, enrichment, audience="parent"
-    )
+    next_milestone = translate_to_parent_language(str(next_milestone))
+    weak_skills = translate_list_to_parent_language(weak_skills)
+    narrative = parent_text
 
     return ParentSummary(
         child_name=child_name,

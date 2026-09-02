@@ -5,6 +5,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
+from ilearn.providers.curriculum import PILOT_GRADES
+
 
 class FeatureTier(str, Enum):
     OFFLINE = "offline"
@@ -57,4 +59,5 @@ class FeatureRegistry:
             "llm_available": llm_available,
             "features": features,
             "tiers": cls.offline_status(),
+            "pilot_grades": sorted(PILOT_GRADES),
         }

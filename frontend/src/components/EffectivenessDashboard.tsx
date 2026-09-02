@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { EffectivenessResponse } from '../api/client'
+import PDFExportButton from './PDFExportButton'
 
 type EffectivenessDashboardProps = {
   sessionId: string
@@ -37,12 +38,31 @@ export default function EffectivenessDashboard({ sessionId }: EffectivenessDashb
   const { metrics, comparison } = data
   const vs = comparison.traditional_vs_ilearn
   const simulated = metrics.is_simulated
+  const confidenceLabel =
+    metrics.data_confidence === 'high'
+      ? '高'
+      : metrics.data_confidence === 'medium'
+        ? '中'
+        : '低'
 
   return (
     <div
       className={`effectiveness-dashboard${simulated ? ' is-simulated' : ''}`}
       data-simulated={simulated ? 'true' : 'false'}
     >
+      <div className="effectiveness-head">
+        <h3>教学效果量化</h3>
+        <div className="effectiveness-badges">
+          {simulated ? (
+            <span className="data-badge simulated" title={metrics.data_source}>
+              模拟数据
+            </span>
+          ) : (
+            <span className="data-badge real">真实数据</span>
+          )}
+          <span className="data-confidence">置信度：{confidenceLabel}</span>
+        </div>
+      </div>
       {simulated ? (
         <p className="simulated-data-notice" role="status">
           ⚠️ 当前部分效果数据为演示估算值（{metrics.data_source}），仅供参考。
@@ -122,15 +142,7 @@ export default function EffectivenessDashboard({ sessionId }: EffectivenessDashb
           </tbody>
         </table>
       </section>
-      <button
-        className="btn"
-        type="button"
-        onClick={() => {
-          void api.exportEffectivenessPdf(sessionId)
-        }}
-      >
-        导出效果验证报告
-      </button>
+      <PDFExportButton sessionId={sessionId} kind="effectiveness" className="btn" />
     </div>
   )
 }

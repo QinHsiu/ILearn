@@ -1,5 +1,7 @@
 export type Gender = 'male' | 'female' | 'unspecified'
 
+export type AuthRole = 'parent' | 'teacher'
+
 export type StudentProfile = {
   region: string
   grade: number
@@ -208,6 +210,7 @@ export type TeachingEffectivenessMetrics = {
   teacher_notes_count: number
   is_simulated: boolean
   data_source: string
+  data_confidence: 'high' | 'medium' | 'low' | string
 }
 
 export type EffectivenessComparisonPair = {
@@ -224,6 +227,13 @@ export type EffectivenessResponse = {
       feedback_delay: EffectivenessComparisonPair
     }
   }
+}
+
+export type CapabilitiesResponse = {
+  llm_available: boolean
+  pilot_grades: number[]
+  features: Array<{ name: string; tier: string; available: boolean }>
+  tiers: Record<string, string>
 }
 
 export type PdfBackendInfo = {
@@ -465,6 +475,9 @@ export const api = {
   },
   getPdfBackend() {
     return request<PdfBackendInfo>('/system/pdf-backend')
+  },
+  getCapabilities() {
+    return request<CapabilitiesResponse>('/capabilities')
   },
   getTeacherSummary(sessionId: string) {
     return request<TeacherSummary>(`/sessions/${sessionId}/summary/teacher`)

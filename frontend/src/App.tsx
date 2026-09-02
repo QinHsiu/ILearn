@@ -14,6 +14,8 @@ import MarkdownView from './MarkdownView'
 import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
 import StudentSummaryPanel from './components/StudentSummaryPanel'
+import EvidenceChain from './components/EvidenceChain'
+import PDFExportButton from './components/PDFExportButton'
 import ParentDashboard from './pages/ParentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import LandingPage from './pages/LandingPage'
@@ -31,8 +33,8 @@ import './dashboard.css'
 
 const STEPS = ['建档', '测评作答', '批改与学情', '学习计划'] as const
 
-// Pilot pack ships only grade 4–6 math items; other grades have no blueprint.
-const PILOT_GRADES = [4, 5, 6]
+const ALL_GRADES = Array.from({ length: 12 }, (_, i) => i + 1)
+const DEFAULT_PILOT_GRADES = [4, 5, 6]
 
 const LEVEL_LABELS: Record<string, string> = {
   mastered: '已掌握',
@@ -114,16 +116,16 @@ function StudentApp() {
   )
   const [error, setError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [paper, setPaper] = useState<AssessmentPaper | null>(null)
+  const [, setPaper] = useState<AssessmentPaper | null>(null)
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [imageUploads, setImageUploads] = useState<
+  const [, setImageUploads] = useState<
     Record<string, ImageAnswer & { preview: string; name: string }>
   >({})
   const [report, setReport] = useState<ReportResponse | null>(null)
   const [session, setSession] = useState<SessionState | null>(null)
   const [historyNickname, setHistoryNickname] = useState('')
-  const [focusItemId, setFocusItemId] = useState<string | null>(null)
-  const [exporting, setExporting] = useState<'assessment' | 'report' | null>(null)
+  const [, setFocusItemId] = useState<string | null>(null)
+  const [pilotGrades, setPilotGrades] = useState<number[]>(DEFAULT_PILOT_GRADES)
   const [pdfBackend, setPdfBackend] = useState<{
     backend: string
     fallback_active: boolean
@@ -150,6 +152,14 @@ function StudentApp() {
   useEffect(() => {
     applyTheme(profile.grade, profile.gender || 'unspecified')
   }, [profile.grade, profile.gender])
+
+  useEffect(() => {
+    void api.getCapabilities().then((caps) => {
+      if (caps.pilot_grades?.length) setPilotGrades(caps.pilot_grades)
+    }).catch(() => setPilotGrades(DEFAULT_PILOT_GRADES))
+  }, [])
+
+  const isGradeSupported = (grade: number) => pilotGrades.includes(grade)
 
   useEffect(() => {
     if (step < 3) return
@@ -231,8 +241,8 @@ function StudentApp() {
 
   async function onStart(e: FormEvent) {
     e.preventDefault()
-    if (!PILOT_GRADES.includes(Number(profile.grade))) {
-      setError('该年级暂未开放，请选择 4–6 年级数学试点内容。')
+    if (!isGradeSupported(Number(profile.grade))) {
+      setError(`该年级暂未开放，请选择 ${pilotGrades.join('、')} 年级数学试点内容。`)
       return
     }
     setBusy(true)
@@ -311,25 +321,6 @@ function StudentApp() {
     }
   }
 
-  async function onExportPdf(kind: 'assessment' | 'report') {
-    if (!sessionId) return
-    setExporting(kind)
-    setError(null)
-    try {
-      const nick = (profile.nickname || '').trim() || '未命名'
-      const day = new Date().toISOString().slice(0, 10)
-      const filename =
-        kind === 'assessment'
-          ? `ILearn-做题复盘-${nick}-${day}.pdf`
-          : `ILearn-学习报告-${nick}-${day}.pdf`
-      await api.downloadExport(sessionId, kind, filename)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    } finally {
-      setExporting(null)
-    }
-  }
-
   const grades = session?.grades || []
   const correct = grades.filter((g) => g.final_correct).length
 
@@ -401,22 +392,34 @@ function StudentApp() {
                   required
                 />
               </div>
-              <div className="field">
-                <label htmlFor="grade">年级</label>
-                <select
-                  id="grade"
-                  value={profile.grade}
-                  onChange={(e) =>
-                    setProfile({ ...profile, grade: Number(e.target.value) })
-                  }
-                >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((g) => (
-                    <option key={g} value={g} disabled={!PILOT_GRADES.includes(g)}>
-                      {g} 年级{PILOT_GRADES.includes(g) ? '' : '（暂未开放）'}
-                    </option>
-                  ))}
-                </select>
-                <p className="field-hint">试点内容目前覆盖 4–6 年级数学。</p>
+              <div className="field field-grade">
+                <label>年级</label>
+                <div className="grade-pill-grid" role="group" aria-label="年级选择">
+                  {ALL_GRADES.map((g) => {
+                    const supported = isGradeSupported(g)
+                    const selected = Number(profile.grade) === g
+                    return (
+                      <button
+                        key={g}
+                        type="button"
+                        className={`grade-pill${selected ? ' is-selected' : ''}${supported ? '' : ' is-locked'}`}
+                        disabled={!supported}
+                        onClick={() => supported && setProfile({ ...profile, grade: g })}
+                      >
+                        {g} 年级
+                        {!supported ? <span className="grade-pill-lock" aria-hidden="true">🔒</span> : null}
+                      </button>
+                    )
+                  })}
+                </div>
+                {!isGradeSupported(Number(profile.grade)) ? (
+                  <p className="field-hint field-hint-error">
+                    当前仅试点 {pilotGrades.join('、')} 年级，其他年级暂未开放
+                  </p>
+                ) : null}
+                <p className="field-hint">
+                  当前试点：{pilotGrades.join('、')} 年级 · 北京·人教
+                </p>
               </div>
               <div className="field">
                 <label htmlFor="age">年龄</label>
@@ -450,7 +453,7 @@ function StudentApp() {
               </div>
             </div>
             <div className="actions">
-              <button className="btn" type="submit" disabled={busy}>
+              <button className="btn" type="submit" disabled={busy || !isGradeSupported(Number(profile.grade))}>
                 {busy ? '生成中…' : '开始测评'}
               </button>
             </div>
@@ -510,10 +513,10 @@ function StudentApp() {
               {(session.paper?.items || []).map((item, index) => {
                 const grade = grades.find((row) => row.item_id === item.id)
                 if (!grade) return null
-                const meta =
-                  (session.metadata?.item_meta?.[item.id] as
-                    | { elapsed_ms?: number; hint_used?: boolean }
-                    | undefined) || {}
+                const itemMeta = session.metadata?.item_meta as
+                  | Record<string, { elapsed_ms?: number; hint_used?: boolean }>
+                  | undefined
+                const meta = itemMeta?.[item.id] || {}
                 const hints = session.hint_interactions?.[item.id] || []
                 const hintCount = hints.length
                 const elapsedSec = Math.round(Number(meta.elapsed_ms || 0) / 1000)
@@ -576,6 +579,8 @@ function StudentApp() {
               })}
             </tbody>
           </table>
+
+          <EvidenceChain detail={session} />
 
           {wrongItems.length > 0 && (
             <>
@@ -641,22 +646,22 @@ function StudentApp() {
             <button className="btn secondary" type="button" onClick={() => setStep(2)}>
               返回学情
             </button>
-            <button
-              className="btn secondary"
-              type="button"
-              onClick={() => void onExportPdf('assessment')}
-              disabled={busy || exporting !== null}
-            >
-              {exporting === 'assessment' ? '生成中…' : '导出做题复盘 PDF'}
-            </button>
-            <button
-              className="btn secondary"
-              type="button"
-              onClick={() => void onExportPdf('report')}
-              disabled={busy || exporting !== null}
-            >
-              {exporting === 'report' ? '生成中…' : '导出学习报告 PDF'}
-            </button>
+            {sessionId ? (
+              <>
+                <PDFExportButton
+                  sessionId={sessionId}
+                  kind="assessment"
+                  disabled={busy}
+                  nickname={profile.nickname ?? undefined}
+                />
+                <PDFExportButton
+                  sessionId={sessionId}
+                  kind="report"
+                  disabled={busy}
+                  nickname={profile.nickname ?? undefined}
+                />
+              </>
+            ) : null}
             <button className="btn" type="button" onClick={() => void onReplan()} disabled={busy}>
               {busy ? '规划中…' : '重新规划'}
             </button>

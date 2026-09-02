@@ -104,7 +104,7 @@ export default function Assessment({
   const [sourceLabel, setSourceLabel] = useState<string | null>(null)
   const [imageUploads, setImageUploads] = useState<Record<string, ImageUpload>>({})
   const [focusItemId, setFocusItemId] = useState<string | null>(null)
-  const [hintUsed, setHintUsed] = useState<Record<string, boolean>>({})
+  const [, setHintUsed] = useState<Record<string, boolean>>({})
   const [elapsedMs, setElapsedMs] = useState<Record<string, number>>({})
 
   const onErrorRef = useRef(onError)

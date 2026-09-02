@@ -539,9 +539,146 @@ textarea {
 }
 
 .field-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted, #5a7a9a);
+}
+
+.field-hint-error {
+  color: #c0392b;
+}
+
+.grade-pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.grade-pill {
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.grade-pill.is-selected {
+  border: 2px solid var(--accent, #002fa7);
+  background: color-mix(in srgb, var(--accent, #002fa7) 8%, white);
+  font-weight: 600;
+}
+
+.grade-pill.is-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.grade-pill-lock {
+  font-size: 0.65rem;
+  margin-left: 0.2rem;
+}
+
+.effectiveness-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.effectiveness-head h3 {
   margin: 0;
+}
+
+.effectiveness-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.data-badge {
   font-size: 0.75rem;
-  color: var(--muted);
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.data-badge.simulated {
+  background: color-mix(in srgb, #f5a623 18%, white);
+  color: #8a5a00;
+}
+
+.data-badge.real {
+  background: color-mix(in srgb, #1a7f4b 15%, white);
+  color: #1a7f4b;
+}
+
+.data-confidence {
+  font-size: 0.8rem;
+  color: var(--muted, #5a7a9a);
+}
+
+.pdf-export-engine-badge {
+  margin-left: 0.35rem;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--line) 40%, white);
+  vertical-align: middle;
+}
+
+.evidence-chain-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.evidence-chain-head h3 {
+  margin: 0;
+}
+
+.evidence-chain-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+}
+
+.evidence-stat.ok {
+  color: #1a7f4b;
+}
+
+.evidence-stat.weak {
+  color: #c0392b;
+}
+
+.evidence-stat.hint {
+  color: #b45309;
+}
+
+.evidence-chain-foot {
+  margin-top: 0.65rem;
+  font-size: 0.85rem;
+  color: var(--muted, #5a7a9a);
+}
+
+.evidence-more {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted, #5a7a9a);
+}
+
+.evidence-conf-high {
+  color: #1a7f4b;
+}
+
+.evidence-conf-mid {
+  color: #b45309;
 }
 
 .actions {
