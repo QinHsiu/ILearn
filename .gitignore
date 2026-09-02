@@ -31,6 +31,7 @@ runtime_evidence/*
 !runtime_evidence/demo.mp4
 !runtime_evidence/demo_720p.mp4
 !runtime_evidence/demo_1080p.mp4
+!runtime_evidence/demo_preview.gif
 
 # External curriculum dumps (Edition 0826)
 data/raw/*
