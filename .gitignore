@@ -25,10 +25,8 @@ docs/
 data/sessions/*
 !data/sessions/.gitkeep
 
-# Competition smoke session scratch
-runtime_evidence/_tmp_demo_sessions/
-runtime_evidence/goai_video_build/
-runtime_evidence/demo_recording.mp4
+# Competition local evidence / demo artifacts (keep on disk, not in git)
+runtime_evidence/
 
 # External curriculum dumps (Edition 0826)
 data/raw/*
