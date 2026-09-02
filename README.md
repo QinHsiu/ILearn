@@ -11,20 +11,9 @@
 
 让每个孩子拥有课标对齐、数据驱动、持续进化的 AI 学习伙伴。
 
-## Demo 视频（GOAI 2026）
+[![ILearn Demo](./runtime_evidence/demo_preview.gif)](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_720p.mp4)
 
-**排查结论**：GitHub README 会**直接剥掉** `<video>` 标签（相对路径、`raw.githubusercontent.com`、Release 链接均不行）。只有通过网页编辑器拖拽上传得到的 `user-attachments` 地址，或使用 **GIF/图片** 才能在 README 里内联展示。
-
-点击下方预览跳转完整 MP4（720p）：
-
-[![ILearn Demo Preview](./runtime_evidence/demo_preview.gif)](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_720p.mp4)
-
-- [720p MP4（~5.4MB）](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_720p.mp4)
-- [1080p 原始成片（~12.1MB）](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_1080p.mp4)
-- [Release 页](https://github.com/QinHsiu/ILearn/releases/tag/goai-demo)
-- 本地播放页（clone 后打开）：[`demo-player.html`](./demo-player.html)
-
-仓库文件：[`demo_720p.mp4`](./runtime_evidence/demo_720p.mp4) · [`demo_1080p.mp4`](./runtime_evidence/demo_1080p.mp4) · [`demo.mp4`](./runtime_evidence/demo.mp4)
+[720p](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_720p.mp4) · [1080p](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_1080p.mp4) · [Release](https://github.com/QinHsiu/ILearn/releases/tag/goai-demo)
 
 ```text
 测评 → 批改 → 诊断 → 规划 → 巩固
