@@ -7,9 +7,16 @@ __pycache__/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+node_modules/
+package-lock.json
 
 # Local design notes and agent workspace (not for public repo)
-doc/
+# Ignore contents of doc/, but keep competition deliverables trackable.
+doc/*
+!doc/submit/
+!doc/submit/**
+!doc/goai-submit-deck/
+!doc/goai-submit-deck/**
 docs/
 .superpowers/
 .pr-body-*.md
@@ -17,6 +24,10 @@ docs/
 # Runtime session artifacts
 data/sessions/*
 !data/sessions/.gitkeep
+
+# Competition smoke session scratch
+runtime_evidence/_tmp_demo_sessions/
+runtime_evidence/goai_video_build/
 
 # External curriculum dumps (Edition 0826)
 data/raw/*
