@@ -26,7 +26,9 @@ data/sessions/*
 !data/sessions/.gitkeep
 
 # Competition local evidence / demo artifacts (keep on disk, not in git)
-runtime_evidence/
+# Ignore contents, but allow the official Demo upload file.
+runtime_evidence/*
+!runtime_evidence/demo.mp4
 
 # External curriculum dumps (Edition 0826)
 data/raw/*
