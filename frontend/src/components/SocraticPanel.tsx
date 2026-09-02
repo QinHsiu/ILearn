@@ -4,6 +4,12 @@ import type { TutorTurn } from '../api/client'
 
 const MAX_HINTS = 3
 
+const HINT_LEVELS = [
+  { icon: '🔍', label: '提示', key: 'hint' },
+  { icon: '💡', label: '思路', key: 'clue' },
+  { icon: '✅', label: '验证', key: 'verify' },
+] as const
+
 type SocraticPanelProps = {
   sessionId: string
   itemId: string
@@ -62,6 +68,12 @@ export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps)
       const turn = await api.tutorHint(sessionId, itemId, text)
       setUsedCount((n) => n + 1)
       setMessages((prev) => [...prev, { role: 'assistant', content: turn.message }])
+      if (usedCount + 1 >= MAX_HINTS) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: '⭐ 坚持思考很棒，继续试试独立完成！' },
+        ])
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       setError(message)
@@ -91,6 +103,22 @@ export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps)
       <div className="socratic-head">
         <strong>苏格拉底助教</strong>
         <span>剩余提示 {remaining}/{MAX_HINTS}</span>
+      </div>
+      <div className="socratic-hint-progress" aria-label="提示进度">
+        {HINT_LEVELS.map((level, index) => (
+          <span
+            key={level.key}
+            className={`socratic-hint-step ${index < usedCount ? 'is-used' : ''} ${index === usedCount && remaining > 0 ? 'is-next' : ''}`}
+          >
+            {level.icon} {level.label}
+          </span>
+        ))}
+      </div>
+      <div className="socratic-hint-bar" aria-hidden="true">
+        <div
+          className="socratic-hint-bar-fill"
+          style={{ width: `${(usedCount / MAX_HINTS) * 100}%` }}
+        />
       </div>
       <div className="socratic-messages">
         {messages.map((msg, index) => (

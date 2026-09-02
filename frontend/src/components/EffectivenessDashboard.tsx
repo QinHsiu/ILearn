@@ -36,9 +36,18 @@ export default function EffectivenessDashboard({ sessionId }: EffectivenessDashb
 
   const { metrics, comparison } = data
   const vs = comparison.traditional_vs_ilearn
+  const simulated = metrics.is_simulated
 
   return (
-    <div className="effectiveness-dashboard">
+    <div
+      className={`effectiveness-dashboard${simulated ? ' is-simulated' : ''}`}
+      data-simulated={simulated ? 'true' : 'false'}
+    >
+      {simulated ? (
+        <p className="simulated-data-notice" role="status">
+          ⚠️ 当前部分效果数据为演示估算值（{metrics.data_source}），仅供参考。
+        </p>
+      ) : null}
       <section className="comparison-cards" aria-labelledby="comparison-cards-title">
         <h3 id="comparison-cards-title">前后对比</h3>
         <div className="comparison-cards-grid">

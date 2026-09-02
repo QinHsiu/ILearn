@@ -1223,6 +1223,113 @@ html[data-band='senior'] .brand {
   flex-wrap: wrap;
 }
 
+.socratic-hint-progress {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+}
+
+.socratic-hint-step {
+  padding: 0.2rem 0.45rem;
+  border: 1px dashed var(--line);
+  opacity: 0.55;
+}
+
+.socratic-hint-step.is-used {
+  border-style: solid;
+  opacity: 1;
+  background: color-mix(in srgb, var(--accent) 10%, white);
+}
+
+.socratic-hint-step.is-next {
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.socratic-hint-bar {
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.socratic-hint-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.25s ease;
+}
+
+.effectiveness-dashboard.is-simulated {
+  border: 2px dashed color-mix(in srgb, var(--accent) 45%, var(--line));
+  padding: 0.85rem;
+  border-radius: var(--card-radius);
+}
+
+.simulated-data-notice {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.7rem;
+  background: color-mix(in srgb, #f5a623 12%, white);
+  border-left: 3px solid #f5a623;
+  font-size: 0.9rem;
+}
+
+.pdf-backend-indicator {
+  margin: 0 0 0.65rem;
+  font-size: 0.85rem;
+  color: var(--muted, #5a7a9a);
+}
+
+.pdf-backend-indicator.is-fallback {
+  color: #b45309;
+  padding: 0.45rem 0.65rem;
+  background: color-mix(in srgb, #f5a623 10%, white);
+  border: 1px solid color-mix(in srgb, #f5a623 35%, var(--line));
+  border-radius: var(--radius);
+}
+
+.evidence-chain {
+  margin: 1rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  background: var(--card);
+}
+
+.evidence-chain-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.evidence-item {
+  display: grid;
+  grid-template-columns: minmax(5rem, 1fr) auto 2fr;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.88rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.evidence-status.weak {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.evidence-status.ok {
+  color: #1a7f4b;
+  font-weight: 600;
+}
+
+.evidence-confidence {
+  margin-top: 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
 .socratic-actions input {
   flex: 1;
   min-width: 8rem;

@@ -42,6 +42,25 @@ def test_build_explanations_includes_findings():
     assert any("计算" in r or "步骤" in r for r in rows)
 
 
+def test_build_explanations_dedupes_duplicate_cognitive_findings():
+    dup_finding = {
+        "gap_skill_label": "理解分数单位",
+        "gap_skill": "frac_meaning_001",
+        "root_cause": "理解层次不足",
+        "recommendation": "建议用自己的话解释概念，并对照图形/例题核对理解。",
+    }
+    rows = DiagnosisExplainer.build_explanations(
+        weak_skills=["frac_mult"],
+        error_attribution={"top_tags": [], "counts": {}},
+        cognitive_findings=[dup_finding, dup_finding, dup_finding],
+    )
+    expected = (
+        "技能「理解分数单位」：理解层次不足。"
+        "建议用自己的话解释概念，并对照图形/例题核对理解。"
+    )
+    assert rows.count(expected) == 1
+
+
 def test_tiered_intervention_by_mastery():
     assert get_tiered_intervention("frac_add_same", 0.85) is None
     t1 = get_tiered_intervention("frac_add_same", 0.7)

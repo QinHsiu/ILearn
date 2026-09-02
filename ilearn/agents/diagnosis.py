@@ -263,6 +263,7 @@ class DiagnosisAgent:
         gaps = list(dict.fromkeys(prerequisite_gaps))
         advice = self._generate_learning_advice(weak_skills, gaps)
         cognitive_findings: list[dict[str, Any]] = []
+        seen_gap_skills: set[str] = set()
         if self._cognitive_graph is not None:
             for event in evidence_log:
                 if _event_is_correct(event) is not False:
@@ -271,8 +272,11 @@ class DiagnosisAgent:
                 finding = self.diagnose_with_cognitive_profile(
                     evidence_log, skill_id=skill_id, knowledge_id=_event_get(event, "knowledge_id")
                 )
-                if finding.get("gap_skill"):
-                    cognitive_findings.append(finding)
+                gap = finding.get("gap_skill")
+                if not gap or gap in seen_gap_skills:
+                    continue
+                seen_gap_skills.add(str(gap))
+                cognitive_findings.append(finding)
         error_attribution = aggregate_error_attribution(grades)
         from ilearn.core.diagnosis_explainer import DiagnosisExplainer
 

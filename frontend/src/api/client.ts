@@ -78,6 +78,15 @@ export type SessionState = {
   answers?: StudentAnswer[]
   grades?: GradeResult[] | null
   hint_interactions?: Record<string, HintInteraction[]>
+  evidence_log?: Array<{
+    evidence_id?: string
+    knowledge_id?: string
+    correct?: boolean
+    error_tag?: string | null
+    hint_level?: string
+    lane?: string
+    item_id?: string
+  }>
   diagnosis?: {
     knowledge_mastery?: Array<{
       knowledge_id: string
@@ -197,6 +206,8 @@ export type TeachingEffectivenessMetrics = {
   evidence_count: number
   parent_view_count: number
   teacher_notes_count: number
+  is_simulated: boolean
+  data_source: string
 }
 
 export type EffectivenessComparisonPair = {
@@ -215,7 +226,13 @@ export type EffectivenessResponse = {
   }
 }
 
-export type AuthRole = 'parent' | 'teacher'
+export type PdfBackendInfo = {
+  backend: 'weasyprint' | 'fpdf2'
+  weasyprint_available: boolean
+  forced: boolean
+  last_used: 'weasyprint' | 'fpdf2' | null
+  fallback_active: boolean
+}
 
 export type LoginResponse = {
   role: AuthRole
@@ -445,6 +462,9 @@ export const api = {
   },
   getEffectiveness(sessionId: string) {
     return request<EffectivenessResponse>(`/sessions/${sessionId}/effectiveness`)
+  },
+  getPdfBackend() {
+    return request<PdfBackendInfo>('/system/pdf-backend')
   },
   getTeacherSummary(sessionId: string) {
     return request<TeacherSummary>(`/sessions/${sessionId}/summary/teacher`)

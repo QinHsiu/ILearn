@@ -21,6 +21,8 @@ export const EFFECTIVENESS: EffectivenessResponse = {
     evidence_count: 5,
     parent_view_count: 3,
     teacher_notes_count: 2,
+    is_simulated: true,
+    data_source: '演示单元预置后测估算',
   },
   comparison: {
     traditional_vs_ilearn: {

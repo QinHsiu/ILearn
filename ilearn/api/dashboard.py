@@ -70,7 +70,14 @@ def create_dashboard_router(
     def parent_child(parent_id: str, session_id: str) -> SessionState:
         if session_id not in relationships.children_for_parent(parent_id):
             raise HTTPException(status_code=404, detail="child not found")
-        return sessions.load(session_id)
+        try:
+            return sessions.load(session_id)
+        except FileNotFoundError:
+            relationships.reconcile()
+            raise HTTPException(
+                status_code=404,
+                detail="学习会话不存在或已过期，请重新绑定或创建新会话",
+            ) from None
 
     @router.get(
         "/teacher/{teacher_id}/classes",
@@ -115,7 +122,14 @@ def create_dashboard_router(
     ) -> SessionState:
         if session_id not in relationships.students_for_class(teacher_id, class_id):
             raise HTTPException(status_code=404, detail="student not found")
-        return sessions.load(session_id)
+        try:
+            return sessions.load(session_id)
+        except FileNotFoundError:
+            relationships.reconcile()
+            raise HTTPException(
+                status_code=404,
+                detail="学习会话不存在或已过期，请重新绑定或创建新会话",
+            ) from None
 
     @router.get(
         "/teacher/{teacher_id}/student/{session_id}",
@@ -126,7 +140,14 @@ def create_dashboard_router(
     ) -> SessionState:
         for class_id in relationships.classes_for_teacher(teacher_id):
             if session_id in relationships.students_for_class(teacher_id, class_id):
-                return sessions.load(session_id)
+                try:
+                    return sessions.load(session_id)
+                except FileNotFoundError:
+                    relationships.reconcile()
+                    raise HTTPException(
+                        status_code=404,
+                        detail="学习会话不存在或已过期，请重新绑定或创建新会话",
+                    ) from None
         raise HTTPException(status_code=404, detail="student not found")
 
     return router

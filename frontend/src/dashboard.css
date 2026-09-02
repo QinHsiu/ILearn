@@ -343,3 +343,36 @@
     grid-template-columns: 1fr;
   }
 }
+
+.teacher-metric-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.teacher-metric-cards .metric-card {
+  border: 1px solid var(--line);
+  padding: 0.85rem;
+  background: var(--card, white);
+  display: grid;
+  gap: 0.35rem;
+}
+
+.teacher-metric-cards .metric-card span {
+  font-size: 0.82rem;
+  color: var(--muted, #5a7a9a);
+}
+
+.teacher-metric-cards .metric-card strong {
+  font-size: 1.35rem;
+}
+
+.metric-card-alert strong {
+  color: #c0392b;
+}
+
+@media (max-width: 720px) {
+  .teacher-metric-cards {
+    grid-template-columns: 1fr;
+  }
+}

@@ -64,6 +64,7 @@ class DiagnosisExplainer:
         counts = dict(attribution.get("counts") or {})
         top_tags = list(attribution.get("top_tags") or [])
         explanations: list[str] = []
+        seen_findings: set[str] = set()
         for finding in cognitive_findings or []:
             raw_skill = str(
                 finding.get("gap_skill_label")
@@ -73,8 +74,12 @@ class DiagnosisExplainer:
             )
             if not raw_skill:
                 continue
-            skill = resolve_knowledge_label(raw_skill, mastery_names=mastery_names)
             root = str(finding.get("root_cause") or "")
+            finding_key = f"{raw_skill}|{root}"
+            if finding_key in seen_findings:
+                continue
+            seen_findings.add(finding_key)
+            skill = resolve_knowledge_label(raw_skill, mastery_names=mastery_names)
             rec = str(finding.get("recommendation") or "")
             explanations.append(
                 f"技能「{skill}」：{root}。{rec}".strip()
@@ -93,4 +98,15 @@ class DiagnosisExplainer:
                     mastery_names=mastery_names,
                 )
             )
-        return explanations
+        return cls._dedupe_preserve_order(explanations)
+
+    @staticmethod
+    def _dedupe_preserve_order(items: list[str]) -> list[str]:
+        seen: set[str] = set()
+        out: list[str] = []
+        for item in items:
+            if item in seen:
+                continue
+            seen.add(item)
+            out.append(item)
+        return out

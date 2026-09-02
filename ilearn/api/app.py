@@ -28,7 +28,12 @@ from ilearn.core.export_markdown import (
 )
 from ilearn.core.feature_flags import FeatureRegistry
 from ilearn.core.orchestrator import Orchestrator
-from ilearn.core.pdf_export import markdown_to_pdf
+from ilearn.core.pdf_export import (
+    get_pdf_backend_info,
+    markdown_to_pdf,
+    markdown_to_pdf_report,
+    resolve_pdf_backend,
+)
 from ilearn.core.rate_limiter import RateLimiter, RateLimitMiddleware
 from ilearn.core.settings import clear_settings_cache, get_settings
 from ilearn.core.subject_adapter import normalize_region
@@ -168,6 +173,7 @@ def create_app(
         relationships_path or _PROJECT_ROOT / "data" / "relationships.json",
         store,
     )
+    relationships.reconcile()
     curriculum = PilotBeijingRenjiaoProvider(pilot_data_dir or _DEFAULT_PILOT_DATA)
     pilot_assets_root = Path(pilot_data_dir or _DEFAULT_PILOT_DATA) / "assets"
     orchestrator = Orchestrator(store=store, curriculum=curriculum, llm=llm)
@@ -192,7 +198,10 @@ def create_app(
 
     @app.exception_handler(FileNotFoundError)
     async def handle_not_found(_request, exc: FileNotFoundError) -> JSONResponse:
-        return JSONResponse(status_code=404, content={"detail": str(exc)})
+        detail = str(exc)
+        if detail.startswith("session not found"):
+            detail = "学习会话不存在或已过期，请从历史记录重新进入或新建会话"
+        return JSONResponse(status_code=404, content={"detail": detail})
 
     @app.exception_handler(UserFriendlyError)
     async def handle_user_friendly(_request, exc: UserFriendlyError) -> JSONResponse:
@@ -225,6 +234,22 @@ def create_app(
     def capabilities() -> dict:
         """Offline / hybrid / online feature tiers for UI transparency."""
         return FeatureRegistry.capabilities_payload(llm_available=llm is not None)
+
+    @app.get("/system/pdf-backend")
+    def pdf_backend_status() -> dict:
+        """Active PDF renderer and whether WeasyPrint fallback is in use."""
+        return get_pdf_backend_info()
+
+    def _pdf_response(pdf: bytes, filename: str) -> Response:
+        backend = resolve_pdf_backend()
+        return Response(
+            content=pdf,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "X-PDF-Backend": backend,
+            },
+        )
 
     @app.get("/pilot-assets/{asset_path:path}", include_in_schema=True)
     def pilot_assets(asset_path: str) -> FileResponse:
@@ -398,26 +423,14 @@ def create_app(
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         pdf = markdown_to_pdf(markdown)
-        return Response(
-            content=pdf,
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": 'attachment; filename="ILearn-assessment.pdf"'
-            },
-        )
+        return _pdf_response(pdf, "ILearn-assessment.pdf")
 
     @app.get("/sessions/{session_id}/export/report.pdf")
     def export_report_pdf(session_id: str) -> Response:
         session = store.load(session_id)
         markdown = render_advice_report_markdown(session)
-        pdf = markdown_to_pdf(markdown)
-        return Response(
-            content=pdf,
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": 'attachment; filename="ILearn-report.pdf"'
-            },
-        )
+        pdf = markdown_to_pdf_report(markdown)
+        return _pdf_response(pdf, "ILearn-report.pdf")
 
     @app.get("/sessions/{session_id}/export/effectiveness.pdf")
     def export_effectiveness_pdf(session_id: str) -> Response:
@@ -432,13 +445,7 @@ def create_app(
                 unit_name = str(unit_id)
         markdown = render_effectiveness_markdown(metrics, unit_name=unit_name)
         pdf = markdown_to_pdf(markdown)
-        return Response(
-            content=pdf,
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": 'attachment; filename="ILearn-effectiveness.pdf"'
-            },
-        )
+        return _pdf_response(pdf, "ILearn-effectiveness.pdf")
 
     @app.post("/sessions/{session_id}/run", response_model=SessionState)
     def run(session_id: str) -> SessionState:

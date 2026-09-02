@@ -8,6 +8,7 @@ import type {
 import { api } from '../api/client'
 import MarkdownView from '../MarkdownView'
 import EffectivenessDashboard from './EffectivenessDashboard'
+import EvidenceChain from './EvidenceChain'
 
 type DashboardDetailProps = {
   detail: DashboardStudentDetail
@@ -175,6 +176,7 @@ export default function DashboardDetail({ detail, surface = 'teacher' }: Dashboa
           {parentSummary.narrative ? <p>{parentSummary.narrative}</p> : null}
         </div>
       ) : null}
+      <EvidenceChain detail={detail} />
       <h3>知识点掌握</h3>
       {mastery.length ? (
         <div className="dashboard-skills">

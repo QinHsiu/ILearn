@@ -65,3 +65,25 @@ def test_dashboard_returns_empty_valid_lists_and_rejects_wrong_teacher(tmp_path)
         "/dashboard/teacher/t-empty/class/c-empty/students"
     )
     assert empty_students.status_code == 200
+
+
+def test_relationship_reconcile_drops_missing_sessions(tmp_path):
+    client = _client(tmp_path)
+    session_id = _create_session(client, "小明")
+    client.post(
+        "/dashboard/parent/bind",
+        json={"parent_id": "p1", "session_id": session_id},
+    )
+    rel_path = tmp_path / "relationships.json"
+    import json
+
+    data = json.loads(rel_path.read_text(encoding="utf-8"))
+    data["parents"]["p1"].append("ghost-session-id")
+    rel_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # Restart app to trigger reconcile on startup
+    client2 = _client(tmp_path)
+    children = client2.get("/dashboard/parent/p1/children").json()
+    assert [row["session_id"] for row in children] == [session_id]
+    data2 = json.loads(rel_path.read_text(encoding="utf-8"))
+    assert "ghost-session-id" not in data2["parents"]["p1"]

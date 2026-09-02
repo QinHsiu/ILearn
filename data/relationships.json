@@ -1,0 +1,14 @@
+{
+  "parents": {
+    "demo_parent": [
+      "0a68bd816ccd499a9d33bd917b24fe6c"
+    ]
+  },
+  "teachers": {
+    "demo_teacher": {
+      "demo_class_5a": [
+        "0a68bd816ccd499a9d33bd917b24fe6c"
+      ]
+    }
+  }
+}

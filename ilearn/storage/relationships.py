@@ -51,6 +51,30 @@ class RelationshipStore:
         data = self._load()
         return list(data["teachers"].get(teacher_id, {}).get(class_id, []))
 
+    def reconcile(self) -> list[str]:
+        """Drop bindings whose session JSON files no longer exist."""
+        data = self._load()
+        removed: list[str] = []
+
+        for parent_id, children in data["parents"].items():
+            kept = [sid for sid in children if self._sessions.exists(sid)]
+            for sid in children:
+                if sid not in kept:
+                    removed.append(sid)
+            data["parents"][parent_id] = kept
+
+        for teacher_id, classes in data["teachers"].items():
+            for class_id, students in list(classes.items()):
+                kept = [sid for sid in students if self._sessions.exists(sid)]
+                for sid in students:
+                    if sid not in kept:
+                        removed.append(sid)
+                classes[class_id] = kept
+
+        if removed:
+            self._save(data)
+        return list(dict.fromkeys(removed))
+
     def _require_id(self, value: str, field: str) -> str:
         trimmed = (value or "").strip()
         if not trimmed:

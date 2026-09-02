@@ -5,7 +5,9 @@ import type {
   DashboardClassSummary,
   DashboardStudentDetail,
   DashboardStudentSummary,
+  TeacherSummary,
 } from '../api/client'
+import { api } from '../api/client'
 import DashboardDetail from '../components/DashboardDetail'
 import StudentList from '../components/StudentList'
 import DashboardHome, { updateDashboardQuery } from './DashboardHome'
@@ -20,6 +22,23 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   const [error, setError] = useState<string | null>(null)
   const [bindSessionId, setBindSessionId] = useState('')
   const [selectedStudentId, setSelectedStudentId] = useState(studentId || '')
+  const [classMetrics, setClassMetrics] = useState<TeacherSummary | null>(null)
+
+  useEffect(() => {
+    if (!selected?.session_id) {
+      setClassMetrics(null)
+      return
+    }
+    let cancelled = false
+    void api.getTeacherSummary(selected.session_id).then((data) => {
+      if (!cancelled) setClassMetrics(data)
+    }).catch(() => {
+      if (!cancelled) setClassMetrics(null)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [selected?.session_id])
 
   useEffect(() => {
     void dashboardApi.teacherClasses(userId).then(setClasses).catch((err) => {
@@ -103,6 +122,22 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
             <button className="btn" type="submit">绑定学生并刷新</button>
           </form>
         </section>
+        {classMetrics ? (
+          <section className="teacher-metric-cards" aria-label="班级核心指标">
+            <article className="metric-card">
+              <span>班级平均掌握度</span>
+              <strong>{Math.round(classMetrics.avg_mastery * 100)}%</strong>
+            </article>
+            <article className="metric-card metric-card-alert">
+              <span>需干预学生</span>
+              <strong>{classMetrics.need_intervention_students.length}人</strong>
+            </article>
+            <article className="metric-card">
+              <span>本周节省批改时间</span>
+              <strong>{classMetrics.estimated_time_saved_minutes}分钟</strong>
+            </article>
+          </section>
+        ) : null}
         {selected ? <DashboardDetail detail={selected} surface="teacher" /> : null}
       </main>
     </DashboardHome>

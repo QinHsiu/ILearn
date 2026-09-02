@@ -134,6 +134,12 @@ class SessionStore:
             self._cache.pop(session_id, None)
             self._cache_expires.pop(session_id, None)
 
+    def exists(self, session_id: str) -> bool:
+        with self._lock_for(session_id):
+            if self._cache_get(session_id) is not None:
+                return True
+            return self._path(session_id).is_file()
+
     def clear_cache(self) -> None:
         with self._list_lock:
             self._cache.clear()

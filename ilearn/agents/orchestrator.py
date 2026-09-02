@@ -16,6 +16,11 @@ from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
 from ilearn.core.datetime_utils import utc_now
 from ilearn.core.item_validators import revise_paper, validate_paper as validate_item_paper
+from ilearn.core.assessment_timeout import (
+    apply_submit_timeout,
+    is_assessment_timed_out,
+    mark_assessment_started,
+)
 from ilearn.core.evidence import append_evidence
 from ilearn.agents.protocol import AgentContext
 from ilearn.core.quality_gate import (
@@ -251,6 +256,7 @@ class MultiAgentOrchestrator:
         session.grades = []
         session.diagnosis = None
         session.plan = None
+        mark_assessment_started(session)
         self._set_phase(session, result.phase)
         self._record_decision(
             session,
@@ -301,6 +307,7 @@ class MultiAgentOrchestrator:
             "shortfall": payload.get("shortfall"),
         }
         session.metadata["adaptive"] = adaptive
+        mark_assessment_started(session)
         self._record_decision(
             session,
             self._assessment.name,
@@ -399,6 +406,8 @@ class MultiAgentOrchestrator:
             for item in paper.items
         ]
         session.metadata["item_meta"] = item_meta or {}
+        if is_assessment_timed_out(session):
+            apply_submit_timeout(session, paper.items)
         session.grades = []
         session.diagnosis = None
         session.plan = None

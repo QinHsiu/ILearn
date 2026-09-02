@@ -31,6 +31,8 @@ class TeachingEffectivenessMetrics(BaseModel):
     evidence_count: int
     parent_view_count: int
     teacher_notes_count: int
+    is_simulated: bool = False
+    data_source: str = "computed"
 
 
 def compute_metrics(session: SessionState) -> TeachingEffectivenessMetrics:
@@ -69,6 +71,8 @@ def compute_metrics(session: SessionState) -> TeachingEffectivenessMetrics:
     paper_n = len(session.paper.items) if session.paper is not None else 0
     completion = 100.0 * len(session.answers) / max(paper_n, 1)
 
+    is_simulated, data_source = _effectiveness_data_provenance(session, post_score)
+
     return TeachingEffectivenessMetrics(
         pre_assessment_score=pre_score,
         post_assessment_score=post_score,
@@ -91,6 +95,8 @@ def compute_metrics(session: SessionState) -> TeachingEffectivenessMetrics:
         evidence_count=len(session.evidence_log),
         parent_view_count=int(session.metadata.get("parent_view_count") or 0),
         teacher_notes_count=int(session.metadata.get("teacher_notes_count") or 0),
+        is_simulated=is_simulated,
+        data_source=data_source,
     )
 
 
@@ -106,6 +112,9 @@ def render_effectiveness_markdown(
         if metrics.post_assessment_score is not None
         else "—"
     )
+    sim_note = ""
+    if metrics.is_simulated:
+        sim_note = f"\n\n> ⚠️ 部分效果数据为演示估算值（来源：{metrics.data_source}），仅供参考。"
     lines.extend(
         [
             "## 学习成效",
@@ -141,6 +150,9 @@ def render_effectiveness_markdown(
             "",
         ]
     )
+    if sim_note:
+        lines.append(sim_note.strip())
+        lines.append("")
     return "\n".join(lines).strip()
 
 
@@ -201,3 +213,19 @@ def _optional_float(value: object) -> float | None:
     if value is None or value == "":
         return None
     return float(value)
+
+
+def _effectiveness_data_provenance(
+    session: SessionState, post_score: float | None
+) -> tuple[bool, str]:
+    """Whether post-test / gain figures are demo estimates rather than measured."""
+    if session.metadata.get("post_assessment_grades"):
+        return False, "post_assessment"
+    if session.metadata.get("demo_unit"):
+        if post_score is not None:
+            return True, "演示单元预置后测估算"
+        if session.metadata.get("demo_mastery_gain"):
+            return True, "演示单元掌握度增益估算"
+    if post_score is not None and not session.metadata.get("post_assessment_grades"):
+        return True, "元数据后测估算"
+    return False, "computed"

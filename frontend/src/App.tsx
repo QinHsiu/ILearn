@@ -124,6 +124,10 @@ function StudentApp() {
   const [historyNickname, setHistoryNickname] = useState('')
   const [focusItemId, setFocusItemId] = useState<string | null>(null)
   const [exporting, setExporting] = useState<'assessment' | 'report' | null>(null)
+  const [pdfBackend, setPdfBackend] = useState<{
+    backend: string
+    fallback_active: boolean
+  } | null>(null)
 
   const [profile, setProfile] = useState<StudentProfile>({
     region: 'beijing',
@@ -146,6 +150,16 @@ function StudentApp() {
   useEffect(() => {
     applyTheme(profile.grade, profile.gender || 'unspecified')
   }, [profile.grade, profile.gender])
+
+  useEffect(() => {
+    if (step < 3) return
+    void api.getPdfBackend().then((info) => {
+      setPdfBackend({
+        backend: info.backend,
+        fallback_active: Boolean(info.fallback_active),
+      })
+    }).catch(() => setPdfBackend(null))
+  }, [step])
 
   const onSessionSync = useCallback((nextSession: SessionState) => {
     setSession(nextSession)
@@ -217,6 +231,10 @@ function StudentApp() {
 
   async function onStart(e: FormEvent) {
     e.preventDefault()
+    if (!PILOT_GRADES.includes(Number(profile.grade))) {
+      setError('该年级暂未开放，请选择 4–6 年级数学试点内容。')
+      return
+    }
     setBusy(true)
     setError(null)
     try {
@@ -609,6 +627,17 @@ function StudentApp() {
             />
           </div>
           <div className="actions">
+            {pdfBackend ? (
+              <p
+                className={`pdf-backend-indicator${pdfBackend.fallback_active ? ' is-fallback' : ''}`}
+                role="status"
+              >
+                PDF 渲染引擎：{pdfBackend.backend === 'weasyprint' ? 'WeasyPrint' : 'fpdf2'}
+                {pdfBackend.fallback_active
+                  ? '（WeasyPrint 不可用，已回退至 fpdf2，排版可能与预览略有差异）'
+                  : ''}
+              </p>
+            ) : null}
             <button className="btn secondary" type="button" onClick={() => setStep(2)}>
               返回学情
             </button>
