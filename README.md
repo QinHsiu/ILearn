@@ -13,11 +13,22 @@
 
 ## Demo 视频（GOAI 2026）
 
-GitHub **文件页 / raw 链接通常无法在线播放**（`Content-Type: application/octet-stream`，且 CDN 可能缓存旧文件）。请用下面方式打开：
+下面尝试用 HTML `<video>` 在 README 内嵌播放（**优先 720p**，约 5.4MB，低于 GitHub ~10MB 嵌入软限制）。若页面仍不显示播放器，请用下方下载链接本地打开。
 
-- **推荐下载/播放**： [Release · goai-demo · demo.mp4](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo.mp4)
-- Release 页：[goai-demo](https://github.com/QinHsiu/ILearn/releases/tag/goai-demo)
-- 仓库路径（仅存档）：[`runtime_evidence/demo.mp4`](https://github.com/QinHsiu/ILearn/blob/master/runtime_evidence/demo.mp4)
+<video src="./runtime_evidence/demo_720p.mp4" width="720" controls playsinline>
+  你的浏览器不支持 video 标签；请
+  <a href="./runtime_evidence/demo_720p.mp4">下载 720p Demo</a>
+</video>
+
+备用写法（相对路径）：
+
+https://github.com/QinHsiu/ILearn/raw/master/runtime_evidence/demo_720p.mp4
+
+| 版本 | 分辨率 | 大小 | 链接 |
+|------|--------|------|------|
+| 720p（README 嵌入用） | 1280×720 | ~5.4MB | [`demo_720p.mp4`](./runtime_evidence/demo_720p.mp4) · [`demo.mp4`](./runtime_evidence/demo.mp4)（同内容） |
+| 1080p（原始成片） | 1920×1080 | ~12.1MB | [`demo_1080p.mp4`](./runtime_evidence/demo_1080p.mp4) |
+| Release 下载 | — | — | [goai-demo Assets](https://github.com/QinHsiu/ILearn/releases/tag/goai-demo) |
 
 ```text
 测评 → 批改 → 诊断 → 规划 → 巩固
