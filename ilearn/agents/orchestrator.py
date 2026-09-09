@@ -16,6 +16,8 @@ from ilearn.agents.practice import PracticeAgent, evidence_from_grades
 from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
 from ilearn.core.datetime_utils import utc_now
+from ilearn.core.assessment_paper_builder import build_weak_first_knowledge_ids
+from ilearn.core.enhanced_context import ensure_cold_start_profile
 from ilearn.core.enhanced_flags import is_enhanced_enabled
 from ilearn.core.enhanced_session import get_enhanced_profile
 from ilearn.core.item_validators import revise_paper, validate_paper as validate_item_paper
@@ -144,6 +146,34 @@ class MultiAgentOrchestrator:
                 session.session_id,
             )
             return session
+
+    def _ensure_enhanced_profile(self, session: SessionState) -> SessionState:
+        """P1 cold start + P0 context hint; no-op when PROFILE flag is off."""
+        if not is_enhanced_enabled("ENABLE_ENHANCED_PROFILE"):
+            return session
+        try:
+            return ensure_cold_start_profile(session, self._curriculum)
+        except Exception:
+            logger.exception(
+                "enhanced cold start failed for session %s; continuing legacy path",
+                session.session_id,
+            )
+            return session
+
+    def _apply_enhanced_tutor_prefix(
+        self, session: SessionState, turn: TutorTurn
+    ) -> TutorTurn:
+        """Prefix tutor message with enhanced context when AGENTS flag is on."""
+        if not is_enhanced_enabled("ENABLE_ENHANCED_AGENTS"):
+            return turn
+        hint = session.metadata.get("enhanced_context_hint")
+        if not isinstance(hint, str) or not hint.strip():
+            return turn
+        if hint in turn.message:
+            return turn
+        return turn.model_copy(
+            update={"message": f"{hint.strip()}\n\n{turn.message}"}
+        )
 
     @staticmethod
     def _ctx(
@@ -288,6 +318,11 @@ class MultiAgentOrchestrator:
     @with_session_lock
     def generate_assessment(self, session_id: str) -> AssessmentPaper:
         session = self._store.load(session_id)
+        session = self._ensure_enhanced_profile(session)
+        assess_meta: dict = {}
+        weak_queue = build_weak_first_knowledge_ids(session)
+        if weak_queue:
+            assess_meta["weak_knowledge_ids"] = weak_queue
         citation_result = self._curriculum_agent.run(self._ctx(session))
         assert_writes_allowed(
             self._curriculum_agent.name,
@@ -297,7 +332,7 @@ class MultiAgentOrchestrator:
 
         result, degraded = run_with_quality_gate(
             lambda: self._assessment.run(
-                self._ctx(session, phase=SessionPhase.ASSESS)
+                self._ctx(session, phase=SessionPhase.ASSESS, metadata=assess_meta)
             ),
             valid_assessment_result,
         )
@@ -542,9 +577,18 @@ class MultiAgentOrchestrator:
         session = self._store.load(session_id)
         self._require_paper(session)
         PhaseGuard.assert_ready_for("diagnose", session)
+        session = self._ensure_enhanced_profile(session)
+        diagnose_meta: dict = {}
+        hint = session.metadata.get("enhanced_context_hint")
+        if isinstance(hint, str) and hint.strip():
+            diagnose_meta["enhanced_context_hint"] = hint
         result, degraded = run_with_quality_gate(
             lambda: self._diagnosis.run(
-                self._ctx(session, phase=SessionPhase.DIAGNOSE)
+                self._ctx(
+                    session,
+                    phase=SessionPhase.DIAGNOSE,
+                    metadata=diagnose_meta,
+                )
             ),
             valid_diagnosis_result,
         )
@@ -696,9 +740,11 @@ class MultiAgentOrchestrator:
             raise ValueError(f"unknown item id: {item_id}")
         grade = next((g for g in session.grades if g.item_id == item_id), None)
         error_tag = grade.error_tags[0] if grade and grade.error_tags else None
+        session = self._ensure_enhanced_profile(session)
         turn = self._tutor.start(
             item, error_tag, frustration=self._frustration_level(session)
         )
+        turn = self._apply_enhanced_tutor_prefix(session, turn)
         turn = self._guard_turn(session, item, turn)
         session.tutor_by_item[item_id] = turn
         self._record_decision(
@@ -753,6 +799,8 @@ class MultiAgentOrchestrator:
                 previous.error_tag,
                 frustration=frustration,
             )
+        session = self._ensure_enhanced_profile(session)
+        turn = self._apply_enhanced_tutor_prefix(session, turn)
         turn = self._guard_turn(session, item, turn)
         session.tutor_by_item[item_id] = turn
         session.hint_interactions.setdefault(item_id, []).append(
