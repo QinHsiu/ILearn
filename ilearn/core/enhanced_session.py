@@ -28,6 +28,12 @@ def get_enhanced_profile(session: SessionState) -> StudentFiveDimProfile | None:
     return StudentFiveDimProfile.model_validate(profile_data)
 
 
+def _ensure_metadata(session: SessionState) -> None:
+    """Defensive: SessionState always has metadata; keep for non-Pydantic callers."""
+    if not hasattr(session, "metadata") or session.metadata is None:
+        session.metadata = {}
+
+
 def set_enhanced_profile(
     session: SessionState,
     profile: StudentFiveDimProfile,
@@ -39,6 +45,7 @@ def set_enhanced_profile(
     """
     if not is_enhanced_enabled("ENABLE_ENHANCED_PROFILE"):
         return session
+    _ensure_metadata(session)
     session.metadata["enhanced"] = {
         "schema_version": ENHANCED_SCHEMA_VERSION,
         "profile": profile.model_dump(mode="json"),

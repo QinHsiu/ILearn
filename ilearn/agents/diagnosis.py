@@ -124,6 +124,12 @@ class DiagnosisAgent:
         enrichment["teacher_summary"] = generate_audience_summary(
             diagnosis, enrichment, audience="teacher"
         )
+        enhanced_hint = ctx.metadata.get("enhanced_context_hint")
+        if isinstance(enhanced_hint, str) and enhanced_hint.strip():
+            enrichment["enhanced_context_hint"] = enhanced_hint.strip()
+            enrichment["teacher_summary"] = (
+                f"{enhanced_hint.strip()}\n\n{enrichment['teacher_summary']}"
+            )
         flags = list(diagnosis.flags)
         if enrichment.get("prerequisite_gaps") and "prerequisite_gaps" not in flags:
             flags.append("prerequisite_gaps")
