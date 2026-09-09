@@ -22,6 +22,11 @@ from ilearn.core.effectiveness import (
     effectiveness_payload,
     render_effectiveness_markdown,
 )
+from ilearn.core.enhanced_api import (
+    attach_enhanced_fields,
+    enhanced_api_active,
+    render_enhanced_report_markdown,
+)
 from ilearn.demo.units import load_demo_unit
 from ilearn.core.export_markdown import (
     render_advice_report_markdown,
@@ -439,19 +444,42 @@ def create_app(
         return effectiveness_payload(session)
 
     @app.get("/sessions/{session_id}/summary/teacher")
-    def get_teacher_summary(session_id: str) -> dict:
+    def get_teacher_summary(session_id: str, enhanced: bool = False) -> dict:
         session = _load_session_optional(session_id)
-        return build_teacher_summary_safe(session).model_dump()
+        payload = build_teacher_summary_safe(session).model_dump()
+        if enhanced_api_active(enhanced) and session is not None:
+            return attach_enhanced_fields(payload, session)
+        return payload
 
     @app.get("/sessions/{session_id}/summary/parent")
-    def get_parent_summary(session_id: str) -> dict:
+    def get_parent_summary(session_id: str, enhanced: bool = False) -> dict:
         session = _load_session_optional(session_id)
-        return build_parent_summary_safe(session).model_dump()
+        payload = build_parent_summary_safe(session).model_dump()
+        if enhanced_api_active(enhanced) and session is not None:
+            return attach_enhanced_fields(payload, session)
+        return payload
 
     @app.get("/sessions/{session_id}/summary/student")
-    def get_student_summary(session_id: str) -> dict:
+    def get_student_summary(session_id: str, enhanced: bool = False) -> dict:
         session = _load_session_optional(session_id)
-        return build_student_summary_safe(session).model_dump()
+        payload = build_student_summary_safe(session).model_dump()
+        if enhanced_api_active(enhanced) and session is not None:
+            return attach_enhanced_fields(payload, session)
+        return payload
+
+    @app.get("/sessions/{session_id}/enhanced/report.pdf")
+    def export_enhanced_report_pdf(session_id: str) -> Response:
+        from ilearn.core.enhanced_flags import is_enhanced_enabled
+
+        if not is_enhanced_enabled("ENABLE_ENHANCED_API"):
+            raise HTTPException(
+                status_code=404,
+                detail="enhanced report disabled",
+            )
+        session = store.load(session_id)
+        markdown = render_enhanced_report_markdown(session)
+        pdf = _render_pdf_bytes(lambda: markdown_to_pdf_report(markdown))
+        return _pdf_response(pdf, "ILearn-enhanced-report.pdf")
 
     @app.get("/sessions/{session_id}/export/assessment.pdf")
     def export_assessment_pdf(session_id: str) -> Response:
