@@ -15,6 +15,8 @@ from ilearn.agents.practice import PracticeAgent, evidence_from_grades
 from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
 from ilearn.core.datetime_utils import utc_now
+from ilearn.core.enhanced_flags import is_enhanced_enabled
+from ilearn.core.enhanced_session import get_enhanced_profile
 from ilearn.core.item_validators import revise_paper, validate_paper as validate_item_paper
 from ilearn.core.assessment_timeout import (
     apply_submit_timeout,
@@ -80,6 +82,49 @@ class MultiAgentOrchestrator:
         self._planning = PlanningAgent(curriculum)
         self._tutor = tutor or TutorAgent()
         self._guard = GuardAgent()
+        stub_mode = llm is None or not getattr(llm, "available", lambda: False)()
+        from ilearn.agents.enhanced.diagnosis import ErrorDiagnosisAgent
+        from ilearn.agents.enhanced.profile_updater import ProfileUpdaterAgent
+        from ilearn.agents.enhanced.question import QuestionGeneratorAgent
+        from ilearn.agents.enhanced.recommend import RecommendAgent
+
+        self._enhanced_profile_updater = ProfileUpdaterAgent(llm, stub_mode=stub_mode)
+        self._enhanced_recommender = RecommendAgent(llm, stub_mode=stub_mode)
+        self._enhanced_question_gen = QuestionGeneratorAgent(llm, stub_mode=stub_mode)
+        self._enhanced_error_diagnosis = ErrorDiagnosisAgent(llm, stub_mode=stub_mode)
+
+    def _maybe_update_enhanced_profile(self, session: SessionState) -> SessionState:
+        """Bypass hook: refresh metadata.enhanced after diagnosis/plan (flag-gated)."""
+        if not (
+            is_enhanced_enabled("ENABLE_ENHANCED_AGENTS")
+            and is_enhanced_enabled("ENABLE_ENHANCED_PROFILE")
+        ):
+            return session
+        return self._enhanced_profile_updater.update_session(session)
+
+    def _maybe_attach_enhanced_recommendations(
+        self, session: SessionState
+    ) -> SessionState:
+        """Attach recommendations under metadata.enhanced (flag-gated)."""
+        if not (
+            is_enhanced_enabled("ENABLE_ENHANCED_AGENTS")
+            and is_enhanced_enabled("ENABLE_ENHANCED_PROFILE")
+        ):
+            return session
+        profile = get_enhanced_profile(session)
+        if profile is None:
+            session = self._maybe_update_enhanced_profile(session)
+            profile = get_enhanced_profile(session)
+        if profile is None:
+            return session
+        recommendations = self._enhanced_recommender.recommend_from_profile(profile)
+        blob = session.metadata.get("enhanced")
+        if not isinstance(blob, dict):
+            return session
+        blob = dict(blob)
+        blob["recommendations"] = recommendations
+        session.metadata["enhanced"] = blob
+        return session
 
     @staticmethod
     def _ctx(
@@ -510,6 +555,7 @@ class MultiAgentOrchestrator:
             ok=not degraded,
             degraded=degraded,
         )
+        session = self._maybe_update_enhanced_profile(session)
         self._store.save(session)
         return session.diagnosis
 
@@ -553,6 +599,8 @@ class MultiAgentOrchestrator:
             ok=not degraded,
             degraded=degraded,
         )
+        session = self._maybe_update_enhanced_profile(session)
+        session = self._maybe_attach_enhanced_recommendations(session)
         self._store.save(session)
         return session.plan
 
