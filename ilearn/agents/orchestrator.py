@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from copy import deepcopy
 from pathlib import Path
 
@@ -57,6 +58,8 @@ from ilearn.providers.curriculum import CurriculumProvider, load_example_bank
 from ilearn.providers.llm import LLMClient
 from ilearn.storage.sessions import SessionStore
 
+logger = logging.getLogger(__name__)
+
 
 class MultiAgentOrchestrator:
     """Run ILearn agents and persist each state-machine transition."""
@@ -100,7 +103,14 @@ class MultiAgentOrchestrator:
             and is_enhanced_enabled("ENABLE_ENHANCED_PROFILE")
         ):
             return session
-        return self._enhanced_profile_updater.update_session(session)
+        try:
+            return self._enhanced_profile_updater.update_session(session)
+        except Exception:
+            logger.exception(
+                "enhanced profile update failed for session %s; continuing legacy path",
+                session.session_id,
+            )
+            return session
 
     def _maybe_attach_enhanced_recommendations(
         self, session: SessionState
@@ -111,20 +121,29 @@ class MultiAgentOrchestrator:
             and is_enhanced_enabled("ENABLE_ENHANCED_PROFILE")
         ):
             return session
-        profile = get_enhanced_profile(session)
-        if profile is None:
-            session = self._maybe_update_enhanced_profile(session)
+        try:
             profile = get_enhanced_profile(session)
-        if profile is None:
+            if profile is None:
+                session = self._maybe_update_enhanced_profile(session)
+                profile = get_enhanced_profile(session)
+            if profile is None:
+                return session
+            recommendations = self._enhanced_recommender.recommend_from_profile(
+                profile
+            )
+            blob = session.metadata.get("enhanced")
+            if not isinstance(blob, dict):
+                return session
+            blob = dict(blob)
+            blob["recommendations"] = recommendations
+            session.metadata["enhanced"] = blob
             return session
-        recommendations = self._enhanced_recommender.recommend_from_profile(profile)
-        blob = session.metadata.get("enhanced")
-        if not isinstance(blob, dict):
+        except Exception:
+            logger.exception(
+                "enhanced recommendations failed for session %s; continuing legacy path",
+                session.session_id,
+            )
             return session
-        blob = dict(blob)
-        blob["recommendations"] = recommendations
-        session.metadata["enhanced"] = blob
-        return session
 
     @staticmethod
     def _ctx(
