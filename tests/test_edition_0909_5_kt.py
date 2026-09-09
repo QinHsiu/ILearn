@@ -6,9 +6,13 @@ from unittest.mock import Mock
 
 import pytest
 
+from ilearn.core.enhanced_flags import clear_enhanced_flag_cache
+from ilearn.core.enhanced_session import get_kt_state, set_enhanced_profile, set_kt_state
 from ilearn.core.kt.bkt import BKTKnowledgeTracing
 from ilearn.core.kt.factory import create_kt_service, create_kt_service_from_session
 from ilearn.core.kt.protocol import KTInteraction
+from ilearn.core.models.enhanced_profile import StudentFiveDimProfile
+from ilearn.core.schemas import SessionState, StudentProfile
 
 
 class TestBKT:
@@ -199,3 +203,48 @@ class TestKTFactory:
 
         svc = create_kt_service_from_session(session, backend="bkt")
         assert isinstance(svc, BKTKnowledgeTracing)
+
+
+class TestSessionIntegration:
+    """Session integration tests for enhanced blob merge."""
+
+    def test_set_enhanced_profile_preserves_kt(self, monkeypatch):
+        monkeypatch.setenv("ILEARN_ENABLE_ENHANCED_PROFILE", "1")
+        clear_enhanced_flag_cache()
+        session = SessionState(
+            session_id="s1",
+            profile=StudentProfile(region="北京", grade=5, age=11),
+            metadata={
+                "enhanced": {
+                    "schema_version": 1,
+                    "profile": {"student_id": "s1"},
+                    "kt": {"backend": "bkt", "interactions": []},
+                    "recommendations": [{"id": 1}],
+                }
+            },
+        )
+        profile = StudentFiveDimProfile(student_id="s1")
+        session = set_enhanced_profile(session, profile)
+        assert session.metadata["enhanced"]["kt"]["backend"] == "bkt"
+        assert session.metadata["enhanced"]["recommendations"] == [{"id": 1}]
+        assert "profile" in session.metadata["enhanced"]
+
+    def test_set_kt_state_preserves_profile(self, monkeypatch):
+        monkeypatch.setenv("ILEARN_ENABLE_ENHANCED_PROFILE", "1")
+        clear_enhanced_flag_cache()
+        session = SessionState(
+            session_id="s1",
+            profile=StudentProfile(region="北京", grade=5, age=11),
+            metadata={
+                "enhanced": {
+                    "schema_version": 1,
+                    "profile": {"student_id": "s1"},
+                }
+            },
+        )
+        kt_state = {"backend": "bkt", "interactions": []}
+        session = set_kt_state(session, kt_state)
+        enhanced = session.metadata["enhanced"]
+        assert "profile" in enhanced
+        assert enhanced["kt"] == kt_state
+        assert get_kt_state(session) == kt_state
