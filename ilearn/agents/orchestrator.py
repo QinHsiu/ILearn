@@ -105,6 +105,8 @@ class MultiAgentOrchestrator:
             and is_enhanced_enabled("ENABLE_ENHANCED_PROFILE")
         ):
             return session
+        if is_enhanced_enabled("ENABLE_ENHANCED_BACKGROUND"):
+            return session
         try:
             return self._enhanced_profile_updater.update_session(session)
         except Exception:
@@ -122,6 +124,8 @@ class MultiAgentOrchestrator:
             is_enhanced_enabled("ENABLE_ENHANCED_AGENTS")
             and is_enhanced_enabled("ENABLE_ENHANCED_PROFILE")
         ):
+            return session
+        if is_enhanced_enabled("ENABLE_ENHANCED_BACKGROUND"):
             return session
         try:
             profile = get_enhanced_profile(session)

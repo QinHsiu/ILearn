@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -185,6 +185,25 @@ def create_app(
     curriculum = PilotBeijingRenjiaoProvider(pilot_data_dir or _DEFAULT_PILOT_DATA)
     pilot_assets_root = Path(pilot_data_dir or _DEFAULT_PILOT_DATA) / "assets"
     orchestrator = Orchestrator(store=store, curriculum=curriculum, llm=llm)
+
+    def _schedule_profile_background(
+        background_tasks: BackgroundTasks,
+        session_id: str,
+        *,
+        attach_recommendations: bool = False,
+    ) -> None:
+        from ilearn.core.enhanced_flags import is_enhanced_enabled
+        from ilearn.services.profile_update_service import update_profile_background
+
+        if not is_enhanced_enabled("ENABLE_ENHANCED_BACKGROUND"):
+            return
+        background_tasks.add_task(
+            update_profile_background,
+            store,
+            session_id,
+            llm,
+            attach_recommendations=attach_recommendations,
+        )
 
     app = FastAPI(title="ILearn", version="0.1.0")
     app.include_router(create_auth_router(auth_credentials))
@@ -411,12 +430,20 @@ def create_app(
         return orchestrator.grade(session_id)
 
     @app.post("/sessions/{session_id}/diagnose", response_model=DiagnosisReport)
-    def diagnose(session_id: str) -> DiagnosisReport:
-        return orchestrator.diagnose(session_id)
+    def diagnose(
+        session_id: str, background_tasks: BackgroundTasks
+    ) -> DiagnosisReport:
+        report = orchestrator.diagnose(session_id)
+        _schedule_profile_background(background_tasks, session_id)
+        return report
 
     @app.post("/sessions/{session_id}/plan", response_model=LearningPlanReport)
-    def plan(session_id: str) -> LearningPlanReport:
-        return orchestrator.plan(session_id)
+    def plan(session_id: str, background_tasks: BackgroundTasks) -> LearningPlanReport:
+        report = orchestrator.plan(session_id)
+        _schedule_profile_background(
+            background_tasks, session_id, attach_recommendations=True
+        )
+        return report
 
     @app.post("/sessions/{session_id}/tutor", response_model=TutorTurn)
     def tutor_start(session_id: str, body: TutorStartRequest) -> TutorTurn:
@@ -518,8 +545,12 @@ def create_app(
         return _pdf_response(pdf, "ILearn-effectiveness.pdf")
 
     @app.post("/sessions/{session_id}/run", response_model=SessionState)
-    def run(session_id: str) -> SessionState:
-        return orchestrator.run_after_submit(session_id)
+    def run(session_id: str, background_tasks: BackgroundTasks) -> SessionState:
+        state = orchestrator.run_after_submit(session_id)
+        _schedule_profile_background(
+            background_tasks, session_id, attach_recommendations=True
+        )
+        return state
 
     @app.get("/sessions/{session_id}/phase", response_model=PhaseResponse)
     def get_phase(session_id: str) -> PhaseResponse:
