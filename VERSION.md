@@ -5,9 +5,9 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0901_3 学生流程 Swiss UI |
-| **基线** | 554 tests（离线可跑）+ **73** vitest |
-| **日期** | 2026-09-02 |
+| **标签** | Edition 0909_1 Enhanced（旁路画像 / Agents / API） |
+| **基线** | PR01–03 合入后离线可跑；增强 Flag 默认关闭 |
+| **日期** | 2026-09-09 |
 
 ---
 
@@ -52,6 +52,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 - **Edition 0901_1：** 结构化教师/家长摘要 API、Landing 演示角色选择、学生 `session_id` 深链 resume、效果页前后 ComparisonCards、demo seed 写入 `post_assessment_score`
 - **Edition 0901_2：** `StudentSummary` builder（seed overlay C）+ `GET /sessions/{id}/summary/student`；demo seed 写入 `metadata.student_summary`；学生计划步 `StudentSummaryPanel`（任务进度 / 星星 / 下一挑战）
 - **Edition 0901_3：** 学生向导 Swiss / Klein Blue 视觉对齐（`.student-shell` / chrome / steps）；建档密度；测评 phase·counter·stem·choice-row；学情「苏格拉底助教」面板；计划步 summary 间距；不改 API / 自适应逻辑
+- **Edition 0909_1 Enhanced（A+C 旁路合入）：** `StudentFiveDimProfile` + `metadata.enhanced`（PR01）；`ilearn/agents/enhanced/*` 在 `diagnose`/`plan` 末尾 Flag 钩子（PR02）；summary/dashboard `?enhanced=` + `/enhanced/report.pdf`（PR03）。`data/features.yaml` 中 `ENABLE_ENHANCED_*` 默认 `false`，旧链路零副作用
 
 ---
 
@@ -87,6 +88,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0901_1 结构化演示摘要 | 结构化教师/家长摘要 API、Landing 演示角色选择、学生 `session_id` 深链 resume、效果页前后 ComparisonCards、demo seed 写入 `post_assessment_score` | **549** pytest + **62** vitest |
 | Edition 0901_2 学生摘要 + 计划步面板 | StudentSummary builder/overlay、GET summary/student、demo seed metadata、计划步 StudentSummaryPanel | **554** pytest + **71** vitest |
 | Edition 0901_3 学生流程 Swiss UI | student-shell / chrome / steps；建档密度；测评 phase·counter·stem·choice-row；苏格拉底助教面板；计划 summary 间距 | **554** pytest + **73** vitest |
+| Edition 0909_1 Enhanced PR01–03 | 五维画像 metadata.enhanced；enhanced agents 钩子；API `?enhanced=` / enhanced PDF；Flag 默认关 | PR01–03 专项测试通过 |
 
 ---
 
