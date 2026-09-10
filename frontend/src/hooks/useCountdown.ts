@@ -1,64 +1,85 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-export function useCountdown(initialSeconds = 3600, onTimeout?: () => void) {
-  const active = initialSeconds > 0
-  const [seconds, setSeconds] = useState(active ? initialSeconds : 0)
-  const [isFinished, setIsFinished] = useState(false)
-  const onTimeoutRef = useRef(onTimeout)
-  onTimeoutRef.current = onTimeout
+export function useCountdown(
+  initialSeconds = 3600,
+  options?: {
+    enabled?: boolean
+    onUiDeadline?: () => void
+  },
+) {
+  const enabled = options?.enabled ?? initialSeconds !== 0
+  const [seconds, setSeconds] = useState(initialSeconds)
+  const [isPaused, setIsPaused] = useState(false)
+  const [isUiDeadlinePassed, setIsUiDeadlinePassed] = useState(false)
+
+  const onUiDeadlineRef = useRef(options?.onUiDeadline)
+  onUiDeadlineRef.current = options?.onUiDeadline
   const firedRef = useRef(false)
-  // Tracks the previous tick value so we only fire onTimeout on a genuine
-  // countdown-to-zero, not on the render where the timer first activates
-  // (when `seconds` state still lags at its stale value).
-  const prevSecondsRef = useRef(active ? initialSeconds : 0)
+  const enabledRef = useRef(enabled)
+  enabledRef.current = enabled
+  const trackedInitialRef = useRef(initialSeconds)
 
-  useEffect(() => {
-    if (!active) {
-      setSeconds(0)
-      setIsFinished(false)
-      firedRef.current = false
-      prevSecondsRef.current = 0
-      return
-    }
+  // Sync seconds when initialSeconds changes during render so effects never
+  // see a stale <=0 value after activation (0 → N).
+  if (trackedInitialRef.current !== initialSeconds) {
+    trackedInitialRef.current = initialSeconds
     setSeconds(initialSeconds)
-    setIsFinished(false)
     firedRef.current = false
-  }, [active, initialSeconds])
+    setIsUiDeadlinePassed(false)
+  }
 
+  // Tick while enabled and not paused — including overtime (seconds < 0).
   useEffect(() => {
-    if (!active) return undefined
-    if (seconds > 0) {
-      prevSecondsRef.current = seconds
-      const timer = window.setInterval(() => {
-        setSeconds((prev) => prev - 1)
-      }, 1000)
-      return () => window.clearInterval(timer)
-    }
-    // seconds === 0: only a timeout if we actually counted down from a
-    // positive value. On activation prevSecondsRef is still 0, so we skip.
-    if (prevSecondsRef.current > 0) {
-      setIsFinished(true)
-      if (!firedRef.current) {
-        firedRef.current = true
-        onTimeoutRef.current?.()
-      }
-    }
-    return undefined
-  }, [active, seconds])
+    if (!enabled || isPaused) return undefined
+    const timer = window.setInterval(() => {
+      setSeconds((prev) => prev - 1)
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [enabled, isPaused])
+
+  // Fire onUiDeadline once: crossing into <=0, enable already <=0, or resume at <=0.
+  useEffect(() => {
+    if (!enabled || isPaused) return
+    if (seconds > 0 || firedRef.current) return
+    firedRef.current = true
+    setIsUiDeadlinePassed(true)
+    onUiDeadlineRef.current?.()
+  }, [enabled, isPaused, seconds])
 
   const format = useCallback(() => {
-    const m = Math.floor(Math.max(0, seconds) / 60)
-    const s = Math.max(0, seconds) % 60
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    const abs = Math.abs(seconds)
+    const m = Math.floor(abs / 60)
+    const s = abs % 60
+    const body = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    return seconds < 0 ? `+${body}` : body
   }, [seconds])
 
-  const reset = useCallback(() => {
-    if (!active) return
-    firedRef.current = false
-    prevSecondsRef.current = initialSeconds
-    setSeconds(initialSeconds)
-    setIsFinished(false)
-  }, [active, initialSeconds])
+  const pause = useCallback(() => {
+    setIsPaused(true)
+  }, [])
 
-  return { seconds, format, isFinished, reset }
+  const resume = useCallback(() => {
+    setIsPaused(false)
+  }, [])
+
+  const reset = useCallback(
+    (nextSeconds?: number) => {
+      if (!enabledRef.current) return
+      const target = nextSeconds ?? initialSeconds
+      firedRef.current = false
+      setIsUiDeadlinePassed(false)
+      setSeconds(target)
+    },
+    [initialSeconds],
+  )
+
+  return {
+    seconds,
+    isPaused,
+    isUiDeadlinePassed,
+    format,
+    pause,
+    resume,
+    reset,
+  }
 }

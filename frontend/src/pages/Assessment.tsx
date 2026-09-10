@@ -115,10 +115,10 @@ export default function Assessment({
   const countdownActive = phase === 'anchor' || phase === 'full'
   const { format: formatCountdown, reset: resetCountdown } = useCountdown(
     countdownActive ? ASSESSMENT_SECONDS : 0,
-    () => {
-      if ((phase === 'anchor' || phase === 'full') && paper && !busy) {
-        submitFullRef.current()
-      }
+    {
+      enabled: countdownActive,
+      // Task 2: no auto-submit on UI deadline; overtime meta is Task 6
+      onUiDeadline: () => {},
     },
   )
 
