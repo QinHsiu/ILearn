@@ -18,14 +18,11 @@ import MathVisualizer from '../components/MathVisualizer'
 import CountingManipulative from '../components/CountingManipulative'
 import { inferVisualization } from '../lib/inferVisualization'
 import { inferCountingManipulative } from '../lib/inferManipulative'
+import { ASSESSMENT_SECONDS } from '../constants/timing'
+import type { AssessmentItemMeta } from '../types/assessmentMeta'
 
-/** Default overall assessment window: 150 minutes. */
-export const ASSESSMENT_SECONDS = 150 * 60
-
-export type AssessmentItemMeta = {
-  elapsed_ms: number
-  hint_used?: boolean
-}
+export { ASSESSMENT_SECONDS }
+export type { AssessmentItemMeta }
 
 export type AssessmentCompletePayload = {
   paper: AssessmentPaper
@@ -227,7 +224,9 @@ export default function Assessment({
     const metaMap: Record<string, AssessmentItemMeta> = {}
     for (const item of items) {
       metaMap[item.id] = {
+        item_meta_version: 'v1',
         elapsed_ms: elapsedMsRef.current[item.id] || 0,
+        thinking_ms: elapsedMsRef.current[item.id] || 0,
         hint_used: Boolean(hintUsedRef.current[item.id]),
       }
     }

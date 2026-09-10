@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-# Matches frontend ASSESSMENT_SECONDS (150 minutes).
+# Hard ceiling only (150 min). Frontend UI fair window is ASSESSMENT_SECONDS (60 min) in constants/timing.ts.
 ASSESSMENT_TIMEOUT_SECONDS = 150 * 60
 
 
