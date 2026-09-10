@@ -280,6 +280,31 @@ export type StudentSummary = {
   narrative: string
 }
 
+export type EnhancedProfile = {
+  cognitive: {
+    knowledge_mastery: Record<string, number>
+    weak_concepts: string[]
+  }
+  emotional: {
+    current_emotion: string
+  }
+  metacognitive: {
+    learning_style: string
+  }
+}
+
+export type SummaryOptions = {
+  enhanced?: boolean
+}
+
+function summaryPath(sessionId: string, role: 'teacher' | 'parent' | 'student', options?: SummaryOptions) {
+  const base = `/sessions/${sessionId}/summary/${role}`
+  if (options?.enhanced) {
+    return `${base}?enhanced=true`
+  }
+  return base
+}
+
 const MIME_BY_EXT: Record<string, ImageMime> = {
   png: 'image/png',
   jpg: 'image/jpeg',
@@ -503,14 +528,14 @@ export const api = {
   getCapabilities() {
     return request<CapabilitiesResponse>('/capabilities')
   },
-  getTeacherSummary(sessionId: string) {
-    return request<TeacherSummary>(`/sessions/${sessionId}/summary/teacher`)
+  getTeacherSummary(sessionId: string, options?: SummaryOptions) {
+    return request<TeacherSummary>(summaryPath(sessionId, 'teacher', options))
   },
-  getParentSummary(sessionId: string) {
-    return request<ParentSummary>(`/sessions/${sessionId}/summary/parent`)
+  getParentSummary(sessionId: string, options?: SummaryOptions) {
+    return request<ParentSummary>(summaryPath(sessionId, 'parent', options))
   },
-  getStudentSummary(sessionId: string) {
-    return request<StudentSummary>(`/sessions/${sessionId}/summary/student`)
+  getStudentSummary(sessionId: string, options?: SummaryOptions) {
+    return request<StudentSummary>(summaryPath(sessionId, 'student', options))
   },
   heartbeat(sessionId: string) {
     return request<{ ok: boolean; phase: string; server_time: string }>(

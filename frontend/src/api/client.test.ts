@@ -250,6 +250,56 @@ describe('api.getTeacherSummary / getParentSummary', () => {
       expect.anything(),
     )
   })
+
+  it('getTeacherSummary without options omits enhanced query', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ class_name: 'demo', student_count: 1 }))
+    await api.getTeacherSummary('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/s1/summary/teacher',
+      expect.anything(),
+    )
+  })
+
+  it('getTeacherSummary with enhanced:true appends query param', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ class_name: 'demo', student_count: 1 }))
+    await api.getTeacherSummary('s1', { enhanced: true })
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/s1/summary/teacher?enhanced=true',
+      expect.anything(),
+    )
+  })
+
+  it('getParentSummary with enhanced:true appends query param', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ child_name: '小明' }))
+    await api.getParentSummary('s1', { enhanced: true })
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/s1/summary/parent?enhanced=true',
+      expect.anything(),
+    )
+  })
+
+  it('getStudentSummary with enhanced:true appends query param', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ current_task: '小数', narrative: '' }))
+    await api.getStudentSummary('s1', { enhanced: true })
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/s1/summary/student?enhanced=true',
+      expect.anything(),
+    )
+  })
+
+  it('getStudentSummary with enhanced:false omits query param', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(jsonResponse({ current_task: '小数', narrative: '' }))
+    await api.getStudentSummary('s1', { enhanced: false })
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/s1/summary/student',
+      expect.anything(),
+    )
+  })
 })
 
 describe('api.exportEffectivenessPdf', () => {
