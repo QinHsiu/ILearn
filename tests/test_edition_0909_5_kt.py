@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from ilearn.core.enhanced_flags import clear_enhanced_flag_cache
+from ilearn.core.enhanced_flags import clear_enhanced_flag_cache, is_enhanced_enabled
 from ilearn.core.enhanced_session import get_kt_state, set_enhanced_profile, set_kt_state
 from ilearn.core.kt.bkt import BKTKnowledgeTracing
 from ilearn.core.kt.factory import create_kt_service, create_kt_service_from_session
@@ -248,3 +248,15 @@ class TestSessionIntegration:
         assert "profile" in enhanced
         assert enhanced["kt"] == kt_state
         assert get_kt_state(session) == kt_state
+
+
+def test_kt_flag_defaults_off(monkeypatch):
+    monkeypatch.delenv("ILEARN_ENABLE_ENHANCED_KT", raising=False)
+    clear_enhanced_flag_cache()
+    assert is_enhanced_enabled("ENABLE_ENHANCED_KT") is False
+
+
+def test_kt_flag_env_on(monkeypatch):
+    monkeypatch.setenv("ILEARN_ENABLE_ENHANCED_KT", "1")
+    clear_enhanced_flag_cache()
+    assert is_enhanced_enabled("ENABLE_ENHANCED_KT") is True
