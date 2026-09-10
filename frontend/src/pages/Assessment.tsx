@@ -18,8 +18,14 @@ import MathVisualizer from '../components/MathVisualizer'
 import CountingManipulative from '../components/CountingManipulative'
 import { inferVisualization } from '../lib/inferVisualization'
 import { inferCountingManipulative } from '../lib/inferManipulative'
-import { ASSESSMENT_SECONDS } from '../constants/timing'
-import type { AssessmentItemMeta } from '../types/assessmentMeta'
+import { ASSESSMENT_SECONDS, MAX_VISIBILITY_PAUSE_MS } from '../constants/timing'
+import type { AssessmentItemMeta, TimerEvent } from '../types/assessmentMeta'
+import { TimerEventBuffer } from '../lib/timerEvents'
+import {
+  clearOpenItem,
+  consumeIncompleteOpenItem,
+  writeOpenItem,
+} from '../lib/timerOpenItem'
 
 export { ASSESSMENT_SECONDS }
 export type { AssessmentItemMeta }
@@ -29,6 +35,7 @@ export type AssessmentCompletePayload = {
   answers: Record<string, string>
   images: ImageAnswer[]
   itemMeta: Record<string, AssessmentItemMeta>
+  timerEvents?: TimerEvent[]
 }
 
 type AssessmentProps = {
@@ -40,6 +47,26 @@ type AssessmentProps = {
 }
 
 type ImageUpload = ImageAnswer & { preview: string; name: string }
+
+type ItemAccumulator = {
+  elapsed_ms: number
+  thinking_ms: number
+  overtime_ms: number
+  pause_ms_busy: number
+  pause_ms_visibility: number
+  pause_count: number
+}
+
+function emptyAccumulator(): ItemAccumulator {
+  return {
+    elapsed_ms: 0,
+    thinking_ms: 0,
+    overtime_ms: 0,
+    pause_ms_busy: 0,
+    pause_ms_visibility: 0,
+    pause_count: 0,
+  }
+}
 
 function gradeLocal(item: AssessmentItem, answer: string): boolean {
   const key = (item.answer_key || '').trim()
@@ -103,54 +130,368 @@ export default function Assessment({
   const [focusItemId, setFocusItemId] = useState<string | null>(null)
   const [, setHintUsed] = useState<Record<string, boolean>>({})
   const [elapsedMs, setElapsedMs] = useState<Record<string, number>>({})
+  const [seedSeconds, setSeedSeconds] = useState(ASSESSMENT_SECONDS)
 
   const onErrorRef = useRef(onError)
   onErrorRef.current = onError
   const submitFullRef = useRef<() => void>(() => {})
-  const itemStartedAtRef = useRef<number>(Date.now())
   const currentItemIdRef = useRef<string | null>(null)
-  const elapsedMsRef = useRef<Record<string, number>>({})
   const hintUsedRef = useRef<Record<string, boolean>>({})
+  const accumulatorsRef = useRef<Record<string, ItemAccumulator>>({})
+  const timerBufferRef = useRef(new TimerEventBuffer())
+  const systemWaitCountRef = useRef(0)
+  const visibilityHiddenRef = useRef(false)
+  const visibilityPauseUsedRef = useRef(0)
+  const uiDeadlineCrossedRef = useRef(false)
+  const uiDeadlineHandledRef = useRef(false)
+  const incompleteItemIdsRef = useRef<Set<string>>(new Set())
+  const lastTickAtRef = useRef(Date.now())
+  const pauseSegmentRef = useRef<{
+    reason: 'busy' | 'visibility'
+    startedAt: number
+  } | null>(null)
+  const countdownPauseRef = useRef<(pause: boolean) => void>(() => {})
+  const isUiDeadlinePassedRef = useRef(false)
+  const phaseRef = useRef(phase)
+  phaseRef.current = phase
+  const sessionIdRef = useRef(sessionId)
+  sessionIdRef.current = sessionId
+  const flushedUnloadRef = useRef(false)
 
   const countdownActive = phase === 'anchor' || phase === 'full'
-  const { format: formatCountdown, reset: resetCountdown } = useCountdown(
-    countdownActive ? ASSESSMENT_SECONDS : 0,
-    {
-      enabled: countdownActive,
-      // Task 2: no auto-submit on UI deadline; overtime meta is Task 6
-      onUiDeadline: () => {},
+
+  const handleUiDeadline = useCallback(() => {
+    if (uiDeadlineHandledRef.current) return
+    uiDeadlineHandledRef.current = true
+    uiDeadlineCrossedRef.current = true
+    timerBufferRef.current.push(currentItemIdRef.current || '_session', {
+      type: 'ui_deadline',
+      ts: Date.now(),
+    })
+  }, [])
+
+  const {
+    format: formatCountdown,
+    pause: pauseCountdown,
+    resume: resumeCountdown,
+    reset: resetCountdown,
+    isUiDeadlinePassed,
+  } = useCountdown(countdownActive ? seedSeconds : 0, {
+    enabled: countdownActive,
+    onUiDeadline: handleUiDeadline,
+  })
+
+  isUiDeadlinePassedRef.current = isUiDeadlinePassed || uiDeadlineCrossedRef.current
+
+  const ensureAccumulator = useCallback((itemId: string): ItemAccumulator => {
+    if (!accumulatorsRef.current[itemId]) {
+      accumulatorsRef.current[itemId] = emptyAccumulator()
+    }
+    return accumulatorsRef.current[itemId]
+  }, [])
+
+  const computeShouldPause = useCallback(() => {
+    const systemWait = systemWaitCountRef.current > 0
+    const budgetLeft = visibilityPauseUsedRef.current < MAX_VISIBILITY_PAUSE_MS
+    return systemWait || (visibilityHiddenRef.current && budgetLeft)
+  }, [])
+
+  const syncCountdownPause = useCallback(() => {
+    const should = computeShouldPause()
+    countdownPauseRef.current(should)
+  }, [computeShouldPause])
+
+  useEffect(() => {
+    countdownPauseRef.current = (shouldPause: boolean) => {
+      if (shouldPause) pauseCountdown()
+      else resumeCountdown()
+    }
+  }, [pauseCountdown, resumeCountdown])
+
+  const closePauseSegment = useCallback(
+    (now: number) => {
+      const segment = pauseSegmentRef.current
+      const itemId = currentItemIdRef.current
+      if (!segment || !itemId) {
+        pauseSegmentRef.current = null
+        return
+      }
+      const duration = Math.max(0, now - segment.startedAt)
+      timerBufferRef.current.push(itemId, {
+        type: 'timer_resume',
+        ts: now,
+        item_id: itemId,
+        pause_duration_ms: duration,
+      })
+      pauseSegmentRef.current = null
     },
+    [],
   )
 
-  const flushCurrentItemTime = useCallback(() => {
-    const itemId = currentItemIdRef.current
-    if (!itemId) return
-    const delta = Date.now() - itemStartedAtRef.current
-    if (delta <= 0) return
-    const next = {
-      ...elapsedMsRef.current,
-      [itemId]: (elapsedMsRef.current[itemId] || 0) + delta,
-    }
-    elapsedMsRef.current = next
-    setElapsedMs(next)
-    itemStartedAtRef.current = Date.now()
-  }, [])
+  const openPauseSegment = useCallback(
+    (reason: 'busy' | 'visibility', now: number) => {
+      const itemId = currentItemIdRef.current
+      if (!itemId) return
+      const existing = pauseSegmentRef.current
+      if (existing?.reason === reason) return
+      if (existing) closePauseSegment(now)
+      const acc = ensureAccumulator(itemId)
+      acc.pause_count += 1
+      pauseSegmentRef.current = { reason, startedAt: now }
+      timerBufferRef.current.push(itemId, {
+        type: 'timer_pause',
+        ts: now,
+        item_id: itemId,
+        reason,
+      })
+    },
+    [closePauseSegment, ensureAccumulator],
+  )
+
+  const tickAccumulators = useCallback(
+    (now = Date.now()) => {
+      const itemId = currentItemIdRef.current
+      const active = phaseRef.current === 'anchor' || phaseRef.current === 'full'
+      if (!itemId || !active) {
+        lastTickAtRef.current = now
+        return
+      }
+      let dt = now - lastTickAtRef.current
+      lastTickAtRef.current = now
+      if (dt <= 0) return
+      // Cap a single slice to avoid huge jumps after long sleeps / fake-timer quirks
+      if (dt > 60_000) dt = 60_000
+
+      const acc = ensureAccumulator(itemId)
+      acc.elapsed_ms += dt
+
+      const systemWait = systemWaitCountRef.current > 0
+      const hidden = visibilityHiddenRef.current
+      const budgetLeft = visibilityPauseUsedRef.current < MAX_VISIBILITY_PAUSE_MS
+      const shouldPause = systemWait || (hidden && budgetLeft)
+
+      if (shouldPause) {
+        if (systemWait) {
+          openPauseSegment('busy', now)
+          acc.pause_ms_busy += dt
+        } else {
+          openPauseSegment('visibility', now)
+          const room = MAX_VISIBILITY_PAUSE_MS - visibilityPauseUsedRef.current
+          const credited = Math.min(dt, Math.max(0, room))
+          acc.pause_ms_visibility += credited
+          visibilityPauseUsedRef.current += credited
+          if (
+            credited > 0 &&
+            visibilityPauseUsedRef.current >= MAX_VISIBILITY_PAUSE_MS
+          ) {
+            timerBufferRef.current.push(itemId, {
+              type: 'timer_pause_cap',
+              ts: now,
+              item_id: itemId,
+              cap_ms: MAX_VISIBILITY_PAUSE_MS,
+            })
+          }
+          if (dt > credited) {
+            const thinkingDt = dt - credited
+            acc.thinking_ms += thinkingDt
+            if (isUiDeadlinePassedRef.current) {
+              acc.overtime_ms += thinkingDt
+            }
+            closePauseSegment(now)
+            syncCountdownPause()
+          }
+        }
+      } else {
+        if (pauseSegmentRef.current) closePauseSegment(now)
+        acc.thinking_ms += dt
+        if (isUiDeadlinePassedRef.current) {
+          acc.overtime_ms += dt
+        }
+      }
+
+      setElapsedMs((prev) => {
+        const nextVal = acc.elapsed_ms
+        if (prev[itemId] === nextVal) return prev
+        return { ...prev, [itemId]: nextVal }
+      })
+    },
+    [closePauseSegment, ensureAccumulator, openPauseSegment, syncCountdownPause],
+  )
+
+  const acquireSystemWait = useCallback(() => {
+    tickAccumulators()
+    systemWaitCountRef.current += 1
+    syncCountdownPause()
+    tickAccumulators()
+  }, [syncCountdownPause, tickAccumulators])
+
+  const releaseSystemWait = useCallback(() => {
+    tickAccumulators()
+    systemWaitCountRef.current = Math.max(0, systemWaitCountRef.current - 1)
+    syncCountdownPause()
+    tickAccumulators()
+  }, [syncCountdownPause, tickAccumulators])
+
+  const flushAllItemEvents = useCallback(
+    (opts?: { incomplete?: boolean }): TimerEvent[] => {
+      tickAccumulators()
+      const itemId = currentItemIdRef.current
+      if (itemId) {
+        const acc = ensureAccumulator(itemId)
+        const pauseMs = acc.pause_ms_busy + acc.pause_ms_visibility
+        timerBufferRef.current.push(itemId, {
+          type: 'item_time_flush',
+          ts: Date.now(),
+          item_id: itemId,
+          thinking_ms: acc.thinking_ms,
+          pause_ms: pauseMs,
+          incomplete: opts?.incomplete,
+        })
+      }
+      return timerBufferRef.current.drainAll()
+    },
+    [ensureAccumulator, tickAccumulators],
+  )
+
+  const buildItemMeta = useCallback(
+    (items: AssessmentItem[]): Record<string, AssessmentItemMeta> => {
+      tickAccumulators()
+      const metaMap: Record<string, AssessmentItemMeta> = {}
+      for (const item of items) {
+        const acc = accumulatorsRef.current[item.id] || emptyAccumulator()
+        const pauseMs = acc.pause_ms_busy + acc.pause_ms_visibility
+        const incomplete = incompleteItemIdsRef.current.has(item.id)
+        metaMap[item.id] = {
+          item_meta_version: 'v1',
+          elapsed_ms: acc.elapsed_ms,
+          thinking_ms: acc.thinking_ms,
+          overtime_ms: acc.overtime_ms || undefined,
+          ui_deadline_crossed: uiDeadlineCrossedRef.current || undefined,
+          thinking_ms_incomplete: incomplete || undefined,
+          hint_used: Boolean(hintUsedRef.current[item.id]),
+          ...(acc.pause_count > 0 || pauseMs > 0
+            ? {
+                pause_count: acc.pause_count,
+                pause_ms: pauseMs,
+                pause_ms_busy: acc.pause_ms_busy,
+                pause_ms_visibility: acc.pause_ms_visibility,
+              }
+            : {}),
+        }
+      }
+      return metaMap
+    },
+    [tickAccumulators],
+  )
 
   const selectItem = useCallback(
     (index: number) => {
-      flushCurrentItemTime()
+      tickAccumulators()
+      if (pauseSegmentRef.current) closePauseSegment(Date.now())
       setCurrentIndex(index)
       const nextId = paper?.items[index]?.id ?? null
       currentItemIdRef.current = nextId
-      itemStartedAtRef.current = Date.now()
+      lastTickAtRef.current = Date.now()
+      if (nextId) {
+        writeOpenItem(sessionId, nextId)
+        ensureAccumulator(nextId)
+      }
     },
-    [flushCurrentItemTime, paper],
+    [closePauseSegment, ensureAccumulator, paper, sessionId, tickAccumulators],
   )
 
+  // Mount: detect incomplete open item from prior session
+  useEffect(() => {
+    const incompleteId = consumeIncompleteOpenItem(sessionId)
+    if (incompleteId) {
+      incompleteItemIdsRef.current.add(incompleteId)
+      timerBufferRef.current.push(incompleteId, {
+        type: 'timer_refresh',
+        ts: Date.now(),
+        item_id: incompleteId,
+      })
+    }
+  }, [sessionId])
+
+  // Accumulator ticker
+  useEffect(() => {
+    if (!countdownActive) return undefined
+    lastTickAtRef.current = Date.now()
+    const id = window.setInterval(() => {
+      tickAccumulators()
+      syncCountdownPause()
+    }, 250)
+    return () => window.clearInterval(id)
+  }, [countdownActive, syncCountdownPause, tickAccumulators])
+
+  // Visibility pause + budget
+  useEffect(() => {
+    if (!countdownActive) return undefined
+
+    const onVisibility = () => {
+      tickAccumulators()
+      visibilityHiddenRef.current = document.visibilityState === 'hidden'
+      syncCountdownPause()
+      tickAccumulators()
+    }
+    visibilityHiddenRef.current = document.visibilityState === 'hidden'
+    syncCountdownPause()
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [countdownActive, syncCountdownPause, tickAccumulators])
+
+  // Unload flush (do not clearOpenItem)
+  useEffect(() => {
+    if (!countdownActive) return undefined
+
+    const onUnload = () => {
+      if (flushedUnloadRef.current) return
+      flushedUnloadRef.current = true
+      const itemId = currentItemIdRef.current
+      if (itemId) writeOpenItem(sessionIdRef.current, itemId)
+      const events = flushAllItemEvents({ incomplete: true })
+      if (events.length) {
+        api.appendTimerTelemetryKeepalive(sessionIdRef.current, {
+          timer_events: events,
+          item_meta_patch: itemId
+            ? {
+                [itemId]: {
+                  thinking_ms_incomplete: true,
+                  ...(accumulatorsRef.current[itemId]
+                    ? {
+                        elapsed_ms: accumulatorsRef.current[itemId].elapsed_ms,
+                        thinking_ms: accumulatorsRef.current[itemId].thinking_ms,
+                        overtime_ms: accumulatorsRef.current[itemId].overtime_ms,
+                        pause_ms_busy: accumulatorsRef.current[itemId].pause_ms_busy,
+                        pause_ms_visibility:
+                          accumulatorsRef.current[itemId].pause_ms_visibility,
+                      }
+                    : {}),
+                },
+              }
+            : undefined,
+        })
+      }
+    }
+
+    window.addEventListener('pagehide', onUnload)
+    window.addEventListener('beforeunload', onUnload)
+    return () => {
+      window.removeEventListener('pagehide', onUnload)
+      window.removeEventListener('beforeunload', onUnload)
+      // Component unmount: best-effort flush; keep open marker
+      if (!flushedUnloadRef.current) {
+        onUnload()
+      }
+    }
+  }, [countdownActive, flushAllItemEvents])
+
+  // Adaptive start
   useEffect(() => {
     let cancelled = false
     async function start() {
       setBusy(true)
+      acquireSystemWait()
       try {
         const res = await api.adaptiveStart(sessionId)
         if (cancelled) return
@@ -160,11 +501,16 @@ export default function Assessment({
         setFocusItemId(null)
         setHintUsed({})
         setElapsedMs({})
-        elapsedMsRef.current = {}
+        accumulatorsRef.current = {}
         hintUsedRef.current = {}
         setCurrentIndex(0)
-        currentItemIdRef.current = res.paper.items[0]?.id ?? null
-        itemStartedAtRef.current = Date.now()
+        const firstId = res.paper.items[0]?.id ?? null
+        currentItemIdRef.current = firstId
+        lastTickAtRef.current = Date.now()
+        if (firstId) {
+          ensureAccumulator(firstId)
+          writeOpenItem(sessionId, firstId)
+        }
         setPhase('anchor')
         setInferredChapter(res.inferred_chapter ?? null)
         setSourceLabel(firstMultimodalSourceLabel(res.paper.items))
@@ -172,6 +518,7 @@ export default function Assessment({
       } catch (err) {
         onErrorRef.current?.(err instanceof Error ? err.message : String(err))
       } finally {
+        releaseSystemWait()
         if (!cancelled) setBusy(false)
       }
     }
@@ -179,13 +526,43 @@ export default function Assessment({
     return () => {
       cancelled = true
     }
-  }, [sessionId])
+  }, [sessionId, acquireSystemWait, releaseSystemWait, ensureAccumulator])
 
+  // Re-seed countdown from assessment_started_at
   useEffect(() => {
-    if (phase === 'anchor' || phase === 'full') {
-      resetCountdown()
+    if (!countdownActive) return undefined
+    let cancelled = false
+    async function reseed() {
+      try {
+        const session = await api.getSession(sessionId)
+        if (cancelled) return
+        const startedAt = session.metadata?.assessment_started_at
+        const elapsedServerSec = startedAt
+          ? (Date.now() - Date.parse(String(startedAt))) / 1000
+          : 0
+        const remainingSec = ASSESSMENT_SECONDS - elapsedServerSec
+        if (remainingSec <= 0) {
+          uiDeadlineCrossedRef.current = true
+          // Emit once before gating; reset() clears useCountdown firedRef and would re-fire
+          if (!uiDeadlineHandledRef.current) {
+            uiDeadlineHandledRef.current = true
+            timerBufferRef.current.push(currentItemIdRef.current || '_session', {
+              type: 'ui_deadline',
+              ts: Date.now(),
+            })
+          }
+        }
+        setSeedSeconds(remainingSec)
+        resetCountdown(remainingSec)
+      } catch {
+        // Keep local seed on failure
+      }
     }
-  }, [phase, sessionId, paper?.items.length, resetCountdown])
+    void reseed()
+    return () => {
+      cancelled = true
+    }
+  }, [countdownActive, sessionId, phase, paper?.items.length, resetCountdown])
 
   useEffect(() => {
     return () => {
@@ -197,6 +574,8 @@ export default function Assessment({
 
   async function onPickImage(itemId: string, file: File | undefined) {
     if (!file) return
+    acquireSystemWait()
+    setBusy(true)
     try {
       const payload = await fileToImageAnswer(itemId, file)
       const preview = URL.createObjectURL(file)
@@ -207,6 +586,9 @@ export default function Assessment({
       })
     } catch (err) {
       onErrorRef.current?.(err instanceof Error ? err.message : String(err))
+    } finally {
+      releaseSystemWait()
+      setBusy(false)
     }
   }
 
@@ -219,42 +601,40 @@ export default function Assessment({
     })
   }
 
-  function buildItemMeta(items: AssessmentItem[]): Record<string, AssessmentItemMeta> {
-    flushCurrentItemTime()
-    const metaMap: Record<string, AssessmentItemMeta> = {}
-    for (const item of items) {
-      metaMap[item.id] = {
-        item_meta_version: 'v1',
-        elapsed_ms: elapsedMsRef.current[item.id] || 0,
-        thinking_ms: elapsedMsRef.current[item.id] || 0,
-        hint_used: Boolean(hintUsedRef.current[item.id]),
-      }
-    }
-    return metaMap
-  }
-
   async function submitAnchor() {
     if (!paper) return
     setBusy(true)
-    flushCurrentItemTime()
+    acquireSystemWait()
+    const events = flushAllItemEvents()
     try {
+      if (events.length) {
+        await api.appendTimerTelemetry(sessionId, { timer_events: events })
+      }
       const anchorResults = paper.items.map((item) => ({
         item_id: item.id,
         knowledge_ids: item.knowledge_ids || [],
         is_correct: gradeLocal(item, answers[item.id] || ''),
       }))
       const res = await api.adaptiveContinue(sessionId, anchorResults)
+      clearOpenItem(sessionId)
       setPaper(res.paper)
       setAnswers({})
       setImageUploads({})
       setFocusItemId(null)
       setHintUsed({})
       setElapsedMs({})
-      elapsedMsRef.current = {}
+      accumulatorsRef.current = {}
       hintUsedRef.current = {}
+      timerBufferRef.current = new TimerEventBuffer()
       setCurrentIndex(0)
-      currentItemIdRef.current = res.paper.items[0]?.id ?? null
-      itemStartedAtRef.current = Date.now()
+      const firstId = res.paper.items[0]?.id ?? null
+      currentItemIdRef.current = firstId
+      lastTickAtRef.current = Date.now()
+      pauseSegmentRef.current = null
+      if (firstId) {
+        ensureAccumulator(firstId)
+        writeOpenItem(sessionId, firstId)
+      }
       setPhase('full')
       setInferredChapter(res.inferred_chapter ?? null)
       setSourceLabel(firstMultimodalSourceLabel(res.paper.items))
@@ -262,6 +642,7 @@ export default function Assessment({
     } catch (err) {
       onErrorRef.current?.(err instanceof Error ? err.message : String(err))
     } finally {
+      releaseSystemWait()
       setBusy(false)
     }
   }
@@ -269,8 +650,13 @@ export default function Assessment({
   async function submitFull() {
     if (!paper) return
     setBusy(true)
+    acquireSystemWait()
     try {
       const itemMeta = buildItemMeta(paper.items)
+      const events = flushAllItemEvents()
+      if (events.length) {
+        await api.appendTimerTelemetry(sessionId, { timer_events: events })
+      }
       const images = Object.values(imageUploads).map(
         ({ item_id, image_base64, mime_type }) => ({
           item_id,
@@ -278,10 +664,13 @@ export default function Assessment({
           mime_type,
         }),
       )
-      await onComplete({ paper, answers, images, itemMeta })
+      await onComplete({ paper, answers, images, itemMeta, timerEvents: events })
+      clearOpenItem(sessionId)
+      flushedUnloadRef.current = true
     } catch (err) {
       onErrorRef.current?.(err instanceof Error ? err.message : String(err))
     } finally {
+      releaseSystemWait()
       setBusy(false)
     }
   }
@@ -429,6 +818,7 @@ export default function Assessment({
     focusItemId != null
       ? paper.items.find((item) => item.id === focusItemId) || null
       : null
+  const overtimeHint = isUiDeadlinePassed || uiDeadlineCrossedRef.current
 
   if (focusItem) {
     const visual = inferVisualization(focusItem.stem)
@@ -441,6 +831,7 @@ export default function Assessment({
           </div>
           <div className="countdown" aria-live="polite">
             剩余 {formatCountdown()}
+            {overtimeHint ? <span className="countdown-overtime"> · 已超时</span> : null}
           </div>
         </div>
         <FocusedHintLayout
@@ -502,6 +893,7 @@ export default function Assessment({
         </div>
         <div className="countdown" aria-live="polite">
           剩余 {formatCountdown()}
+          {overtimeHint ? <span className="countdown-overtime"> · 已超时</span> : null}
         </div>
       </div>
 
