@@ -39,12 +39,18 @@ describe('TimerEventBuffer', () => {
     expect(buf.drain('q1')).toEqual([])
   })
 
-  it('drain returns only one item events', () => {
+  it('drainAllEntries returns item ids and pushEntries restores', () => {
     const buf = new TimerEventBuffer()
     buf.push('q1', pauseEvent('q1', 1))
     buf.push('q2', pauseEvent('q2', 2))
-    expect(buf.drain('q1')).toEqual([pauseEvent('q1', 1)])
-    expect(buf.drain('q2')).toEqual([pauseEvent('q2', 2)])
+    const entries = buf.drainAllEntries()
+    expect(entries).toEqual([
+      { itemId: 'q1', event: pauseEvent('q1', 1) },
+      { itemId: 'q2', event: pauseEvent('q2', 2) },
+    ])
+    expect(buf.drainAll()).toEqual([])
+    buf.pushEntries(entries)
+    expect(buf.drainAll()).toEqual([pauseEvent('q1', 1), pauseEvent('q2', 2)])
   })
 })
 

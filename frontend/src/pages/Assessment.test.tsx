@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Assessment from './Assessment'
@@ -451,5 +451,143 @@ describe('Assessment page', () => {
       expect.arrayContaining([expect.objectContaining({ type: 'ui_deadline' })]),
     )
     expect(allEvents.length).toBeGreaterThan(0)
+  })
+
+  it('pagehide keepalive failed keeps events, does not latch, keeps open marker', async () => {
+    vi.mocked(api.adaptiveStart).mockResolvedValue(ANCHOR_START)
+    mockDefaultSession()
+    vi.mocked(api.appendTimerTelemetryKeepalive)
+      .mockReturnValueOnce('failed')
+      .mockReturnValueOnce('keepalive')
+
+    const { unmount } = render(
+      <Assessment
+        sessionId="s1"
+        profile={{ region: '北京', grade: 5, age: 11 }}
+        onComplete={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => expect(screen.getByText('锚点测评')).toBeInTheDocument())
+    expect(sessionStorage.getItem(openItemStorageKey('s1'))).toBeTruthy()
+
+    await act(async () => {
+      window.dispatchEvent(new Event('pagehide'))
+    })
+
+    expect(api.appendTimerTelemetryKeepalive).toHaveBeenCalledTimes(1)
+    expect(sessionStorage.getItem(openItemStorageKey('s1'))).toBeTruthy()
+
+    await act(async () => {
+      window.dispatchEvent(new Event('pagehide'))
+    })
+
+    expect(api.appendTimerTelemetryKeepalive).toHaveBeenCalledTimes(2)
+    const secondPayload = vi.mocked(api.appendTimerTelemetryKeepalive).mock.calls[1][1] as {
+      timer_events?: { type: string }[]
+    }
+    expect(secondPayload.timer_events?.length).toBeGreaterThan(0)
+    expect(sessionStorage.getItem(openItemStorageKey('s1'))).toBeTruthy()
+
+    unmount()
+  })
+
+  it('re-buffers events when appendTimerTelemetry throws on submit', async () => {
+    const onComplete = await goToFullPhase()
+    const baseline = vi.mocked(api.appendTimerTelemetry).mock.calls.length
+    vi.mocked(api.appendTimerTelemetry)
+      .mockRejectedValueOnce(new Error('network down'))
+      .mockResolvedValueOnce(undefined as never)
+
+    fireEvent.change(screen.getByPlaceholderText('输入你的答案'), { target: { value: '1' } })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '提交并诊断' }))
+    })
+
+    await waitFor(() =>
+      expect(api.appendTimerTelemetry).toHaveBeenCalledTimes(baseline + 1),
+    )
+    expect(onComplete).not.toHaveBeenCalled()
+    expect(sessionStorage.getItem(openItemStorageKey('s1'))).toBeTruthy()
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '提交并诊断' }))
+    })
+
+    await waitFor(() => expect(onComplete).toHaveBeenCalled())
+    expect(api.appendTimerTelemetry).toHaveBeenCalledTimes(baseline + 2)
+    const retryEvents = (
+      vi.mocked(api.appendTimerTelemetry).mock.calls[baseline + 1][1] as {
+        timer_events?: { type: string }[]
+      }
+    ).timer_events
+    expect(retryEvents?.length).toBeGreaterThan(0)
+  })
+
+  it('selectItem flushes leaving item into buffer', async () => {
+    const twoItemFull = {
+      is_anchor: false,
+      paper: {
+        items: [
+          {
+            id: 'f0',
+            stem: 'Q0',
+            type: 'fill',
+            difficulty: 'easy',
+            knowledge_ids: ['frac_add_same'],
+            answer_key: '1',
+          },
+          {
+            id: 'f1',
+            stem: 'Q1',
+            type: 'fill',
+            difficulty: 'easy',
+            knowledge_ids: ['frac_add_same'],
+            answer_key: '1',
+          },
+        ],
+        grade: 5,
+        curriculum_label: 'pilot',
+      },
+      requested: 2,
+      delivered: 2,
+      shortfall: 0,
+    } as const
+
+    vi.mocked(api.adaptiveStart).mockResolvedValue(ANCHOR_START)
+    vi.mocked(api.adaptiveContinue).mockResolvedValue(twoItemFull)
+    mockDefaultSession()
+
+    const onComplete = vi.fn().mockResolvedValue(undefined)
+    render(
+      <Assessment
+        sessionId="s1"
+        profile={{ region: '北京', grade: 5, age: 11 }}
+        onComplete={onComplete}
+      />,
+    )
+
+    await waitFor(() => expect(screen.getByText('锚点测评')).toBeInTheDocument())
+    fireEvent.change(screen.getByPlaceholderText('输入你的答案'), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: '提交锚点，继续完整测评' }))
+    await waitFor(() => expect(screen.getByText('完整测评')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: /第 2 题/ }))
+    const activeCard = document.querySelector('.item-card.active')
+    expect(activeCard).toBeTruthy()
+    fireEvent.change(within(activeCard as HTMLElement).getByPlaceholderText('输入你的答案'), {
+      target: { value: '1' },
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '提交并诊断' }))
+    })
+
+    await waitFor(() => expect(onComplete).toHaveBeenCalled())
+    const events = onComplete.mock.calls[0][0].timerEvents as { type: string; item_id?: string }[]
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'item_time_flush', item_id: 'f0' }),
+      ]),
+    )
   })
 })

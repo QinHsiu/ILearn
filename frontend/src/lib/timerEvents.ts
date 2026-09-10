@@ -9,15 +9,21 @@ export function appendFifo<T>(existing: T[], next: T[], cap: number): T[] {
   return merged
 }
 
-type BufferedEntry = { itemId: string; event: TimerEvent }
+export type TimerBufferedEntry = { itemId: string; event: TimerEvent }
 
 export class TimerEventBuffer {
-  private ordered: BufferedEntry[] = []
+  private ordered: TimerBufferedEntry[] = []
 
   push(itemId: string, event: TimerEvent): void {
     this.ordered.push({ itemId, event })
     while (this.ordered.length > TIMER_EVENTS_CAP) {
       this.ordered.shift()
+    }
+  }
+
+  pushEntries(entries: TimerBufferedEntry[]): void {
+    for (const entry of entries) {
+      this.push(entry.itemId, entry.event)
     }
   }
 
@@ -33,10 +39,14 @@ export class TimerEventBuffer {
     return drained
   }
 
-  drainAll(): TimerEvent[] {
-    const all = this.ordered.map((entry) => entry.event)
+  drainAllEntries(): TimerBufferedEntry[] {
+    const all = this.ordered
     this.ordered = []
     return all
+  }
+
+  drainAll(): TimerEvent[] {
+    return this.drainAllEntries().map((entry) => entry.event)
   }
 }
 

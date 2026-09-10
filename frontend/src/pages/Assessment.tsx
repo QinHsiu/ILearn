@@ -20,7 +20,7 @@ import { inferVisualization } from '../lib/inferVisualization'
 import { inferCountingManipulative } from '../lib/inferManipulative'
 import { ASSESSMENT_SECONDS, MAX_VISIBILITY_PAUSE_MS } from '../constants/timing'
 import type { AssessmentItemMeta, TimerEvent } from '../types/assessmentMeta'
-import { TimerEventBuffer } from '../lib/timerEvents'
+import { TimerEventBuffer, type TimerBufferedEntry } from '../lib/timerEvents'
 import {
   clearOpenItem,
   consumeIncompleteOpenItem,
@@ -332,26 +332,37 @@ export default function Assessment({
     tickAccumulators()
   }, [syncCountdownPause, tickAccumulators])
 
+  const pushItemTimeFlush = useCallback(
+    (itemId: string, opts?: { incomplete?: boolean }) => {
+      const acc = ensureAccumulator(itemId)
+      const pauseMs = acc.pause_ms_busy + acc.pause_ms_visibility
+      timerBufferRef.current.push(itemId, {
+        type: 'item_time_flush',
+        ts: Date.now(),
+        item_id: itemId,
+        thinking_ms: acc.thinking_ms,
+        pause_ms: pauseMs,
+        incomplete: opts?.incomplete,
+      })
+    },
+    [ensureAccumulator],
+  )
+
   const flushAllItemEvents = useCallback(
-    (opts?: { incomplete?: boolean }): TimerEvent[] => {
+    (opts?: { incomplete?: boolean }): TimerBufferedEntry[] => {
       tickAccumulators()
       const itemId = currentItemIdRef.current
       if (itemId) {
-        const acc = ensureAccumulator(itemId)
-        const pauseMs = acc.pause_ms_busy + acc.pause_ms_visibility
-        timerBufferRef.current.push(itemId, {
-          type: 'item_time_flush',
-          ts: Date.now(),
-          item_id: itemId,
-          thinking_ms: acc.thinking_ms,
-          pause_ms: pauseMs,
-          incomplete: opts?.incomplete,
-        })
+        pushItemTimeFlush(itemId, opts)
       }
-      return timerBufferRef.current.drainAll()
+      return timerBufferRef.current.drainAllEntries()
     },
-    [ensureAccumulator, tickAccumulators],
+    [pushItemTimeFlush, tickAccumulators],
   )
+
+  const restoreBufferedEntries = useCallback((entries: TimerBufferedEntry[]) => {
+    timerBufferRef.current.pushEntries(entries)
+  }, [])
 
   const buildItemMeta = useCallback(
     (items: AssessmentItem[]): Record<string, AssessmentItemMeta> => {
@@ -388,8 +399,12 @@ export default function Assessment({
     (index: number) => {
       tickAccumulators()
       if (pauseSegmentRef.current) closePauseSegment(Date.now())
-      setCurrentIndex(index)
+      const leavingId = currentItemIdRef.current
       const nextId = paper?.items[index]?.id ?? null
+      if (leavingId && leavingId !== nextId) {
+        pushItemTimeFlush(leavingId)
+      }
+      setCurrentIndex(index)
       currentItemIdRef.current = nextId
       lastTickAtRef.current = Date.now()
       if (nextId) {
@@ -397,7 +412,14 @@ export default function Assessment({
         ensureAccumulator(nextId)
       }
     },
-    [closePauseSegment, ensureAccumulator, paper, sessionId, tickAccumulators],
+    [
+      closePauseSegment,
+      ensureAccumulator,
+      paper,
+      pushItemTimeFlush,
+      sessionId,
+      tickAccumulators,
+    ],
   )
 
   // Mount: detect incomplete open item from prior session
@@ -440,38 +462,44 @@ export default function Assessment({
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [countdownActive, syncCountdownPause, tickAccumulators])
 
-  // Unload flush (do not clearOpenItem)
+  // Unload flush (do not clearOpenItem; latch only after keepalive ≠ failed)
   useEffect(() => {
     if (!countdownActive) return undefined
 
     const onUnload = () => {
       if (flushedUnloadRef.current) return
-      flushedUnloadRef.current = true
       const itemId = currentItemIdRef.current
       if (itemId) writeOpenItem(sessionIdRef.current, itemId)
-      const events = flushAllItemEvents({ incomplete: true })
-      if (events.length) {
-        api.appendTimerTelemetryKeepalive(sessionIdRef.current, {
-          timer_events: events,
-          item_meta_patch: itemId
-            ? {
-                [itemId]: {
-                  thinking_ms_incomplete: true,
-                  ...(accumulatorsRef.current[itemId]
-                    ? {
-                        elapsed_ms: accumulatorsRef.current[itemId].elapsed_ms,
-                        thinking_ms: accumulatorsRef.current[itemId].thinking_ms,
-                        overtime_ms: accumulatorsRef.current[itemId].overtime_ms,
-                        pause_ms_busy: accumulatorsRef.current[itemId].pause_ms_busy,
-                        pause_ms_visibility:
-                          accumulatorsRef.current[itemId].pause_ms_visibility,
-                      }
-                    : {}),
-                },
-              }
-            : undefined,
-        })
+      const entries = flushAllItemEvents({ incomplete: true })
+      if (!entries.length) {
+        flushedUnloadRef.current = true
+        return
       }
+      const result = api.appendTimerTelemetryKeepalive(sessionIdRef.current, {
+        timer_events: entries.map((entry) => entry.event),
+        item_meta_patch: itemId
+          ? {
+              [itemId]: {
+                thinking_ms_incomplete: true,
+                ...(accumulatorsRef.current[itemId]
+                  ? {
+                      elapsed_ms: accumulatorsRef.current[itemId].elapsed_ms,
+                      thinking_ms: accumulatorsRef.current[itemId].thinking_ms,
+                      overtime_ms: accumulatorsRef.current[itemId].overtime_ms,
+                      pause_ms_busy: accumulatorsRef.current[itemId].pause_ms_busy,
+                      pause_ms_visibility:
+                        accumulatorsRef.current[itemId].pause_ms_visibility,
+                    }
+                  : {}),
+              },
+            }
+          : undefined,
+      })
+      if (result === 'failed') {
+        restoreBufferedEntries(entries)
+        return
+      }
+      flushedUnloadRef.current = true
     }
 
     window.addEventListener('pagehide', onUnload)
@@ -484,7 +512,7 @@ export default function Assessment({
         onUnload()
       }
     }
-  }, [countdownActive, flushAllItemEvents])
+  }, [countdownActive, flushAllItemEvents, restoreBufferedEntries])
 
   // Adaptive start
   useEffect(() => {
@@ -605,11 +633,14 @@ export default function Assessment({
     if (!paper) return
     setBusy(true)
     acquireSystemWait()
-    const events = flushAllItemEvents()
+    const entries = flushAllItemEvents()
+    const events = entries.map((entry) => entry.event)
+    let telemetryCommitted = false
     try {
       if (events.length) {
         await api.appendTimerTelemetry(sessionId, { timer_events: events })
       }
+      telemetryCommitted = true
       const anchorResults = paper.items.map((item) => ({
         item_id: item.id,
         knowledge_ids: item.knowledge_ids || [],
@@ -640,6 +671,7 @@ export default function Assessment({
       setSourceLabel(firstMultimodalSourceLabel(res.paper.items))
       setMeta(buildMetaLine(res))
     } catch (err) {
+      if (!telemetryCommitted) restoreBufferedEntries(entries)
       onErrorRef.current?.(err instanceof Error ? err.message : String(err))
     } finally {
       releaseSystemWait()
@@ -651,12 +683,15 @@ export default function Assessment({
     if (!paper) return
     setBusy(true)
     acquireSystemWait()
+    const itemMeta = buildItemMeta(paper.items)
+    const entries = flushAllItemEvents()
+    const events = entries.map((entry) => entry.event)
+    let telemetryCommitted = false
     try {
-      const itemMeta = buildItemMeta(paper.items)
-      const events = flushAllItemEvents()
       if (events.length) {
         await api.appendTimerTelemetry(sessionId, { timer_events: events })
       }
+      telemetryCommitted = true
       const images = Object.values(imageUploads).map(
         ({ item_id, image_base64, mime_type }) => ({
           item_id,
@@ -668,6 +703,7 @@ export default function Assessment({
       clearOpenItem(sessionId)
       flushedUnloadRef.current = true
     } catch (err) {
+      if (!telemetryCommitted) restoreBufferedEntries(entries)
       onErrorRef.current?.(err instanceof Error ? err.message : String(err))
     } finally {
       releaseSystemWait()
