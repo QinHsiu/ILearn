@@ -79,3 +79,14 @@
 .metaValue {
   font-weight: 500;
 }
+
+.loading {
+  composes: card;
+  composes: mutedText;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
