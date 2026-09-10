@@ -337,3 +337,56 @@ describe('api.exportEffectivenessPdf', () => {
     expect(revokeObjectURL).toHaveBeenCalled()
   })
 })
+
+describe('api.appendTimerTelemetry', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('POSTs timer events to /sessions/{id}/timer-telemetry', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue({ ok: true, status: 204 } as Response)
+    const payload = {
+      timer_events: [{ type: 'ui_deadline' as const, ts: 1000 }],
+    }
+
+    await api.appendTimerTelemetry('sess-1', payload)
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/sess-1/timer-telemetry',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+      }),
+    )
+  })
+})
+
+describe('api.appendTimerTelemetryKeepalive', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('uses preferKeepaliveSend and returns transport result', () => {
+    const sendBeacon = vi.fn(() => true)
+    vi.stubGlobal('navigator', { sendBeacon })
+    const payload = { timer_events: [{ type: 'timer_refresh' as const, ts: 500 }] }
+
+    const result = api.appendTimerTelemetryKeepalive('sess-1', payload)
+
+    expect(result).toBe('beacon')
+    expect(sendBeacon).toHaveBeenCalledWith(
+      '/sessions/sess-1/timer-telemetry',
+      expect.any(Blob),
+    )
+  })
+})

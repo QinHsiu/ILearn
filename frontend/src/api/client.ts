@@ -1,3 +1,6 @@
+import type { AssessmentItemMeta, TimerEvent } from '../types/assessmentMeta'
+import { preferKeepaliveSend } from '../lib/timerEvents'
+
 export type Gender = 'male' | 'female' | 'unspecified'
 
 export type AuthRole = 'parent' | 'teacher'
@@ -435,6 +438,11 @@ export type AdaptiveAnchorResult = {
   knowledge_ids?: string[]
 }
 
+export type TimerTelemetryPayload = {
+  timer_events?: TimerEvent[]
+  item_meta_patch?: Record<string, Partial<AssessmentItemMeta>>
+}
+
 export const api = {
   createSession(profile: StudentProfile) {
     return request<{ session_id: string }>('/sessions', {
@@ -470,10 +478,23 @@ export const api = {
       },
     )
   },
-  submit(sessionId: string, answers: Record<string, string>, itemMeta: Record<string, object> = {}) {
+  submit(
+    sessionId: string,
+    answers: Record<string, string>,
+    itemMeta: Record<string, object> = {},
+    opts?: { timer_events?: TimerEvent[] },
+  ) {
+    const body: {
+      answers: Record<string, string>
+      item_meta: Record<string, object>
+      timer_events?: TimerEvent[]
+    } = { answers, item_meta: itemMeta }
+    if (opts?.timer_events) {
+      body.timer_events = opts.timer_events
+    }
     return request<SessionState>(`/sessions/${sessionId}/submit`, {
       method: 'POST',
-      body: JSON.stringify({ answers, item_meta: itemMeta }),
+      body: JSON.stringify(body),
     })
   },
   submitImages(sessionId: string, images: ImageAnswer[]) {
@@ -542,6 +563,18 @@ export const api = {
       `/sessions/${sessionId}/heartbeat`,
       { method: 'POST' },
     )
+  },
+  appendTimerTelemetry(sessionId: string, payload: TimerTelemetryPayload) {
+    return request<void>(`/sessions/${sessionId}/timer-telemetry`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+  appendTimerTelemetryKeepalive(
+    sessionId: string,
+    payload: TimerTelemetryPayload,
+  ): 'beacon' | 'keepalive' | 'failed' {
+    return preferKeepaliveSend(`/sessions/${sessionId}/timer-telemetry`, payload)
   },
   exportEffectivenessPdf(sessionId: string, filename = 'ILearn-effectiveness.pdf') {
     return downloadBlob(`/sessions/${sessionId}/export/effectiveness.pdf`, filename)

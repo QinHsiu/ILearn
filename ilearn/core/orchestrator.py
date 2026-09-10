@@ -71,8 +71,27 @@ class Orchestrator:
         session_id: str,
         answers: dict[str, str],
         item_meta: dict[str, dict] | None = None,
+        timer_events: list[dict] | None = None,
     ) -> SessionState:
-        return self._inner.submit(session_id, answers, item_meta=item_meta)
+        return self._inner.submit(
+            session_id,
+            answers,
+            item_meta=item_meta,
+            timer_events=timer_events,
+        )
+
+    def append_timer_telemetry(
+        self,
+        session_id: str,
+        *,
+        timer_events: list[dict] | None = None,
+        item_meta_patch: dict[str, dict] | None = None,
+    ) -> None:
+        return self._inner.append_timer_telemetry(
+            session_id,
+            timer_events=timer_events,
+            item_meta_patch=item_meta_patch,
+        )
 
     def grade(self, session_id: str) -> list[GradeResult]:
         return self._inner.grade(session_id)

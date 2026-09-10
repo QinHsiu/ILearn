@@ -85,6 +85,12 @@ class CreateSessionResponse(BaseModel):
 class SubmitRequest(BaseModel):
     answers: dict[str, str]
     item_meta: dict[str, dict] = Field(default_factory=dict)
+    timer_events: list[dict] | None = None
+
+
+class TimerTelemetryRequest(BaseModel):
+    timer_events: list[dict] | None = None
+    item_meta_patch: dict[str, dict] | None = None
 
 
 class ImageSubmitRequest(BaseModel):
@@ -355,6 +361,15 @@ def create_app(
     def heartbeat(session_id: str) -> HeartbeatResponse:
         return HeartbeatResponse.model_validate(orchestrator.heartbeat(session_id))
 
+    @app.post("/sessions/{session_id}/timer-telemetry", status_code=204)
+    def timer_telemetry(session_id: str, body: TimerTelemetryRequest) -> Response:
+        orchestrator.append_timer_telemetry(
+            session_id,
+            timer_events=body.timer_events,
+            item_meta_patch=body.item_meta_patch,
+        )
+        return Response(status_code=204)
+
     @app.delete("/sessions/{session_id}", status_code=204)
     def delete_session(session_id: str) -> Response:
         orchestrator.delete_session(session_id)
@@ -422,7 +437,10 @@ def create_app(
     def submit(session_id: str, body: SubmitRequest) -> SessionState:
         answers = validate_submit_answers(body.answers)
         return orchestrator.submit(
-            session_id, answers, item_meta=body.item_meta
+            session_id,
+            answers,
+            item_meta=body.item_meta,
+            timer_events=body.timer_events,
         )
 
     @app.post("/sessions/{session_id}/grade", response_model=list[GradeResult])
