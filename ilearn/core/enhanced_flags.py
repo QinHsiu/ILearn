@@ -11,6 +11,7 @@ _KNOWN = (
     "ENABLE_ENHANCED_AGENTS",
     "ENABLE_ENHANCED_API",
     "ENABLE_ENHANCED_BACKGROUND",
+    "ENABLE_ENHANCED_KT",
 )
 
 _TRUE = frozenset({"1", "true", "yes", "on"})

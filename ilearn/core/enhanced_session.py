@@ -42,12 +42,50 @@ def set_enhanced_profile(
 
     When ``ENABLE_ENHANCED_PROFILE`` is false, returns ``session`` unchanged
     (no ``enhanced`` key written).
+
+    Merges into the existing ``enhanced`` blob so sibling keys (``kt``,
+    ``recommendations``, etc.) are preserved.
     """
     if not is_enhanced_enabled("ENABLE_ENHANCED_PROFILE"):
         return session
     _ensure_metadata(session)
-    session.metadata["enhanced"] = {
-        "schema_version": ENHANCED_SCHEMA_VERSION,
-        "profile": profile.model_dump(mode="json"),
-    }
+    blob = session.metadata.get("enhanced")
+    if not isinstance(blob, dict):
+        blob = {}
+    else:
+        blob = dict(blob)
+    blob["schema_version"] = blob.get("schema_version", ENHANCED_SCHEMA_VERSION)
+    blob["profile"] = profile.model_dump(mode="json")
+    session.metadata["enhanced"] = blob
+    return session
+
+
+def get_kt_state(session: SessionState) -> dict[str, Any] | None:
+    """Return KT state from ``metadata.enhanced.kt``, or ``None`` if absent."""
+    blob = get_enhanced_blob(session)
+    if not blob:
+        return None
+    kt = blob.get("kt")
+    if isinstance(kt, dict):
+        return kt
+    return None
+
+
+def set_kt_state(session: SessionState, kt_state: dict[str, Any]) -> SessionState:
+    """Persist KT state under metadata.enhanced when PROFILE flag is on.
+
+    Merges into the existing ``enhanced`` blob so sibling keys (``profile``,
+    ``recommendations``, etc.) are preserved.
+    """
+    if not is_enhanced_enabled("ENABLE_ENHANCED_PROFILE"):
+        return session
+    _ensure_metadata(session)
+    blob = session.metadata.get("enhanced")
+    if not isinstance(blob, dict):
+        blob = {}
+    else:
+        blob = dict(blob)
+    blob["schema_version"] = blob.get("schema_version", ENHANCED_SCHEMA_VERSION)
+    blob["kt"] = kt_state
+    session.metadata["enhanced"] = blob
     return session

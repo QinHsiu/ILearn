@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from ilearn.agents.enhanced.base import EnhancedAgentBase
 from ilearn.core.enhanced_flags import is_enhanced_enabled
 from ilearn.core.enhanced_profile_adapter import ProfileAdapter
-from ilearn.core.enhanced_session import get_enhanced_profile, set_enhanced_profile
+from ilearn.core.enhanced_session import get_enhanced_profile, set_enhanced_profile, set_kt_state
+from ilearn.core.kt.factory import create_kt_service_from_session
 from ilearn.core.models.enhanced_profile import (
     EmotionType,
     LearningStyle,
@@ -15,6 +17,8 @@ from ilearn.core.models.enhanced_profile import (
 )
 from ilearn.core.schemas import SessionState
 from ilearn.providers.llm import LLMClient
+
+logger = logging.getLogger(__name__)
 
 
 class CognitiveSubAgent:
@@ -104,12 +108,53 @@ class ProfileUpdaterAgent(EnhancedAgentBase):
             return session
         profile = get_enhanced_profile(session) or ProfileAdapter.from_session(session)
         signals = self._extract_signals(session)
-        profile = self._cognitive.update(profile, signals)
+        if is_enhanced_enabled("ENABLE_ENHANCED_KT"):
+            try:
+                profile = self._apply_kt_fusion(profile, signals, session)
+            except Exception:
+                logger.warning("KT update failed, falling back to ±0.12", exc_info=True)
+                profile = self._cognitive.update(profile, signals)
+        else:
+            profile = self._cognitive.update(profile, signals)
         profile = self._emotional.update(profile, signals)
         profile = self._behavioral.update(profile, signals)
         profile = self._metacognitive.update(profile, signals)
         profile.version = int(profile.version or 1) + 1
         return set_enhanced_profile(session, profile)
+
+    def _apply_kt_fusion(
+        self,
+        profile: StudentFiveDimProfile,
+        signals: dict[str, Any],
+        session: SessionState,
+    ) -> StudentFiveDimProfile:
+        """Fuse BKT predictions into this-round updates; persist KT blob last."""
+        knowledge_updates = {
+            str(concept): bool(correct)
+            for concept, correct in (signals.get("knowledge_updates") or {}).items()
+        }
+        if not knowledge_updates:
+            return profile
+        working = profile.model_copy(deep=True)
+        kt = create_kt_service_from_session(session, backend="bkt")
+        for concept, correct in knowledge_updates.items():
+            kt.add_interaction(concept, correct)
+        preds = kt.predict_mastery(list(knowledge_updates))
+        for concept in knowledge_updates:
+            kt_score = preds.get(concept)
+            if kt_score is None:
+                continue
+            old = working.cognitive.knowledge_mastery.get(concept, 0.5)
+            alpha = 0.4 if kt.get_attempt_count(concept) >= 3 else 0.2
+            working.cognitive.knowledge_mastery[concept] = max(
+                0.05, min(0.95, alpha * float(kt_score) + (1.0 - alpha) * old)
+            )
+        mastery = working.cognitive.knowledge_mastery
+        if mastery:
+            working.cognitive.weak_concepts = [k for k, v in mastery.items() if v < 0.6]
+            working.cognitive.strong_concepts = [k for k, v in mastery.items() if v >= 0.8]
+        set_kt_state(session, kt.get_state())
+        return working
 
     def _execute(self, state: dict[str, Any]) -> dict[str, Any]:
         session = state.get("session")
