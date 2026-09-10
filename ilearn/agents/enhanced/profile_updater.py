@@ -128,30 +128,33 @@ class ProfileUpdaterAgent(EnhancedAgentBase):
         signals: dict[str, Any],
         session: SessionState,
     ) -> StudentFiveDimProfile:
-        """Fuse BKT predictions into cognitive mastery; persist KT blob."""
+        """Fuse BKT predictions into this-round updates; persist KT blob last."""
         knowledge_updates = {
             str(concept): bool(correct)
             for concept, correct in (signals.get("knowledge_updates") or {}).items()
         }
+        if not knowledge_updates:
+            return profile
+        working = profile.model_copy(deep=True)
         kt = create_kt_service_from_session(session, backend="bkt")
         for concept, correct in knowledge_updates.items():
             kt.add_interaction(concept, correct)
-        targets = set(knowledge_updates) | set(profile.cognitive.knowledge_mastery)
-        preds = kt.predict_mastery(list(targets))
-        for concept, kt_score in preds.items():
-            if concept not in knowledge_updates and concept not in profile.cognitive.knowledge_mastery:
+        preds = kt.predict_mastery(list(knowledge_updates))
+        for concept in knowledge_updates:
+            kt_score = preds.get(concept)
+            if kt_score is None:
                 continue
-            old = profile.cognitive.knowledge_mastery.get(concept, 0.5)
+            old = working.cognitive.knowledge_mastery.get(concept, 0.5)
             alpha = 0.4 if kt.get_attempt_count(concept) >= 3 else 0.2
-            profile.cognitive.knowledge_mastery[concept] = max(
+            working.cognitive.knowledge_mastery[concept] = max(
                 0.05, min(0.95, alpha * float(kt_score) + (1.0 - alpha) * old)
             )
-        mastery = profile.cognitive.knowledge_mastery
+        mastery = working.cognitive.knowledge_mastery
         if mastery:
-            profile.cognitive.weak_concepts = [k for k, v in mastery.items() if v < 0.6]
-            profile.cognitive.strong_concepts = [k for k, v in mastery.items() if v >= 0.8]
+            working.cognitive.weak_concepts = [k for k, v in mastery.items() if v < 0.6]
+            working.cognitive.strong_concepts = [k for k, v in mastery.items() if v >= 0.8]
         set_kt_state(session, kt.get_state())
-        return profile
+        return working
 
     def _execute(self, state: dict[str, Any]) -> dict[str, Any]:
         session = state.get("session")

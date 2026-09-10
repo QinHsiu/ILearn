@@ -373,3 +373,120 @@ def test_updater_kt_error_falls_back(monkeypatch):
     assert profile is not None
     assert profile.cognitive.knowledge_mastery["kp_a"] == pytest.approx(0.92)
     assert profile.cognitive.knowledge_mastery["kp_b"] == pytest.approx(0.18)
+
+
+def test_updater_kt_empty_updates_does_not_mutate_mastery(monkeypatch):
+    _enable_updater_flags(monkeypatch, kt=True)
+    session = SessionState(
+        session_id="s-kt-empty",
+        profile=StudentProfile(region="北京", grade=5, age=11),
+    )
+    seeded = StudentFiveDimProfile(student_id="s-kt-empty")
+    seeded.cognitive.knowledge_mastery = {"kp_keep": 0.75, "kp_other": 0.4}
+    session = set_enhanced_profile(session, seeded)
+    factory = Mock(side_effect=AssertionError("KT factory must not run"))
+    monkeypatch.setattr(
+        profile_updater_mod,
+        "create_kt_service_from_session",
+        factory,
+    )
+    updater = ProfileUpdaterAgent(llm=None, stub_mode=True)
+
+    session = updater.update_session(session)
+    profile = get_enhanced_profile(session)
+
+    assert factory.called is False
+    assert profile is not None
+    assert profile.cognitive.knowledge_mastery["kp_keep"] == pytest.approx(0.75)
+    assert profile.cognitive.knowledge_mastery["kp_other"] == pytest.approx(0.4)
+    assert get_kt_state(session) is None
+
+
+def test_updater_kt_on_skips_untouched_mastery(monkeypatch):
+    _enable_updater_flags(monkeypatch, kt=True)
+    session = SessionState(
+        session_id="s-kt-untouched",
+        profile=StudentProfile(region="北京", grade=5, age=11),
+        diagnosis=DiagnosisReport(
+            curriculum_label="北京·人教",
+            knowledge_mastery=[
+                KnowledgeMastery(
+                    knowledge_id="kp_a",
+                    score_rate=0.8,
+                    level="mastered",
+                ),
+            ],
+        ),
+    )
+    seeded = StudentFiveDimProfile(student_id="s-kt-untouched")
+    seeded.cognitive.knowledge_mastery = {"kp_a": 0.8, "kp_untouched": 0.7}
+    session = set_enhanced_profile(session, seeded)
+    updater = ProfileUpdaterAgent(llm=None, stub_mode=True)
+
+    session = updater.update_session(session)
+    profile = get_enhanced_profile(session)
+
+    assert profile is not None
+    assert profile.cognitive.knowledge_mastery["kp_untouched"] == pytest.approx(0.7)
+    assert profile.cognitive.knowledge_mastery["kp_a"] == pytest.approx(
+        _expected_kt_fusion(0.8, True)
+    )
+
+
+def test_updater_kt_uses_full_alpha_after_three_attempts(monkeypatch):
+    _enable_updater_flags(monkeypatch, kt=True)
+    prior = BKTKnowledgeTracing()
+    prior.add_interaction("kp_a", True)
+    prior.add_interaction("kp_a", True)
+    session = SessionState(
+        session_id="s-kt-alpha",
+        profile=StudentProfile(region="北京", grade=5, age=11),
+        diagnosis=DiagnosisReport(
+            curriculum_label="北京·人教",
+            knowledge_mastery=[
+                KnowledgeMastery(
+                    knowledge_id="kp_a",
+                    score_rate=0.9,
+                    level="mastered",
+                ),
+            ],
+        ),
+    )
+    seeded = StudentFiveDimProfile(student_id="s-kt-alpha")
+    seeded.cognitive.knowledge_mastery = {"kp_a": 0.6}
+    session = set_enhanced_profile(session, seeded)
+    session = set_kt_state(session, prior.get_state())
+    updater = ProfileUpdaterAgent(llm=None, stub_mode=True)
+
+    session = updater.update_session(session)
+    profile = get_enhanced_profile(session)
+
+    replay = BKTKnowledgeTracing()
+    replay.load_state(prior.get_state())
+    replay.add_interaction("kp_a", True)
+    kt_score = replay.predict_mastery(["kp_a"])["kp_a"]
+    expected_full = max(0.05, min(0.95, 0.4 * kt_score + 0.6 * 0.6))
+    expected_cold = max(0.05, min(0.95, 0.2 * kt_score + 0.8 * 0.6))
+
+    assert profile is not None
+    assert replay.get_attempt_count("kp_a") == 3
+    assert profile.cognitive.knowledge_mastery["kp_a"] == pytest.approx(expected_full)
+    assert profile.cognitive.knowledge_mastery["kp_a"] != pytest.approx(expected_cold)
+
+
+def test_updater_kt_persist_error_does_not_double_apply(monkeypatch):
+    _enable_updater_flags(monkeypatch, kt=True)
+    monkeypatch.setattr(
+        profile_updater_mod,
+        "set_kt_state",
+        Mock(side_effect=RuntimeError("persist boom")),
+    )
+    session = _session_with_diagnosis()
+    updater = ProfileUpdaterAgent(llm=None, stub_mode=True)
+
+    session = updater.update_session(session)
+    profile = get_enhanced_profile(session)
+
+    assert profile is not None
+    assert profile.cognitive.knowledge_mastery["kp_a"] == pytest.approx(0.92)
+    assert profile.cognitive.knowledge_mastery["kp_b"] == pytest.approx(0.18)
