@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { StudentSummary } from '../api/client'
+import { EnhancedStudentPanel } from './Enhanced'
 
 type StudentSummaryPanelProps = {
   sessionId: string
@@ -39,29 +40,32 @@ export default function StudentSummaryPanel({ sessionId }: StudentSummaryPanelPr
   }
 
   return (
-    <section className="student-summary-panel" aria-label="学生任务摘要">
-      <p className="student-summary-eyebrow">TASK / PROGRESS</p>
-      <div className="summary-grid student-summary-grid">
-        <article className="summary-block">
-          <span>当前任务</span>
-          <strong>{data.current_task}</strong>
-        </article>
-        <article className="summary-block">
-          <span>任务进度</span>
-          <strong>
-            {data.completed_tasks} / {data.total_tasks}
-          </strong>
-        </article>
-        <article className="summary-block" aria-label="获得星星">
-          <span>获得星星</span>
-          <strong>{data.stars_earned}</strong>
-        </article>
-        <article className="summary-block">
-          <span>下一挑战</span>
-          <strong>{data.next_challenge}</strong>
-        </article>
-      </div>
-      {data.narrative ? <p className="student-summary-narrative">{data.narrative}</p> : null}
-    </section>
+    <>
+      <section className="student-summary-panel" aria-label="学生任务摘要">
+        <p className="student-summary-eyebrow">TASK / PROGRESS</p>
+        <div className="summary-grid student-summary-grid">
+          <article className="summary-block">
+            <span>当前任务</span>
+            <strong>{data.current_task}</strong>
+          </article>
+          <article className="summary-block">
+            <span>任务进度</span>
+            <strong>
+              {data.completed_tasks} / {data.total_tasks}
+            </strong>
+          </article>
+          <article className="summary-block" aria-label="获得星星">
+            <span>获得星星</span>
+            <strong>{data.stars_earned}</strong>
+          </article>
+          <article className="summary-block">
+            <span>下一挑战</span>
+            <strong>{data.next_challenge}</strong>
+          </article>
+        </div>
+        {data.narrative ? <p className="student-summary-narrative">{data.narrative}</p> : null}
+      </section>
+      <EnhancedStudentPanel sessionId={sessionId} viewMode="student" summaryKind="student" />
+    </>
   )
 }

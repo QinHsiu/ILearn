@@ -7,6 +7,7 @@ import type {
 } from '../api/client'
 import { api } from '../api/client'
 import MarkdownView from '../MarkdownView'
+import { EnhancedStudentPanel } from './Enhanced'
 import EffectivenessDashboard from './EffectivenessDashboard'
 import EvidenceChain from './EvidenceChain'
 
@@ -196,6 +197,11 @@ export default function DashboardDetail({ detail, surface = 'teacher' }: Dashboa
         <p>计划状态：{detail.plan?.status || '暂无'}</p>
         {detail.plan?.markdown ? <MarkdownView source={detail.plan.markdown} /> : <p>暂无报告内容</p>}
       </div>
+      <EnhancedStudentPanel
+        sessionId={detail.session_id}
+        viewMode="teacher"
+        summaryKind={surface === 'parent' ? 'parent' : 'teacher'}
+      />
     </section>
   )
 }
