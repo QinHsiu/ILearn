@@ -482,6 +482,34 @@ class MultiAgentOrchestrator:
         self._store.save(session)
         return payload
 
+    @staticmethod
+    def _merge_timer_events(
+        session: SessionState, events: list[dict], *, cap: int = 200
+    ) -> None:
+        existing = list(session.metadata.get("timer_events") or [])
+        merged = (existing + list(events))[-cap:]  # FIFO drop oldest
+        session.metadata["timer_events"] = merged
+
+    @with_session_lock
+    def append_timer_telemetry(
+        self,
+        session_id: str,
+        *,
+        timer_events: list[dict] | None = None,
+        item_meta_patch: dict[str, dict] | None = None,
+    ) -> None:
+        session = self._store.load(session_id)
+        if timer_events:
+            self._merge_timer_events(session, timer_events)
+        if item_meta_patch:
+            item_meta = dict(session.metadata.get("item_meta") or {})
+            for item_id, patch in item_meta_patch.items():
+                current = dict(item_meta.get(item_id) or {})
+                current.update(patch or {})
+                item_meta[item_id] = current
+            session.metadata["item_meta"] = item_meta
+        self._store.save(session)
+
     @with_session_lock
     def submit(
         self,
@@ -489,6 +517,7 @@ class MultiAgentOrchestrator:
         answers: dict[str, str],
         *,
         item_meta: dict[str, dict] | None = None,
+        timer_events: list[dict] | None = None,
     ) -> SessionState:
         session = self._store.load(session_id)
         PhaseGuard.assert_ready_for("submit", session)
@@ -509,6 +538,8 @@ class MultiAgentOrchestrator:
             for item in paper.items
         ]
         session.metadata["item_meta"] = item_meta or {}
+        if timer_events:
+            self._merge_timer_events(session, timer_events)
         if is_assessment_timed_out(session):
             apply_submit_timeout(session, paper.items)
         session.grades = []

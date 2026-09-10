@@ -478,10 +478,23 @@ export const api = {
       },
     )
   },
-  submit(sessionId: string, answers: Record<string, string>, itemMeta: Record<string, object> = {}) {
+  submit(
+    sessionId: string,
+    answers: Record<string, string>,
+    itemMeta: Record<string, object> = {},
+    opts?: { timer_events?: TimerEvent[] },
+  ) {
+    const body: {
+      answers: Record<string, string>
+      item_meta: Record<string, object>
+      timer_events?: TimerEvent[]
+    } = { answers, item_meta: itemMeta }
+    if (opts?.timer_events) {
+      body.timer_events = opts.timer_events
+    }
     return request<SessionState>(`/sessions/${sessionId}/submit`, {
       method: 'POST',
-      body: JSON.stringify({ answers, item_meta: itemMeta }),
+      body: JSON.stringify(body),
     })
   },
   submitImages(sessionId: string, images: ImageAnswer[]) {
