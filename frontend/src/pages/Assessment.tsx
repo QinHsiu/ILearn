@@ -19,7 +19,7 @@ import CountingManipulative from '../components/CountingManipulative'
 import { inferVisualization } from '../lib/inferVisualization'
 import { inferCountingManipulative } from '../lib/inferManipulative'
 import { ASSESSMENT_SECONDS, MAX_VISIBILITY_PAUSE_MS } from '../constants/timing'
-import type { AssessmentItemMeta, TimerEvent } from '../types/assessmentMeta'
+import type { AssessmentItemMeta } from '../types/assessmentMeta'
 import { TimerEventBuffer, type TimerBufferedEntry } from '../lib/timerEvents'
 import {
   clearOpenItem,
@@ -35,7 +35,6 @@ export type AssessmentCompletePayload = {
   answers: Record<string, string>
   images: ImageAnswer[]
   itemMeta: Record<string, AssessmentItemMeta>
-  timerEvents?: TimerEvent[]
 }
 
 type AssessmentProps = {
@@ -157,6 +156,8 @@ export default function Assessment({
   const sessionIdRef = useRef(sessionId)
   sessionIdRef.current = sessionId
   const flushedUnloadRef = useRef(false)
+  /** Wall re-seed once per session entry; remount/refresh may re-seed. Not phase/paper. */
+  const wallSeededSessionRef = useRef<string | null>(null)
 
   const countdownActive = phase === 'anchor' || phase === 'full'
 
@@ -180,6 +181,9 @@ export default function Assessment({
     enabled: countdownActive,
     onUiDeadline: handleUiDeadline,
   })
+
+  const resetCountdownRef = useRef(resetCountdown)
+  resetCountdownRef.current = resetCountdown
 
   isUiDeadlinePassedRef.current = isUiDeadlinePassed || uiDeadlineCrossedRef.current
 
@@ -556,9 +560,12 @@ export default function Assessment({
     }
   }, [sessionId, acquireSystemWait, releaseSystemWait, ensureAccumulator])
 
-  // Re-seed countdown from assessment_started_at
+  // Wall-seed countdown from assessment_started_at once per session entry.
+  // Remount/refresh may re-seed. Do NOT re-run on phase / paper length (anchor→full
+  // would claw back pause credit by subtracting full wall elapsed).
   useEffect(() => {
     if (!countdownActive) return undefined
+    if (wallSeededSessionRef.current === sessionId) return undefined
     let cancelled = false
     async function reseed() {
       try {
@@ -580,17 +587,19 @@ export default function Assessment({
             })
           }
         }
+        wallSeededSessionRef.current = sessionId
         setSeedSeconds(remainingSec)
-        resetCountdown(remainingSec)
+        resetCountdownRef.current(remainingSec)
       } catch {
-        // Keep local seed on failure
+        // Keep local seed on failure — leave wallSeededSessionRef unset so a later
+        // countdownActive/sessionId effect can retry.
       }
     }
     void reseed()
     return () => {
       cancelled = true
     }
-  }, [countdownActive, sessionId, phase, paper?.items.length, resetCountdown])
+  }, [countdownActive, sessionId])
 
   useEffect(() => {
     return () => {
@@ -637,6 +646,9 @@ export default function Assessment({
     const events = entries.map((entry) => entry.event)
     let telemetryCommitted = false
     try {
+      // appendTimerTelemetry is the authoritative V1 path for timer_events.
+      // Do not also pass the same events through api.submit / onComplete (avoids
+      // double FIFO merge on the server).
       if (events.length) {
         await api.appendTimerTelemetry(sessionId, { timer_events: events })
       }
@@ -688,6 +700,8 @@ export default function Assessment({
     const events = entries.map((entry) => entry.event)
     let telemetryCommitted = false
     try {
+      // appendTimerTelemetry is the authoritative V1 path for timer_events.
+      // Omit from onComplete so App does not re-submit the same FIFO batch.
       if (events.length) {
         await api.appendTimerTelemetry(sessionId, { timer_events: events })
       }
@@ -699,7 +713,7 @@ export default function Assessment({
           mime_type,
         }),
       )
-      await onComplete({ paper, answers, images, itemMeta, timerEvents: events })
+      await onComplete({ paper, answers, images, itemMeta })
       clearOpenItem(sessionId)
       flushedUnloadRef.current = true
     } catch (err) {

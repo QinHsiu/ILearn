@@ -4,8 +4,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Assessment from './Assessment'
 import { api, fileToImageAnswer } from '../api/client'
 import { useSessionSync } from '../hooks/useSessionSync'
-import { ASSESSMENT_SECONDS } from '../constants/timing'
+import { ASSESSMENT_SECONDS, MAX_VISIBILITY_PAUSE_MS } from '../constants/timing'
 import { writeOpenItem, openItemStorageKey } from '../lib/timerOpenItem'
+
+// Shorter visibility budget so fake-timer tests can exhaust the cap without
+// advancing 10 minutes of 250ms ticker callbacks (slow / flaky under Vitest).
+vi.mock('../constants/timing', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../constants/timing')>()
+  return {
+    ...actual,
+    MAX_VISIBILITY_PAUSE_MS: 3_000,
+  }
+})
 
 vi.mock('../api/client', async () => {
   const actual = await vi.importActual<typeof import('../api/client')>('../api/client')
@@ -391,6 +401,123 @@ describe('Assessment page', () => {
     })
   })
 
+  it('does not claw back pause credit when wall re-seed runs on anchor→full', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const startedAt = new Date(Date.now()).toISOString()
+    mockDefaultSession(startedAt)
+    vi.mocked(api.adaptiveStart).mockResolvedValue(ANCHOR_START)
+    vi.mocked(api.adaptiveContinue).mockResolvedValue(FULL_PAPER)
+
+    render(
+      <Assessment
+        sessionId="s1"
+        profile={{ region: '北京', grade: 5, age: 11 }}
+        onComplete={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => expect(screen.getByText('锚点测评')).toBeInTheDocument())
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledWith('s1'))
+    await waitFor(() => {
+      expect(screen.getByText(/剩余/).textContent).toMatch(/剩余 59:\d{2}|剩余 60:\d{2}/)
+    })
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'hidden',
+    })
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    const pauseMs = 5 * 60 * 1000
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(pauseMs)
+    })
+
+    // Frozen while paused — still near 60:00, not ~55:00
+    expect(screen.getByText(/剩余/).textContent).toMatch(/剩余 59:\d{2}|剩余 60:\d{2}/)
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'visible',
+    })
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    fireEvent.change(screen.getByPlaceholderText('输入你的答案'), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: '提交锚点，继续完整测评' }))
+    await waitFor(() => expect(screen.getByText('完整测评')).toBeInTheDocument())
+
+    const afterPhase = screen.getByText(/剩余/).textContent!
+    // Must NOT jump down by the paused wall elapsed (~5 min → 55:xx)
+    expect(afterPhase).not.toMatch(/剩余 5[0-5]:\d{2}/)
+    expect(afterPhase).toMatch(/剩余 59:\d{2}|剩余 60:\d{2}/)
+    // getSession wall re-seed should not re-fire solely for phase/paper change
+    const getSessionCallsAfterFull = vi.mocked(api.getSession).mock.calls.length
+    expect(getSessionCallsAfterFull).toBeLessThanOrEqual(2)
+  })
+
+  it('after visibility budget exhaustion, further hidden does not freeze; emits timer_pause_cap', async () => {
+    expect(MAX_VISIBILITY_PAUSE_MS).toBe(3_000)
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const onComplete = await goToFullPhase()
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'hidden',
+    })
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    // Exhaust mocked visibility budget while hidden (countdown frozen)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(MAX_VISIBILITY_PAUSE_MS + 250)
+    })
+
+    // Still hidden past the cap — countdown must resume ticking
+    const mid = screen.getByText(/剩余/).textContent!
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(4000)
+    })
+    const afterExtraHidden = screen.getByText(/剩余/).textContent!
+    expect(afterExtraHidden).not.toBe(mid)
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'visible',
+    })
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+
+    fireEvent.change(screen.getByPlaceholderText('输入你的答案'), { target: { value: '1' } })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '提交并诊断' }))
+    })
+
+    await waitFor(() => expect(onComplete).toHaveBeenCalled())
+    const meta = onComplete.mock.calls[0][0].itemMeta.f0
+    expect(meta.pause_ms_visibility).toBeGreaterThanOrEqual(MAX_VISIBILITY_PAUSE_MS - 500)
+    expect(meta.pause_ms_visibility).toBeLessThanOrEqual(MAX_VISIBILITY_PAUSE_MS)
+    // Extra hidden time after cap counts as thinking, not pause
+    expect(meta.thinking_ms).toBeGreaterThanOrEqual(3000)
+
+    const telemetryEvents = vi.mocked(api.appendTimerTelemetry).mock.calls.flatMap(
+      (call) => (call[1] as { timer_events?: { type: string; cap_ms?: number }[] }).timer_events || [],
+    )
+    expect(telemetryEvents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'timer_pause_cap',
+          cap_ms: MAX_VISIBILITY_PAUSE_MS,
+        }),
+      ]),
+    )
+  })
+
   it('marks thinking_ms_incomplete after remount with open marker', async () => {
     writeOpenItem('s1', 'f0', Date.now() - 1000)
     expect(sessionStorage.getItem(openItemStorageKey('s1'))).toBeTruthy()
@@ -405,7 +532,7 @@ describe('Assessment page', () => {
     expect(meta.thinking_ms_incomplete).toBe(true)
   })
 
-  it('submit includes timer_events drained from buffer', async () => {
+  it('submit flushes timer_events via appendTimerTelemetry only (not onComplete)', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const startedAt = new Date(Date.now() - (ASSESSMENT_SECONDS - 1) * 1000).toISOString()
     mockDefaultSession(startedAt)
@@ -438,17 +565,17 @@ describe('Assessment page', () => {
 
     await waitFor(() => expect(onComplete).toHaveBeenCalled())
     const payload = onComplete.mock.calls[0][0]
-    expect(payload.timerEvents?.length).toBeGreaterThan(0)
-    expect(payload.timerEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ type: 'item_time_flush' })]),
-    )
+    expect(payload.timerEvents).toBeUndefined()
 
     const telemetryCalls = vi.mocked(api.appendTimerTelemetry).mock.calls
     const allEvents = telemetryCalls.flatMap(
       (call) => (call[1] as { timer_events?: { type: string }[] }).timer_events || [],
     )
     expect(allEvents).toEqual(
-      expect.arrayContaining([expect.objectContaining({ type: 'ui_deadline' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'ui_deadline' }),
+        expect.objectContaining({ type: 'item_time_flush' }),
+      ]),
     )
     expect(allEvents.length).toBeGreaterThan(0)
   })
@@ -583,8 +710,10 @@ describe('Assessment page', () => {
     })
 
     await waitFor(() => expect(onComplete).toHaveBeenCalled())
-    const events = onComplete.mock.calls[0][0].timerEvents as { type: string; item_id?: string }[]
-    expect(events).toEqual(
+    const telemetryEvents = vi.mocked(api.appendTimerTelemetry).mock.calls.flatMap(
+      (call) => (call[1] as { timer_events?: { type: string; item_id?: string }[] }).timer_events || [],
+    )
+    expect(telemetryEvents).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ type: 'item_time_flush', item_id: 'f0' }),
       ]),
