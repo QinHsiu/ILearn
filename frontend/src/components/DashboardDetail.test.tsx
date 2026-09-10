@@ -2,8 +2,21 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import DashboardDetail from './DashboardDetail'
 import { api } from '../api/client'
-import type { DashboardStudentDetail, ParentSummary, TeacherSummary } from '../api/client'
+import type {
+  DashboardStudentDetail,
+  EnhancedProfile,
+  ParentSummary,
+  TeacherSummary,
+} from '../api/client'
 import { EFFECTIVENESS } from '../test/effectivenessFixture'
+
+const enhancedFlag = vi.hoisted(() => ({ enabled: false }))
+
+vi.mock('../config/enhanced', () => ({
+  get ENHANCED_UI_ENABLED() {
+    return enhancedFlag.enabled
+  },
+}))
 
 vi.mock('../api/client', async () => {
   const actual = await vi.importActual<typeof import('../api/client')>('../api/client')
@@ -41,6 +54,19 @@ const PARENT_SUMMARY: ParentSummary = {
   narrative: '孩子正在巩固小数乘法。',
 }
 
+const ENHANCED_PROFILE: EnhancedProfile = {
+  cognitive: {
+    knowledge_mastery: { 分数: 0.2, 小数: 0.5 },
+    weak_concepts: ['分数'],
+  },
+  emotional: { current_emotion: 'confused' },
+  metacognitive: { learning_style: 'guided' },
+}
+
+function withProfile<T>(base: T, profile: EnhancedProfile) {
+  return { ...base, enhanced_profile: profile }
+}
+
 const baseDetail: DashboardStudentDetail = {
   session_id: 's1',
   phase: 'plan',
@@ -74,6 +100,7 @@ const demoDetail: DashboardStudentDetail = {
 describe('DashboardDetail demo panels', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    enhancedFlag.enabled = false
     vi.mocked(api.getEffectiveness).mockResolvedValue(EFFECTIVENESS)
     vi.mocked(api.getTeacherSummary).mockResolvedValue(TEACHER_SUMMARY)
     vi.mocked(api.getParentSummary).mockResolvedValue(PARENT_SUMMARY)
@@ -158,5 +185,35 @@ describe('DashboardDetail demo panels', () => {
     expect(screen.getByText('知识点掌握')).toBeInTheDocument()
     expect(api.getEffectiveness).not.toHaveBeenCalled()
     expect(await screen.findByText(/结构化备课摘要/)).toBeInTheDocument()
+  })
+
+  it('mounts EnhancedStudentPanel on teacher surface when flag is on', async () => {
+    enhancedFlag.enabled = true
+    vi.mocked(api.getTeacherSummary).mockImplementation((sessionId, options) => {
+      if (options?.enhanced) {
+        return Promise.resolve(withProfile(TEACHER_SUMMARY, ENHANCED_PROFILE))
+      }
+      return Promise.resolve(TEACHER_SUMMARY)
+    })
+
+    render(<DashboardDetail detail={baseDetail} surface="teacher" />)
+
+    expect(await screen.findByText('知识点掌握度')).toBeInTheDocument()
+    expect(api.getTeacherSummary).toHaveBeenCalledWith('s1', { enhanced: true })
+  })
+
+  it('mounts EnhancedStudentPanel with parent summaryKind on parent surface', async () => {
+    enhancedFlag.enabled = true
+    vi.mocked(api.getParentSummary).mockImplementation((sessionId, options) => {
+      if (options?.enhanced) {
+        return Promise.resolve(withProfile(PARENT_SUMMARY, ENHANCED_PROFILE))
+      }
+      return Promise.resolve(PARENT_SUMMARY)
+    })
+
+    render(<DashboardDetail detail={baseDetail} surface="parent" />)
+
+    expect(await screen.findByText('知识点掌握度')).toBeInTheDocument()
+    expect(api.getParentSummary).toHaveBeenCalledWith('s1', { enhanced: true })
   })
 })
