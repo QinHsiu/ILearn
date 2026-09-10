@@ -1,8 +1,9 @@
 # Edition 0910_1 — Student Timer Fairness (V1) Design
 
 **Date:** 2026-09-10  
-**Status:** Product-confirmed (Scenario B); revised for overtime, attribution, flush-all, refresh incompleteness  
-**Scope:** Frontend countdown fairness (pause/resume) + thinking-time telemetry. Server 150 min is hard anti-bypass ceiling only.
+**Status:** Approved for implementation planning  
+**Scope:** Frontend countdown fairness (pause/resume) + thinking-time telemetry. Server 150 min is hard anti-bypass ceiling only.  
+**Plan:** `docs/superpowers/plans/2026-09-10-edition-0910-1-timer-fairness.md` (locks `systemWaitCount`, sessionStorage incomplete detect, beacon/keepalive unload).
 
 ## Goal
 
