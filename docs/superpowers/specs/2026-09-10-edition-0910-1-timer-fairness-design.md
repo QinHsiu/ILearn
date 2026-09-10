@@ -1,8 +1,8 @@
 # Edition 0910_1 — Student Timer Fairness (V1) Design
 
 **Date:** 2026-09-10  
-**Status:** Revised after round-2 review (awaiting product confirm on countdown length)  
-**Scope:** Frontend countdown fairness (pause/resume) + thinking-time telemetry. Server assessment timeout remains wall-clock (looser than client UI).
+**Status:** Product-confirmed (Scenario B); revised for overtime, attribution, flush-all, refresh incompleteness  
+**Scope:** Frontend countdown fairness (pause/resume) + thinking-time telemetry. Server 150 min is hard anti-bypass ceiling only.
 
 ## Goal
 
@@ -13,29 +13,29 @@ Stop system UI time (`systemWait` / feedback / background) from consuming the st
 | Decision | Choice |
 |----------|--------|
 | Slice | A — student timer fairness (0910_1 §2.1 P0) |
-| Duration model | **Scenario B** — frontend **60 min** countdown; server **150 min** wall-clock兜底 |
-| Client countdown | Ticks only while **answering**; on mount/refresh, **re-seed from** `assessment_started_at` |
-| `elapsed_ms` | **Backward compatible** wall-style (includes pauses) |
-| `thinking_ms` | **New authoritative** answering-only ms for 学情 |
-| `item_meta_version` | Emit `"v1"` on meta payloads so downstream can migrate to `thinking_ms` |
-| Concurrent pause | **OR** to pause; clear when `!shouldPause` |
-| `timer_events` | **A** — flush into `session.metadata.timer_events` **per item submit** (cap 200 FIFO) |
-| Persist pause budget across refresh | **Out of V1** (accepted); countdown residual **is** re-synced from server start time |
-| `systemWait` | Generic system-wait flag (submit/fetch, feedback, future §2.2 LLM) — **not** student tab-hide |
+| Duration model | **Scenario B (confirmed)** — UI **60 min**; server **150 min** hard ceiling |
+| At UI 60→0 | **Continue timing** (overtime). **No** auto-submit, **no** UI lock. Overtime **increases evaluation weight** downstream |
+| Server 150 | Anti-bypass / hung-session hard stop only — **not** “extra free quiz time” as a product feature |
+| Client countdown | Ticks only while **answering**; mount/refresh **re-seeds** from `assessment_started_at` (may already be overtime) |
+| `elapsed_ms` | Wall-style (includes pauses) — backward compatible |
+| `thinking_ms` | Authoritative answering-only ms for 学情 |
+| Pause attribution | **Busy-priority exclusive** — no double-count overlap |
+| Concurrent pause gate | **OR** to pause; resume when `!shouldPause` |
+| `timer_events` | Flush to `session.metadata.timer_events` via **`flushAllItemEvents()`** on all exit paths (cap 200 FIFO) |
+| Refresh | Budget resets; mark incomplete thinking; exclude from ≥95% metric |
+| `systemWait` | Generic system wait (submit/fetch, feedback, future §2.2 LLM) — not tab-hide |
 | SessionStore locks | Untouched |
 
-Core slogan: **frontend fair & tighter, backend wall-clock & looser, telemetry traceable.**
+Core slogan: **frontend fair & tighter, overtime weighted, backend hard ceiling, telemetry traceable.**
 
-## Duration model (Scenario B)
-
-Today’s code exports `ASSESSMENT_SECONDS = 150 * 60` on both client and server (aligned). Product / edition intent is a **60-minute** student-facing countdown. V1 **splits** the constants:
+## Duration model (Scenario B — confirmed)
 
 ```ts
 // frontend/src/constants/timing.ts
-/** Student-facing countdown length (tighter UX clock). */
+/** Student-facing fair window (UI deadline). */
 export const ASSESSMENT_SECONDS = 60 * 60
 
-/** Server wall-clock兜底; must match ilearn.core.assessment_timeout.ASSESSMENT_TIMEOUT_SECONDS. */
+/** Server hard ceiling; match ilearn.core.assessment_timeout.ASSESSMENT_TIMEOUT_SECONDS. */
 export const SERVER_TIMEOUT_SECONDS = 150 * 60
 
 export const MAX_VISIBILITY_PAUSE_MS = 10 * 60 * 1000
@@ -43,64 +43,109 @@ export const TIMER_EVENTS_CAP = 200
 ```
 
 ```python
-# ilearn/core/assessment_timeout.py — unchanged numerically
-ASSESSMENT_TIMEOUT_SECONDS = 150 * 60  # server兜底 only; do not force-match frontend UI minutes
+# ilearn/core/assessment_timeout.py
+ASSESSMENT_TIMEOUT_SECONDS = 150 * 60  # hard ceiling only
 ```
 
-| Clock | Length | Purpose |
-|-------|--------|---------|
-| Frontend `ASSESSMENT_SECONDS` | 60 min | What the student sees; fair pause applies here |
-| Server `ASSESSMENT_TIMEOUT_SECONDS` | 150 min | Hard submit/timeout trust boundary |
+| Clock | Length | Role |
+|-------|--------|------|
+| UI `ASSESSMENT_SECONDS` | 60 min | Fair window; after this → **overtime mode** |
+| Server `ASSESSMENT_TIMEOUT_SECONDS` | 150 min | Hard submit rejection / forced timeout — anti-bypass |
 
-**Trust model:** client cannot extend the server deadline; server is intentionally **more generous** so pause/fairness + minor clock skew do not cause “sudden forced submit” before the student-facing window ends under normal use.
+### Behavior when UI clock reaches 0
 
-> **Product confirm:** Scenario B is the recommended lock. If product instead wants Scenario A (frontend = server = 150), set `ASSESSMENT_SECONDS = SERVER_TIMEOUT_SECONDS` and keep re-seed logic.
+| Action | V1 |
+|--------|-----|
+| Auto-submit paper | **No** (today’s `submitFull` on `onTimeout` is **removed**) |
+| Lock answering UI | **No** |
+| Continue clock | **Yes** — keep ticking in `answering`; display overtime (e.g. `+MM:SS` or signed remaining) |
+| Callback | Rename semantics to **`onUiDeadline`**: fire **once** when crossing 0 → set session flags / start overtime accumulation |
+| Evaluation | Overtime interval **increases weight** on assessment / 评测 consideration (see below) |
+| Server 150 | Still the only hard stop; client cannot submit past server timeout |
+
+**Overtime weighting (V1 telemetry + hook):**
+
+- Session/item meta emits e.g. `ui_deadline_crossed: true`, `overtime_ms` (answering time after UI deadline; pause rules still apply).  
+- Downstream 学情 / scoring **must** treat overtime as **higher weight** than in-window thinking (exact formula can live in diagnosis later; V1 guarantees fields exist).  
+- Server 150 does **not** redefine the pedagogical window — it only prevents indefinite / forged clients.
+
+### Re-seed on mount / refresh
+
+```ts
+const startedAt = session.metadata?.assessment_started_at
+const elapsedServerSec = startedAt
+  ? (Date.now() - Date.parse(String(startedAt))) / 1000
+  : 0
+// May be negative → already in overtime; do NOT clamp to 0 for auto-submit.
+const remainingSec = ASSESSMENT_SECONDS - elapsedServerSec
+useCountdown(remainingSec, onUiDeadline)
+```
+
+- If `remainingSec < 0` on load: enter overtime display immediately; set `ui_deadline_crossed` if not already; **do not** auto-submit.  
+- Pause credit still lost on refresh (session-local until V1.5).
 
 ## Duration definitions
 
 | Name | Definition | Use |
 |------|------------|-----|
-| Wall / `elapsed_ms` | On-item time **including** pauses (today’s flush semantics) | Backward-compatible UI/reports |
-| Thinking / `thinking_ms` | Only while state = `answering` | **Authoritative for 学情** |
-| `pause_ms` | Sum of pause on item | Totals |
-| `pause_ms_busy` | Pause attributed to `systemWait` / feedback | Tests + “系统中断” |
-| `pause_ms_visibility` | Pause attributed to tab hidden | Tests + budget accounting |
-| Visibility pause budget | Cumulative **visibility** pause ≤ **10 minutes** / assessment session (in-memory) | Anti-abuse; `systemWait` does **not** consume budget |
+| Wall / `elapsed_ms` | On-item time including pauses | Compatibility |
+| Thinking / `thinking_ms` | Only while `answering` (includes overtime answering) | 学情 (if complete) |
+| `overtime_ms` | Answering time after UI deadline on item/session | Evaluation weight |
+| `pause_ms` | Total pause on item | Totals |
+| `pause_ms_busy` | Exclusive busy/feedback pause | System interrupt |
+| `pause_ms_visibility` | Exclusive visibility pause (non-busy only) | Budget + “主动切走” |
+| Visibility budget | Cumulative **visibility-attributed** pause ≤ 10 min / session (in-memory) | Anti-abuse |
 
-Whole-paper countdown: decrements only in `answering`.
+Invariant (exclusive attribution):
+
+```text
+pause_ms = pause_ms_busy + pause_ms_visibility   (±10ms)
+```
 
 ### Compatibility risk (`elapsed_ms`)
 
-Legacy pipelines that treat `elapsed_ms` as “thinking time” will **overstate** effort after V1 (pauses included).
-
-**Migration:** when `item_meta_version === "v1"`, downstream **must** use `thinking_ms` for 学情; keep `elapsed_ms` only for wall-clock / display compatibility.
+Legacy pipelines treating `elapsed_ms` as thinking will overstate effort. When `item_meta_version === "v1"`, use `thinking_ms` (+ `overtime_ms` / flags for weight).
 
 ## State machine
 
 ```text
 idle → answering ⇄ paused → submitted
+         │
+         └─ (seconds ≤ 0) answering continues in overtime; answering still allowed
 ```
 
 | State | Countdown | thinking_ms | Notes |
 |-------|-----------|-------------|-------|
-| `idle` | stopped | no | Pre-start / brief gap |
-| `answering` | running | accumulates | Student can answer |
+| `idle` | stopped | no | Pre-start |
+| `answering` | running (may be ≤0 / overtime) | yes | Student can answer |
 | `paused` | frozen | no | See pause formula |
-| `submitted` | stopped | no | Item/paper submitted |
+| `submitted` | stopped | no | Item done |
 
-### Pause / resume formula (P0)
+### Pause / resume formula
 
 ```ts
 const shouldPause =
-  systemWait /* busy */ ||
-  (visibilityHidden && visibilityBudgetLeft);
-
-// Resume when !shouldPause (and not submitted).
+  systemWait ||
+  (visibilityHidden && visibilityBudgetLeft)
 ```
 
-- **OR** to enter/stay paused.  
-- Example: `systemWait` ends while tab still `hidden` → **remain paused** until visible (if budget left) or until budget exhausted (then countdown may run while hidden).  
-- When visibility budget exhausted: further `hidden` → emit `timer_pause_cap`; countdown **does not** freeze for visibility; `systemWait` can still freeze.
+### Pause attribution (busy-priority, exclusive)
+
+Overlapping `systemWait` + `hidden` must **not** double-count.
+
+```ts
+// While paused, attribute elapsed pause slice exclusively:
+if (systemWait) {
+  pause_ms_busy += dt        // feedback folded into busy
+  // visibility does NOT accumulate; budget does NOT consume for this slice
+} else if (visibilityHidden && visibilityBudgetLeft) {
+  pause_ms_visibility += dt
+  visibilityBudgetUsed += dt
+}
+pause_ms = pause_ms_busy + pause_ms_visibility
+```
+
+Transition while paused: if visibility-only pause then `systemWait` becomes true → switch attribution to busy for subsequent slices (close visibility segment first).
 
 ### `systemWait` semantics
 
@@ -108,19 +153,12 @@ const shouldPause =
 /**
  * Generic system-wait flag.
  * Triggers: submit/fetch, feedback window, future LLM Socratic wait (§2.2).
- * Does NOT include student tab backgrounding (that is visibility’s job).
+ * Does NOT include student tab backgrounding (visibility’s job).
  */
 type SystemWait = boolean
 ```
 
-### Pause reason sources
-
-1. **`systemWait`** — submit/fetch, feedback, future LLM wait. Does not consume visibility budget.  
-2. **Feedback window** — folded into `systemWait`:  
-   - Fixed-duration feedback (e.g. 1.5–2s): keep `systemWait` true for that window.  
-   - Manual dismiss (“继续”): hold until dismiss, then clear.  
-   Attribution: `pause_ms_busy`.  
-3. **Visibility** — `document.visibilityState === 'hidden'`, subject to budget.
+Feedback: fixed duration or until dismiss — always via `systemWait` → `pause_ms_busy`.
 
 ## Data / API
 
@@ -129,100 +167,100 @@ type SystemWait = boolean
 ```ts
 {
   item_meta_version: "v1"
-  elapsed_ms: number           // wall (includes paused)
-  thinking_ms: number          // answering only
+  elapsed_ms: number
+  thinking_ms: number
+  overtime_ms?: number
+  ui_deadline_crossed?: boolean
+  thinking_ms_incomplete?: boolean  // refresh / ungraceful loss
   pause_count?: number
-  pause_ms?: number            // total pause on item
-  pause_ms_busy?: number       // systemWait / feedback
-  pause_ms_visibility?: number // tab hidden
+  pause_ms?: number
+  pause_ms_busy?: number
+  pause_ms_visibility?: number
   hint_used: boolean
 }
 ```
 
-Backend already stores `item_meta` as free-form dict; unknown fields OK.
-
-### `timer_events` (locked: option A, **per-item submit flush**)
+### `timer_events`
 
 - Path: `session.metadata["timer_events"]`  
-- Cap: **`TIMER_EVENTS_CAP = 200`**, FIFO drop oldest  
-- Write timing: **on each item submit** (not whole-paper end; not every pause/resume)  
-- Buffer per `item_id` in memory; flush that item’s events with the submit payload / metadata append; then clear the item buffer  
+- Cap: `TIMER_EVENTS_CAP = 200`, FIFO  
+- **Not** only per-item submit — use unified flush:
 
 ```ts
-const flushItemEvents = (itemId: string) => {
-  const events = itemEventBuffers[itemId] || []
-  appendToSessionMetadata('timer_events', events) // FIFO cap 200
-  itemEventBuffers[itemId] = []
+function flushItemEvents(itemId: string) { /* append buffer; clear; FIFO cap */ }
+
+function flushAllItemEvents() {
+  for (const itemId of Object.keys(itemEventBuffers)) {
+    flushItemEvents(itemId)
+  }
 }
 ```
 
-Discriminated event shapes (`item_id` **required**):
+**Call `flushAllItemEvents()` (or current-item + all buffers) before:**
+
+| Trigger | Why |
+|---------|-----|
+| Each item submit | Normal path |
+| Full paper submit | Catch open buffers |
+| UI/server timeout handling | Unanswered items still have buffers |
+| Assessment unmount / `pagehide` / `beforeunload` (best effort) | Avoid silent loss |
+| Phase leave | Same |
+
+Also emit `item_time_flush` for the **current** open item even if unanswered when flushing on timeout/unmount.
 
 ```ts
 type TimerEvent =
   | { type: 'timer_pause'; ts: number; item_id: string; reason: 'busy' | 'visibility' | 'feedback' }
   | { type: 'timer_resume'; ts: number; item_id: string; pause_duration_ms: number }
   | { type: 'timer_pause_cap'; ts: number; item_id: string; cap_ms: number }
-  | { type: 'item_time_flush'; ts: number; item_id: string; thinking_ms: number; pause_ms: number }
+  | { type: 'item_time_flush'; ts: number; item_id: string; thinking_ms: number; pause_ms: number; incomplete?: boolean }
+  | { type: 'timer_refresh'; ts: number; item_id?: string }  // best-effort on unload/remount detect
+  | { type: 'ui_deadline'; ts: number }
 ```
-
-Backend: accept & persist; no parse requirement in V1.
 
 ## Frontend file touchpoints
 
 | File | Change |
 |------|--------|
-| `frontend/src/hooks/useCountdown.ts` | `pause` / `resume` / `isPaused`; no tick while paused; on resume if `seconds === 0`, fire `onTimeout` |
-| `frontend/src/pages/Assessment.tsx` | systemWait + visibility; dual accumulators; budget; per-item event flush; **re-seed remaining** from session |
-| `frontend/src/constants/timing.ts` | `ASSESSMENT_SECONDS`, `SERVER_TIMEOUT_SECONDS`, `MAX_VISIBILITY_PAUSE_MS`, `TIMER_EVENTS_CAP` |
-| `frontend/src/api/client.ts` / types | Extend meta + read `metadata.assessment_started_at` |
-| Tests | Countdown + Assessment timer edge cases below |
+| `useCountdown.ts` | pause/resume; allow `seconds ≤ 0` overtime tick; `onUiDeadline` once at crossing; display helper for overtime |
+| `Assessment.tsx` | Remove auto-`submitFull` on deadline; systemWait + visibility; exclusive attribution; budget; `flushAllItemEvents`; re-seed; overtime flags |
+| `constants/timing.ts` | Shared constants |
+| API types | Meta fields + `assessment_started_at` |
+| Tests | See below — **do not** expect auto-submit at 60 |
 
 ## Recovery (V1)
 
-### Countdown residual (required — avoid “sudden timeout”)
-
-On Assessment mount / full refresh, **do not** blindly start at full `ASSESSMENT_SECONDS`. Pull session (existing `getSession`) and re-seed:
-
-```ts
-const startedAt = session.metadata?.assessment_started_at // ISO from server
-const elapsedServerSec = startedAt
-  ? (Date.now() - Date.parse(startedAt)) / 1000
-  : 0
-const remainingSec = Math.max(0, ASSESSMENT_SECONDS - elapsedServerSec)
-useCountdown(remainingSec, onTimeout)
-```
-
-- Uses **client UI length** (`ASSESSMENT_SECONDS` = 60m), not server 150m.  
-- If wall elapsed already ≥ 60m, remaining is 0 → timeout path immediately.  
-- Server may still allow submits until 150m (兜底).  
-- **Tradeoff:** refresh still **drops** in-session pause credit for the countdown (pause fairness is session-local until V1.5). Residual is wall-aligned to start time so UI never shows *more* time than the client window allows.
-
 ### Visibility budget
 
-Still **resets on refresh** (accepted cheat surface; refresh also burns server wall-clock and loses local `thinking_ms`). V1.5 may persist budget in `sessionStorage`.
+Resets on full refresh — accepted. V1.5: optional `sessionStorage`.
 
-### Other
+### Refresh vs `thinking_ms` (explicit)
 
-- No SessionStore lock changes  
+Refresh loses in-memory thinking for the **current unsubmitted item** and resets visibility budget.
+
+**V1 mitigations (required):**
+
+1. Best-effort `flushAllItemEvents()` + `timer_refresh` on `pagehide`/`beforeunload`.  
+2. On remount, if prior open item had no complete flush, subsequent analytics treat missing/partial as `thinking_ms_incomplete: true`.  
+3. **Acceptance metric:** `thinking_ms` ≥95% applies only to items with **successful submit flush** and **`thinking_ms_incomplete !== true`**. Incomplete / refresh-abandoned items are **excluded** from that denominator so teachers/heatmap do not silently under-read effort as “fast.”
 
 ## Anti-cheat
 
-- Server wall-clock timeout unchanged at 150 min  
+- Server 150 min hard ceiling unchanged  
 - Client pause cannot extend server deadline  
-- Visibility pause capped at `MAX_VISIBILITY_PAUSE_MS`  
-- Refresh: countdown residual re-synced; budget reset accepted for V1  
+- Visibility pause capped; busy does not consume budget  
+- Overtime allowed on client until server hard stop; overtime is **weighted**, not free  
 
 ## Testing & acceptance
 
 ### Core
 
-1. Paused → seconds frozen; resume → ticks  
-2. `systemWait` true → frozen; clear + visible → resume  
-3. `hidden` → pause; `visible` → resume; after budget exhausted, further `hidden` does not freeze  
-4. On item submit: precise invariants below  
-5. Server `apply_submit_timeout` still wall-clock 150 min  
-6. Existing single `onTimeout` behavior preserved (including resume-when-zero)  
+1. Pause freezes; resume ticks (including overtime region)  
+2. `systemWait` freezes; clear + visible → resume  
+3. Visibility pause + budget exhaustion  
+4. Exclusive attribution invariants  
+5. Server `apply_submit_timeout` still 150 min wall-clock  
+6. UI deadline: **no** auto-submit; overtime continues; `onUiDeadline` once  
 
 ### Precise meta invariants (±10ms)
 
@@ -230,55 +268,37 @@ Still **resets on refresh** (accepted cheat surface; refresh also burns server w
 expect(Math.abs(meta.pause_ms - (meta.pause_ms_busy + meta.pause_ms_visibility))).toBeLessThan(10)
 expect(meta.pause_ms_busy).toBeGreaterThanOrEqual(0)
 expect(meta.pause_ms_visibility).toBeGreaterThanOrEqual(0)
-expect(meta.thinking_ms + meta.pause_ms).toBeLessThanOrEqual(meta.elapsed_ms + 10)
-// equivalent: thinking_ms ≤ elapsed_ms
 expect(meta.thinking_ms).toBeLessThanOrEqual(meta.elapsed_ms + 10)
 ```
 
-### Boundary (required)
+Overlap case: while both busy and hidden, only `pause_ms_busy` increases.
+
+### Boundary
 
 | Scenario | Expected |
 |----------|----------|
-| `busy` + `hidden` together | Paused; after busy ends still paused until visible (budget allowing) |
-| Refresh mid-assessment | No crash; remaining = `max(0, ASSESSMENT_SECONDS - serverElapsed)`; budget resets |
-| Visibility budget exactly exhausted | Last budgeted pause OK; subsequent hidden does not freeze |
-| Feedback inside systemWait | No double-pause bookkeeping |
-| Per-item `timer_events` flush | After 5 item submits, metadata contains flush events for all 5 items (subject to cap) |
-| `onTimeout` does not fire during pause | Paused with 1s left; advance 5s → no timeout; resume then advance ~1s → fires once |
-| Resume when seconds already 0 | `resume()` triggers `onTimeout` immediately (hook responsibility) |
-
-### `onTimeout` while paused (canonical test)
-
-```ts
-it('resume 后若仍有剩余秒则继续倒数到 0 再 onTimeout；paused 期间不触发', async () => {
-  const onTimeout = vi.fn()
-  const { result } = renderHook(() => useCountdown(1, onTimeout))
-  act(() => result.current.pause())
-  await advanceTimersByTime(5000)
-  expect(onTimeout).not.toHaveBeenCalled()
-  act(() => result.current.resume())
-  await advanceTimersByTime(1100)
-  expect(onTimeout).toHaveBeenCalledTimes(1)
-})
-```
-
-Also cover: start at `0` or resume into `0` → fire once without waiting another tick.
+| busy + hidden | Paused; attribution → busy only for overlap |
+| UI 60→0 | Keep answering; overtime display; no auto-submit |
+| Refresh mid-item | Re-seed (possibly overtime); budget reset; incomplete excluded from ≥95% |
+| `flushAllItemEvents` | Item submit, paper submit, timeout path, unmount all flush |
+| 5 item submits | Events for all 5 (cap permitting) |
+| Pause then resume across 0 | No deadline callback while paused; after resume, cross/fire once as designed |
 
 | Metric | V1 target |
 |--------|-----------|
 | systemWait/feedback freeze | Automated |
-| `thinking_ms` on answered items | ≥ 95% smoke |
-| Split pause fields usable in tests | Yes |
-| Server wall timeout | Unchanged (150 min) |
-| Client UI length | 60 min + start-time re-seed |
+| Complete `thinking_ms` on submitted, non-incomplete items | ≥ 95% smoke |
+| Split pause fields + exclusive overlap | Yes |
+| Server hard ceiling | 150 min unchanged |
+| UI window | 60 min + overtime weight fields |
 
 ## Non-goals (V1)
 
-- Server timeout on thinking time  
-- Persist pause budget or pause-credit across reload (V1.5 optional)  
-- OpenTelemetry dashboards, parent weekly digest, Socratic LLM UI, heatmap  
-- Changing SessionStore locking  
+- Exact numeric overtime→score formula in diagnosis (emit fields + document weight intent; formula can follow)  
+- Persist pause budget / pause-credit across reload  
+- OpenTelemetry dashboards, parent digest, Socratic LLM UI, heatmap UI  
+- SessionStore locking changes  
 
 ## Relation to edition_0910_1
 
-Implements **§2.1** only. `systemWait` is defined generically so **§2.2** LLM wait can set the same flag without refactoring the timer.
+Implements **§2.1** only. `systemWait` stays generic for **§2.2** LLM wait.
