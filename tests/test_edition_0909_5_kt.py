@@ -6,13 +6,25 @@ from unittest.mock import Mock
 
 import pytest
 
+from ilearn.agents.enhanced import profile_updater as profile_updater_mod
+from ilearn.agents.enhanced.profile_updater import ProfileUpdaterAgent
 from ilearn.core.enhanced_flags import clear_enhanced_flag_cache, is_enhanced_enabled
-from ilearn.core.enhanced_session import get_kt_state, set_enhanced_profile, set_kt_state
+from ilearn.core.enhanced_session import (
+    get_enhanced_profile,
+    get_kt_state,
+    set_enhanced_profile,
+    set_kt_state,
+)
 from ilearn.core.kt.bkt import BKTKnowledgeTracing
 from ilearn.core.kt.factory import create_kt_service, create_kt_service_from_session
 from ilearn.core.kt.protocol import KTInteraction
 from ilearn.core.models.enhanced_profile import StudentFiveDimProfile
-from ilearn.core.schemas import SessionState, StudentProfile
+from ilearn.core.schemas import (
+    DiagnosisReport,
+    KnowledgeMastery,
+    SessionState,
+    StudentProfile,
+)
 
 
 class TestBKT:
@@ -260,3 +272,104 @@ def test_kt_flag_env_on(monkeypatch):
     monkeypatch.setenv("ILEARN_ENABLE_ENHANCED_KT", "1")
     clear_enhanced_flag_cache()
     assert is_enhanced_enabled("ENABLE_ENHANCED_KT") is True
+
+
+def _session_with_diagnosis() -> SessionState:
+    """Session with diagnosis rows so stub knowledge_updates are non-empty."""
+    return SessionState(
+        session_id="s-kt-updater",
+        profile=StudentProfile(region="北京", grade=5, age=11),
+        diagnosis=DiagnosisReport(
+            curriculum_label="北京·人教",
+            knowledge_mastery=[
+                KnowledgeMastery(
+                    knowledge_id="kp_a",
+                    score_rate=0.8,
+                    level="mastered",
+                ),
+                KnowledgeMastery(
+                    knowledge_id="kp_b",
+                    score_rate=0.3,
+                    level="weak",
+                ),
+            ],
+        ),
+    )
+
+
+def _enable_updater_flags(monkeypatch, *, kt: bool) -> None:
+    monkeypatch.setenv("ILEARN_ENABLE_ENHANCED_PROFILE", "1")
+    monkeypatch.setenv("ILEARN_ENABLE_ENHANCED_AGENTS", "1")
+    if kt:
+        monkeypatch.setenv("ILEARN_ENABLE_ENHANCED_KT", "1")
+    else:
+        monkeypatch.delenv("ILEARN_ENABLE_ENHANCED_KT", raising=False)
+    clear_enhanced_flag_cache()
+
+
+def _expected_kt_fusion(old: float, correct: bool) -> float:
+    """Independent BKT + cold-start alpha=0.2 fusion for one attempt."""
+    kt = BKTKnowledgeTracing()
+    kt.add_interaction("x", correct)
+    kt_score = kt.predict_mastery(["x"])["x"]
+    alpha = 0.2
+    return max(0.05, min(0.95, alpha * kt_score + (1.0 - alpha) * old))
+
+
+def test_updater_kt_off_uses_delta(monkeypatch):
+    _enable_updater_flags(monkeypatch, kt=False)
+    session = _session_with_diagnosis()
+    updater = ProfileUpdaterAgent(llm=None, stub_mode=True)
+
+    session = updater.update_session(session)
+    profile = get_enhanced_profile(session)
+
+    assert profile is not None
+    assert profile.cognitive.knowledge_mastery["kp_a"] == pytest.approx(0.92)
+    assert profile.cognitive.knowledge_mastery["kp_b"] == pytest.approx(0.18)
+    assert get_kt_state(session) is None
+
+
+def test_updater_kt_on_writes_kt_blob(monkeypatch):
+    _enable_updater_flags(monkeypatch, kt=True)
+    session = _session_with_diagnosis()
+    updater = ProfileUpdaterAgent(llm=None, stub_mode=True)
+
+    session = updater.update_session(session)
+    profile = get_enhanced_profile(session)
+    kt_blob = get_kt_state(session)
+
+    assert profile is not None
+    assert kt_blob is not None
+    assert kt_blob.get("backend") == "bkt"
+    assert kt_blob.get("interactions")
+    assert "states" in kt_blob
+    assert profile.cognitive.knowledge_mastery["kp_a"] == pytest.approx(
+        _expected_kt_fusion(0.8, True)
+    )
+    assert profile.cognitive.knowledge_mastery["kp_b"] == pytest.approx(
+        _expected_kt_fusion(0.3, False)
+    )
+    assert profile.cognitive.knowledge_mastery["kp_a"] != pytest.approx(0.92)
+    assert profile.cognitive.knowledge_mastery["kp_b"] != pytest.approx(0.18)
+
+
+def test_updater_kt_error_falls_back(monkeypatch):
+    _enable_updater_flags(monkeypatch, kt=True)
+    boom = Mock(side_effect=RuntimeError("kt boom"))
+    monkeypatch.setattr(
+        profile_updater_mod,
+        "create_kt_service_from_session",
+        boom,
+        raising=False,
+    )
+    session = _session_with_diagnosis()
+    updater = ProfileUpdaterAgent(llm=None, stub_mode=True)
+
+    session = updater.update_session(session)
+    profile = get_enhanced_profile(session)
+
+    assert boom.called
+    assert profile is not None
+    assert profile.cognitive.knowledge_mastery["kp_a"] == pytest.approx(0.92)
+    assert profile.cognitive.knowledge_mastery["kp_b"] == pytest.approx(0.18)
