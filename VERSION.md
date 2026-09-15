@@ -5,9 +5,9 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | | |
 | --- | --- |
-| **标签** | Edition 0909_1 Enhanced（旁路画像 / Agents / API） |
-| **基线** | PR01–03 合入后离线可跑；增强 Flag 默认关闭 |
-| **日期** | 2026-09-09 |
+| **标签** | Soft-launch · Why-Use 陪伴连续性加深 |
+| **基线** | PR01–03 合入后离线可跑；增强 Flag 默认关闭；三端雇佣路径可演示 |
+| **日期** | 2026-09-16 |
 
 ---
 
@@ -60,6 +60,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | 阶段 | 要点 | 测试 |
 | --- | --- | --- |
+| Soft-launch companion depth A | `progress_delta` + `companion_line`；学生/家长可读陪伴面板；比上次证据优先 | **eval_winbars 39** |
 | Multi-Agent P0 + Composition Phase 1 | 6 Agent 编排、ItemGrader / GradingReceipt、课标 keyword RAG、评测 CLI | 177 |
 | Phase 1 收尾 | StepAttempt、contextual 画像、citation ids、completeness CLI 等 | 177 |
 | Phase 2a 诊断 / 证据 | OPT-023…026、OPT-074、G-05 | 198 |

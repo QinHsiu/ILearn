@@ -9,6 +9,7 @@ import type {
 import DashboardDetail from '../components/DashboardDetail'
 import SoftPdfButton from '../components/SoftPdfButton'
 import UnlockRequestsPanel from '../components/UnlockRequestsPanel'
+import CompanionContinuityPanel from '../components/CompanionContinuityPanel'
 import StudentList from '../components/StudentList'
 import DashboardHome, { updateDashboardQuery } from './DashboardHome'
 
@@ -190,6 +191,13 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
               </article>
             </div>
           </section>
+        ) : null}
+        {selected?.profile?.nickname || summaryStudent?.nickname ? (
+          <CompanionContinuityPanel
+            nickname={String(selected?.profile?.nickname || summaryStudent?.nickname || '')}
+            title="陪伴与比上次"
+            showParentDelta
+          />
         ) : null}
         {summaryStudent ? (
           <section className="parent-summary" aria-labelledby="parent-summary-title">

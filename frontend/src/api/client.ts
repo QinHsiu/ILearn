@@ -683,8 +683,20 @@ export const api = {
       session_count: number
       streak_days: number
       next_challenge: string
+      companion_line: string
       recent_session_ids: string[]
       seven_day_chain: Array<{ day_index: number; focus: string; session_id?: string | null }>
+      progress_delta?: {
+        has_baseline: boolean
+        evidence_delta?: number | null
+        probe_gap_delta?: number | null
+        mastery_delta?: number | null
+        narrative?: string
+        previous_session_id?: string | null
+        current_session_id?: string | null
+      } | null
+      portrait_snapshot?: Record<string, unknown> | null
+      latest_replan_explain?: Record<string, unknown> | null
     }>(`/learners/${encodeURIComponent(nickname)}/continuity`)
   },
   heartbeat(sessionId: string) {

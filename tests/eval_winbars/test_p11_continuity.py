@@ -98,6 +98,32 @@ def test_p11_portrait_snapshot_and_replan_explain():
     assert view.latest_replan_explain.get("triggered") is True
 
 
+def test_p11_progress_delta_and_companion_line():
+    from ilearn.core.schemas import KnowledgeEvidence
+
+    older = _sess("s1", 1, "小数意义")
+    newer = _sess("s0", 0, "小数乘法")
+    older.evidence_log = []
+    newer.evidence_log = [
+        KnowledgeEvidence(
+            session_id="s0",
+            item_id="q1",
+            knowledge_id="kp",
+            lane="probe",
+            correct=True,
+        )
+    ]
+    view = build_learner_continuity("小明", [newer, older])
+    assert view.companion_line
+    assert "下一挑战" in view.companion_line or "连学" in view.companion_line or "挑战" in view.companion_line
+    assert view.progress_delta is not None
+    assert view.progress_delta.has_baseline is True
+    assert view.progress_delta.current_session_id == "s0"
+    assert view.progress_delta.previous_session_id == "s1"
+    assert "比上次" in (view.progress_delta.narrative or "")
+    assert view.progress_delta.evidence_delta == 1
+
+
 def test_p11_replan_explanation_reasons():
     portrait = LearnerPortrait(
         student_key="x",
