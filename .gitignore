@@ -49,3 +49,7 @@ data/raw/*
 
 # Git worktrees
 .worktrees/
+
+# Local tunnel binaries
+tools/ngrok/
+
