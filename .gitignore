@@ -10,13 +10,9 @@ frontend/dist/
 node_modules/
 package-lock.json
 
-# Local design notes / competition drafts — never upload
+# Local notes / competition drafts / design plans — never upload
 doc/
-docs/*
-!docs/superpowers/
-!docs/superpowers/**
-!docs/commercial/
-!docs/commercial/**
+docs/
 .superpowers/
 .pr-body-*.md
 
@@ -24,18 +20,16 @@ docs/*
 data/sessions/*
 !data/sessions/.gitkeep
 data/waitlist.jsonl
+data/relationships.json
 
-# Competition local evidence / demo artifacts (keep on disk, not in git)
-# Ignore contents, but allow Demo mp4 uploads for GitHub / GOAI.
-runtime_evidence/*
-!runtime_evidence/demo.mp4
-!runtime_evidence/demo_720p.mp4
-!runtime_evidence/demo_1080p.mp4
-!runtime_evidence/demo_preview.gif
-!runtime_evidence/launch_smoke.md
-!runtime_evidence/soft_launch_hand_path.md
-!runtime_evidence/activation_why_use.md
-!runtime_evidence/browser_path_activation.md
+# Evidence / demo media / smoke notes — keep on disk, not in git
+runtime_evidence/
+
+# Competition / video tooling (not required to run the product)
+scripts/build_goai_demo_video.py
+scripts/build_short_demo_video.py
+scripts/capture_demo_evidence.py
+scripts/record_ilearn_demo.mjs
 
 # External curriculum dumps (Edition 0826)
 data/raw/*
@@ -46,5 +40,4 @@ data/raw/*
 .worktrees/
 
 # Local tunnel binaries
-tools/ngrok/
-
+tools/
