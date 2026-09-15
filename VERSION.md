@@ -89,6 +89,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 | Edition 0901_2 学生摘要 + 计划步面板 | StudentSummary builder/overlay、GET summary/student、demo seed metadata、计划步 StudentSummaryPanel | **554** pytest + **71** vitest |
 | Edition 0901_3 学生流程 Swiss UI | student-shell / chrome / steps；建档密度；测评 phase·counter·stem·choice-row；苏格拉底助教面板；计划 summary 间距 | **554** pytest + **73** vitest |
 | Edition 0909_1 Enhanced PR01–03 | 五维画像 metadata.enhanced；enhanced agents 钩子；API `?enhanced=` / enhanced PDF；Flag 默认关 | PR01–03 专项测试通过 |
+| Edition 0914 commercial soft-launch | 竞品叙事 Landing、Waitlist、healthz、家长行动摘要、教师分层建议、隐私页、Tutor soft-exit、路演一页纸 | 见 overnight plan |
 
 ---
 
@@ -98,6 +99,7 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | 包 | 包含 | 目标 |
 | --- | --- | --- |
+| **商业化下周** | 支付 / 配额 / 邮件验证 | Soft-launch 后的可收费 MVP |
 | **Eval 扩展** | OPT-072/073/081、E-10…E-21 | 公开基准与 Skill registry |
 | **文档 / 仓库运维** | F-05…F-07 | hermes / xiaozhi / EduGemma 等研究与索引刷新 |
 

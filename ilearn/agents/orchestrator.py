@@ -21,6 +21,7 @@ from ilearn.core.enhanced_context import ensure_cold_start_profile
 from ilearn.core.enhanced_flags import is_enhanced_enabled
 from ilearn.core.enhanced_session import get_enhanced_profile
 from ilearn.core.item_validators import revise_paper, validate_paper as validate_item_paper
+from ilearn.core.citation_gate import ensure_citations_or_stub
 from ilearn.core.assessment_timeout import (
     apply_submit_timeout,
     is_assessment_timed_out,
@@ -208,6 +209,7 @@ class MultiAgentOrchestrator:
                     portrait=session.portrait,
                     loop_count=session.loop_count,
                     evidence_log=list(session.evidence_log),
+                    hint_interactions=dict(session.hint_interactions or {}),
                     metadata=context_metadata,
                 )
             )
@@ -304,6 +306,9 @@ class MultiAgentOrchestrator:
                 )
         remaining_issues = validate_item_paper(
             revised_paper, grade=session.profile.grade
+        )
+        revised_paper = ensure_citations_or_stub(
+            revised_paper, fail_closed=True, example_bank=example_bank
         )
         if result.fallback_used:
             revision_summary = f"revised {result.attempts}, fallback"
@@ -567,7 +572,9 @@ class MultiAgentOrchestrator:
         )
         session.grades = result.payload["grades"]
         evidence_events = result.payload.get("evidence") or evidence_from_grades(
-            session.session_id, session.grades
+            session.session_id,
+            session.grades,
+            session.hint_interactions,
         )
         for event in evidence_events:
             append_evidence(session, event)
@@ -728,6 +735,7 @@ class MultiAgentOrchestrator:
         """Re-run planning with current portrait/diagnosis; supersede prior plan."""
         session = self._store.load(session_id)
         PhaseGuard.assert_ready_for("replan", session)
+        previous_plan = session.plan
         result = self._planning.run(
             self._ctx(
                 session,
@@ -750,6 +758,17 @@ class MultiAgentOrchestrator:
             session.metadata["scientific_plan"] = result.payload["scientific_plan"]
         for entry in result.payload.get("plan_history_append", []):
             session.plan_history.append(entry)
+        from ilearn.core.replan_explain import build_replan_explanation
+
+        explain = build_replan_explanation(
+            portrait=session.portrait,
+            diagnosis=session.diagnosis,
+            previous_plan=previous_plan,
+            new_plan=session.plan,
+        )
+        meta = dict(session.metadata or {})
+        meta["replan_explain"] = explain.model_dump()
+        session.metadata = meta
         target_phase = self._phase_after_planning(
             session, result.phase, replan=True
         )
@@ -759,7 +778,7 @@ class MultiAgentOrchestrator:
             session,
             self._planning.name,
             SessionPhase.PLAN,
-            "learning plan revised",
+            "learning plan revised: " + "; ".join(explain.reasons[:2]),
         )
         self._store.save(session)
         return session.plan

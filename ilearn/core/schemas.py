@@ -95,6 +95,7 @@ class ItemSourceRef(BaseModel):
     example_stem: str | None = None
     example_answer: str | None = None
     example_difficulty: str | None = None
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
 
 
 class ItemTemplate(BaseModel):
@@ -323,6 +324,7 @@ class TutorTurn(BaseModel):
     phase: TutorPhase
     message: str
     error_tag: ErrorTag | None = None
+    action: str | None = None
 
 
 MAX_HINTS_PER_ITEM = 3

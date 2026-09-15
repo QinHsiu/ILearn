@@ -23,20 +23,25 @@ def create_demo_session(
     unit = load_demo_unit(unit_id)
     session = seed_demo_session(unit)
     store.save(session)
+    from ilearn.core.invite import ensure_session_invite
+
+    ensure_session_invite(session, store)
     sid = session.session_id
     relationships.bind_parent(_DEMO_PARENT, sid)
     relationships.bind_teacher(_DEMO_TEACHER, _DEMO_CLASS, sid)
+    invite = str((session.metadata or {}).get("invite_code") or "")
     return {
         "session_id": sid,
         "unit_name": unit.get("name") or unit_id,
+        "invite_code": invite,
         "links": {
             "student": f"?student=1&session_id={sid}",
             "teacher": (
-                f"?login=1&role=teacher&user={_DEMO_TEACHER}"
+                f"?role=teacher&user={_DEMO_TEACHER}"
                 f"&class_id={_DEMO_CLASS}&student_id={sid}"
             ),
             "parent": (
-                f"?login=1&role=parent&user={_DEMO_PARENT}&student_id={sid}"
+                f"?role=parent&user={_DEMO_PARENT}&student_id={sid}"
             ),
         },
     }

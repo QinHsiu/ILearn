@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from ilearn.core.hints import hint_for_error
@@ -31,6 +32,25 @@ _CALM_PREFIX = (
 class TutorAgent:
     name = "tutor"
 
+    @staticmethod
+    def _redact_answer(message: str, item: AssessmentItem) -> str:
+        key = (item.answer_key or "").strip()
+        if not key:
+            return message
+        text = message.replace(key, "□")
+        compact = re.sub(r"\s+", "", key)
+        if re.fullmatch(r"[0-9]+(\.[0-9]+)?", compact):
+            if "." in compact:
+                left, right = compact.split(".", 1)
+                pat = re.compile(
+                    rf"{re.escape(left)}\s*[.\.．。]\s*{re.escape(right)}"
+                )
+                text = pat.sub("□", text)
+            else:
+                pat = re.compile(rf"(?<!\d){re.escape(compact)}(?!\d)")
+                text = pat.sub("□", text)
+        return text
+
     def start(
         self,
         item: AssessmentItem,
@@ -38,14 +58,18 @@ class TutorAgent:
         *,
         frustration: float = 0.0,
     ) -> TutorTurn:
+        steps = []
+        for step in item.rubric_steps or []:
+            steps.append(self._redact_answer(step, item))
         steps_hint = ""
-        if item.rubric_steps:
-            steps_hint = f"（共 {len(item.rubric_steps)} 步：{' → '.join(item.rubric_steps)}）"
+        if steps:
+            steps_hint = f"（共 {len(steps)} 步：{' → '.join(steps)}）"
         message = (
             f"我们一起来看看这道题{steps_hint}。"
             "你觉得哪一步最不清楚？请告诉我是第几步或描述你的困惑。"
         )
         message = self._with_calm_tone(message, frustration)
+        message = self._redact_answer(message, item)
         return TutorTurn(phase="locate_gap", message=message, error_tag=error_tag)
 
     def step(
@@ -65,32 +89,51 @@ class TutorAgent:
                 hint_text = f"{hint_text}；{skill_hint}"
             message = f"好的，我们先从这个方向入手：{hint_text}。你可以再想想这一步。"
             message = self._with_calm_tone(message, frustration)
+            message = self._redact_answer(message, item)
             return TutorTurn(phase="hint_1", message=message, error_tag=tag)
 
         if state == "hint_1":
             _, hint_text = hint_for_error(tag, fail_streak=1)
             message = f"再给你一点提示：{hint_text}。试着按这个思路检查一下。"
             message = self._with_calm_tone(message, frustration)
+            message = self._redact_answer(message, item)
             return TutorTurn(phase="hint_2", message=message, error_tag=tag)
 
         if state == "hint_2":
             message = "现在请你重新尝试完成那一步，写出你的计算或推理过程。"
             message = self._with_calm_tone(message, frustration)
+            message = self._redact_answer(message, item)
             return TutorTurn(phase="retry", message=message, error_tag=tag)
 
         if state == "retry":
             if self._retry_failed(user_message):
                 message = self._build_explanation(item)
                 message = self._with_calm_tone(message, frustration)
-                return TutorTurn(phase="explain", message=message, error_tag=tag)
+                message = self._redact_answer(message, item)
+                return TutorTurn(
+                    phase="explain",
+                    message=message,
+                    error_tag=tag,
+                    action="suggest_review",
+                )
             message = "很好！你已经找到了关键步骤，继续完成后面的部分吧。"
+            message = self._redact_answer(message, item)
             return TutorTurn(phase="done", message=message, error_tag=tag)
 
         if state == "explain":
-            message = "希望这次的讲解对你有帮助。下次遇到类似题目，可以先回顾解题步骤再动手。"
-            return TutorTurn(phase="done", message=message, error_tag=tag)
+            message = (
+                "希望思路梳理对你有帮助。先回顾概念再动手；"
+                "我们不会直接给出最终答案——卡住时可以请教老师，或稍后再试。"
+            )
+            message = self._redact_answer(message, item)
+            return TutorTurn(
+                phase="done",
+                message=message,
+                error_tag=tag,
+                action="suggest_review",
+            )
 
-        message = "辅导已结束。如有疑问可以继续提问。"
+        message = self._redact_answer("辅导已结束。如有疑问可以继续提问。", item)
         return TutorTurn(phase="done", message=message, error_tag=tag)
 
     def get_socratic_hint_with_diagnosis(
@@ -132,6 +175,9 @@ class TutorAgent:
             turn = turn.model_copy(
                 update={"message": "\n\n".join(prefix_parts) + f"\n\n{turn.message}"}
             )
+        turn = turn.model_copy(
+            update={"message": self._redact_answer(turn.message, item)}
+        )
         return turn
 
     @staticmethod

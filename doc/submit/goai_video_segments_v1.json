@@ -1,0 +1,547 @@
+{
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "rate": "-8%",
+  "width": 1920,
+  "height": 1080,
+  "base_url": "http://127.0.0.1:5173",
+  "inter_clip_silence_sec": 0.7,
+  "tail_pad_sec": 0.8,
+  "segments": [
+    {
+      "id": "01_opening",
+      "title": "开场",
+      "narration": "各位评委好，我们是ILearn团队。一个课堂、同一进度，为什么有的孩子越学越吃力？传统教学是同一进度推着所有人走，但每个孩子的知识缺口完全不同。研究表明，我国小学生数学学习困难患病率达百分之八点九七，超过半数的学生认为数学比较难或很难。跟不上的孩子不是不努力，而是没人帮他补上那些没听懂的小台阶。ILearn要解决的，就是这个真实困境——课标在环、多Agent协同、自适应个性化学习引擎。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "scroll",
+          "amount": 380
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "scroll",
+          "amount": 380
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "02_start",
+      "title": "一键启动",
+      "narration": "ILearn预置了完整的演示数据。我们选择五年级小数乘法单元，一键进入——无需注册、无需配置，三十秒即可体验完整闭环。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "scroll",
+          "amount": 520
+        },
+        {
+          "type": "wait",
+          "sec": 1
+        },
+        {
+          "type": "click",
+          "selector": "input[name='demo-role'][value='teacher']"
+        },
+        {
+          "type": "wait",
+          "sec": 0.4
+        },
+        {
+          "type": "click",
+          "selector": ".demo-unit button.btn"
+        },
+        {
+          "type": "wait_for",
+          "selector": ".student-shell, .app-shell, .teacher-shell, .panel",
+          "sec": 12
+        },
+        {
+          "type": "wait",
+          "sec": 4
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "03_teacher",
+      "title": "教师端学情",
+      "narration": "这是教师端——教师可以一眼看到全班的学情全貌。注意看这个学生列表——每个学生的掌握度和薄弱知识点都不一样。有的卡在小数乘小数，有的困在运算律推广，有的则是积的近似数需要加强。这就是现实课堂的真实写照：三十个学生，可能有三十种不同的知识缺口。ILearn帮助教师精准定位每个学生的个性化需求。点击任意学生，教师可以查看该生的完整学情摘要，为后续的个别辅导提供精准依据。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "scroll",
+          "amount": 520
+        },
+        {
+          "type": "click",
+          "selector": "input[name='demo-role'][value='teacher']"
+        },
+        {
+          "type": "click",
+          "selector": ".demo-unit button.btn"
+        },
+        {
+          "type": "wait_for",
+          "selector": ".student-shell, .app-shell, .teacher-shell, .panel",
+          "sec": 12
+        },
+        {
+          "type": "wait",
+          "sec": 3.5
+        },
+        {
+          "type": "click",
+          "selector": "button.teacher-tab:nth-of-type(1)"
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "scroll",
+          "amount": 260
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "click",
+          "selector": "button.teacher-tab:nth-of-type(3)"
+        },
+        {
+          "type": "wait",
+          "sec": 2.5
+        },
+        {
+          "type": "click",
+          "selector": "button.btn.secondary",
+          "optional": true
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "click",
+          "selector": "button.teacher-tab:nth-of-type(2)"
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "scroll",
+          "amount": 220
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "04_student_intro",
+      "title": "学生端过渡",
+      "narration": "接下来是最关键的部分——自适应组卷。我们来看三个不同基础的学生，登录系统后会收到完全不同的题目。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "scroll",
+          "amount": 520
+        },
+        {
+          "type": "click",
+          "selector": "input[name='demo-role'][value='student']"
+        },
+        {
+          "type": "wait",
+          "sec": 1
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "05_xiaoming_card",
+      "title": "小明介绍",
+      "narration": "这是学生A——小明，他的诊断前掌握度只有百分之三十五，属于基础薄弱型。系统给他推送的是基础巩固题——比如小数乘整数、小数乘小数的基础运算题，帮助他先打好基础。",
+      "mode": "card",
+      "card_query": "k=student_a",
+      "actions": [
+        {
+          "type": "wait",
+          "sec": 1.2
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "06_xiaoming_demo",
+      "title": "小明作答",
+      "narration": "小明卡在了小数乘整数上。注意，系统不是直接给答案，而是通过苏格拉底引导——零点五乘三表示几个零点五相加——引导他自己发现错误。测评结束，小明的掌握度从百分之三十五提升到百分之四十八，但小数乘小数和运算律推广仍然是薄弱点。系统会为他制定基础巩固型学习计划。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "scroll",
+          "amount": 520
+        },
+        {
+          "type": "click",
+          "selector": "input[name='demo-role'][value='student']"
+        },
+        {
+          "type": "click",
+          "selector": ".demo-unit button.btn"
+        },
+        {
+          "type": "wait_for",
+          "selector": ".student-shell, .app-shell, .teacher-shell, .panel",
+          "sec": 12
+        },
+        {
+          "type": "wait",
+          "sec": 4
+        },
+        {
+          "type": "scroll",
+          "amount": 280
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('求助苏格拉底'), button:has-text('苏格拉底')",
+          "optional": true
+        },
+        {
+          "type": "wait",
+          "sec": 3
+        },
+        {
+          "type": "scroll",
+          "amount": 220
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "07_xiaohong_card",
+      "title": "小红介绍",
+      "narration": "这是学生B——小红，她的诊断前掌握度是百分之五十八，属于中等水平。注意看，系统给小红的题目和小明完全不一样——她收到的是中等难度题，比如小数乘法的应用题和积的近似数计算。",
+      "mode": "card",
+      "card_query": "k=student_b",
+      "actions": [
+        {
+          "type": "wait",
+          "sec": 1.2
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "08_xiaohong_demo",
+      "title": "小红作答",
+      "narration": "小红解对了这道应用题。她的表现更稳定，系统会适当提升难度，挑战她的思维边界。小红的掌握度从百分之五十八提升到百分之七十六，只剩下运算律推广这一个薄弱点。系统会为她制定能力提升型学习计划，重点是攻克运算律。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "scroll",
+          "amount": 520
+        },
+        {
+          "type": "click",
+          "selector": "input[name='demo-role'][value='student']"
+        },
+        {
+          "type": "click",
+          "selector": ".demo-unit button.btn"
+        },
+        {
+          "type": "wait_for",
+          "selector": ".student-shell, .app-shell, .teacher-shell, .panel",
+          "sec": 12
+        },
+        {
+          "type": "wait",
+          "sec": 4
+        },
+        {
+          "type": "scroll",
+          "amount": 320
+        },
+        {
+          "type": "wait",
+          "sec": 3
+        },
+        {
+          "type": "scroll",
+          "amount": 200
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "09_xiaohua_card",
+      "title": "小华介绍",
+      "narration": "这是学生C——小华，他的诊断前掌握度是百分之八十二，属于优秀水平。他收到的题目完全不同——系统推送的是高难度综合题，比如小数乘法的多步运算和实际应用难题，挑战他的高阶思维。",
+      "mode": "card",
+      "card_query": "k=student_c",
+      "actions": [
+        {
+          "type": "wait",
+          "sec": 1.2
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "10_xiaohua_demo",
+      "title": "小华作答",
+      "narration": "小华面对的是多步综合应用题，需要同时运用小数乘法和四则运算。他的知识网络更完整，系统通过高难度题目验证他的掌握深度。小华的掌握度从百分之八十二提升到百分之九十三，已经没有薄弱点。系统会为他推送综合挑战型学习计划，重点是拓展应用和数学思维训练。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "scroll",
+          "amount": 520
+        },
+        {
+          "type": "click",
+          "selector": "input[name='demo-role'][value='student']"
+        },
+        {
+          "type": "click",
+          "selector": ".demo-unit button.btn"
+        },
+        {
+          "type": "wait_for",
+          "selector": ".student-shell, .app-shell, .teacher-shell, .panel",
+          "sec": 12
+        },
+        {
+          "type": "wait",
+          "sec": 4
+        },
+        {
+          "type": "scroll",
+          "amount": 360
+        },
+        {
+          "type": "wait",
+          "sec": 3
+        },
+        {
+          "type": "scroll",
+          "amount": 240
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "11_compare",
+      "title": "三组对比",
+      "narration": "三组学生，三个完全不同的起点，三个完全不同的题目组合，三个完全不同的学习计划——小明需要补基础，小红需要攻薄弱，小华需要做拓展。这就是ILearn的自适应能力——千人千面，因材施教。",
+      "mode": "card",
+      "card_query": "k=compare",
+      "actions": [
+        {
+          "type": "wait",
+          "sec": 1.5
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "12_diagnosis",
+      "title": "诊断证据",
+      "narration": "诊断不是凭感觉。ILearn的DiagnosisAgent基于证据日志驱动诊断——每条结论都可追溯到具体题目和作答记录。以小红为例——运算律推广薄弱的判断，来自三道相关题目中错了两道，使用了一次Hint。可审计、可追溯，诊断置信度百分之八十五以上。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "scroll",
+          "amount": 520
+        },
+        {
+          "type": "click",
+          "selector": "input[name='demo-role'][value='teacher']"
+        },
+        {
+          "type": "click",
+          "selector": ".demo-unit button.btn"
+        },
+        {
+          "type": "wait_for",
+          "selector": ".student-shell, .app-shell, .teacher-shell, .panel",
+          "sec": 12
+        },
+        {
+          "type": "wait",
+          "sec": 3.5
+        },
+        {
+          "type": "click",
+          "selector": "button.teacher-tab:nth-of-type(4)"
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "scroll",
+          "amount": 420
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "scroll",
+          "amount": 280
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "13_parent",
+      "title": "家长端",
+      "narration": "家长端——所有技术术语已翻译为日常用语。家长看到的是理解程度而非掌握度，运算律推广变成了运算规律的应用。收到的是可操作的家庭辅导建议，而不是一堆看不懂的数据。教育产品不仅要专业，更要对家长友好。",
+      "mode": "browser",
+      "actions": [
+        {
+          "type": "goto",
+          "url": "/"
+        },
+        {
+          "type": "scroll",
+          "amount": 520
+        },
+        {
+          "type": "click",
+          "selector": "input[name='demo-role'][value='parent']"
+        },
+        {
+          "type": "click",
+          "selector": ".demo-unit button.btn"
+        },
+        {
+          "type": "wait_for",
+          "selector": ".student-shell, .app-shell, .teacher-shell, .panel",
+          "sec": 12
+        },
+        {
+          "type": "wait",
+          "sec": 4
+        },
+        {
+          "type": "scroll",
+          "amount": 280
+        },
+        {
+          "type": "wait",
+          "sec": 2
+        },
+        {
+          "type": "scroll",
+          "amount": 240
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "14_effect",
+      "title": "效果量化",
+      "narration": "效果量化——三组学生平均掌握度从百分之五十八提升到百分之七十二，平均提升十四个百分点。批改时间从传统九十分钟压缩到十五分钟，节省百分之七十。与传统教学对比：个性化从统一作业变为自适应，反馈从一到两天变为即时，薄弱点识别从经验判断变为数据驱动。",
+      "mode": "card",
+      "card_query": "k=effect",
+      "actions": [
+        {
+          "type": "wait",
+          "sec": 1.5
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    },
+    {
+      "id": "15_closing",
+      "title": "收尾",
+      "narration": "技术层面，ILearn基于FastAPI加React构建，五百五十余项后端测试与七十余项前端测试保障工程质量。零LLM可离线运行——无API Key亦可演示全流程。ILearn——让每个孩子拥有课标对齐、数据驱动、持续进化的AI学习伙伴。感谢评委，欢迎指正！",
+      "mode": "card",
+      "card_query": "k=closing",
+      "actions": [
+        {
+          "type": "wait",
+          "sec": 1.2
+        },
+        {
+          "type": "hold_to_audio"
+        }
+      ]
+    }
+  ]
+}

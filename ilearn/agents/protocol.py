@@ -31,6 +31,7 @@ class AgentContext:
     portrait: LearnerPortrait | None = None
     loop_count: int = 0
     evidence_log: list[KnowledgeEvidence] = field(default_factory=list)
+    hint_interactions: dict | None = None
     metadata: dict = field(default_factory=dict)
 
 

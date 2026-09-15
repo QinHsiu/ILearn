@@ -1,0 +1,126 @@
+pageType: content
+background:
+  type: solid
+  color: "$soft"
+elements:
+  - elementId: accent-bar
+    elementType: shape
+    bounds: [48, 32, 56, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: page-title
+    elementType: text
+    bounds: [48, 48, 860, 36]
+    content:
+      style: "$title"
+      wrap: false
+      text: 三端协同，各取所需
+  - elementId: t-card
+    elementType: shape
+    bounds: [48, 110, 280, 280]
+    shapeName: roundRect
+    fill:
+      type: solid
+      color: "$white"
+    border:
+      style: solid
+      width: 1
+      color: "$line"
+  - elementId: t-title
+    elementType: text
+    bounds: [64, 128, 248, 36]
+    content:
+      style: "$cardTitle"
+      wrap: false
+      text: 教师端
+  - elementId: t-body
+    elementType: text
+    bounds: [64, 175, 248, 190]
+    content:
+      fontSize: 16
+      color: "$text"
+      lineHeight: 1.5
+      fontFamily: {latin: MiSans, ea: MiSans}
+      text: |
+        <p>班级掌握度</p>
+        <p>薄弱点排行</p>
+        <p>干预学生列表</p>
+        <p>导出班级报告</p>
+        <p style="margin-top:14px; color:#5F6B7A;">从批改中解放，聚焦教学</p>
+  - elementId: p-card
+    elementType: shape
+    bounds: [340, 110, 280, 280]
+    shapeName: roundRect
+    fill:
+      type: solid
+      color: "$white"
+    border:
+      style: solid
+      width: 1
+      color: "$line"
+  - elementId: p-title
+    elementType: text
+    bounds: [356, 128, 248, 36]
+    content:
+      style: "$cardTitle"
+      wrap: false
+      text: 家长端
+  - elementId: p-body
+    elementType: text
+    bounds: [356, 175, 248, 190]
+    content:
+      fontSize: 16
+      color: "$text"
+      lineHeight: 1.5
+      fontFamily: {latin: MiSans, ea: MiSans}
+      text: |
+        <p>孩子学习进度</p>
+        <p>家庭辅导建议</p>
+        <p>无术语报告</p>
+        <p>看得懂、可操作</p>
+        <p style="margin-top:14px; color:#5F6B7A;">日常用语，降低焦虑</p>
+  - elementId: s-card
+    elementType: shape
+    bounds: [632, 110, 280, 280]
+    shapeName: roundRect
+    fill:
+      type: solid
+      color: "$white"
+    border:
+      style: solid
+      width: 1
+      color: "$line"
+  - elementId: s-title
+    elementType: text
+    bounds: [648, 128, 248, 36]
+    content:
+      style: "$cardTitle"
+      wrap: false
+      text: 学生端
+  - elementId: s-body
+    elementType: text
+    bounds: [648, 175, 248, 190]
+    content:
+      fontSize: 16
+      color: "$text"
+      lineHeight: 1.5
+      fontFamily: {latin: MiSans, ea: MiSans}
+      text: |
+        <p>自适应测评</p>
+        <p>苏格拉底引导</p>
+        <p>星星激励</p>
+        <p>进度可视化</p>
+        <p style="margin-top:14px; color:#5F6B7A;">个性化路径，即时反馈</p>
+  - elementId: footer
+    elementType: text
+    bounds: [48, 420, 864, 70]
+    content:
+      fontSize: 16
+      color: "$muted"
+      lineHeight: 1.4
+      fontFamily: {latin: MiSans, ea: MiSans}
+      text: |
+        <p>差异化价值：教师拿班级干预清单 · 家长拿家庭辅导建议 · 学生拿个性化巩固路径</p>
+        <p style="margin-top:6px">家长端强制清洗内部 ID，不出现 kp_* / 课标黑话</p>

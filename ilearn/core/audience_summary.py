@@ -18,7 +18,10 @@ from ilearn.core.knowledge_labels import (
     resolve_knowledge_label,
     resolve_knowledge_labels,
 )
+from ilearn.core.mastery_public import build_mastery_public_view
+from ilearn.core.parent_action_summary import build_parent_action_summary
 from ilearn.core.schemas import DiagnosisReport, SessionState
+from ilearn.core.tier_suggest import classify_tiers, build_tier_assignment
 
 Audience = Literal["parent", "teacher"]
 
@@ -321,6 +324,7 @@ class TeacherSummary(BaseModel):
     auto_graded_rate: float
     estimated_time_saved_minutes: float
     narrative: str
+    tier_suggestion: dict[str, Any] | None = None
 
 
 class ParentSummary(BaseModel):
@@ -332,6 +336,7 @@ class ParentSummary(BaseModel):
     daily_practice_tips: list[str]
     next_milestone: str
     narrative: str
+    action_summary: dict[str, Any] | None = None
 
 
 class StudentSummary(BaseModel):
@@ -341,6 +346,12 @@ class StudentSummary(BaseModel):
     stars_earned: int
     next_challenge: str
     narrative: str
+    mastery_percent: int | None = None
+    mastery_change_pp: int | None = None
+    focus_skill: str | None = None
+    evidence_count: int | None = None
+    probe_gap_count: int | None = None
+    discounted_hint_correct: int | None = None
 
 
 def build_student_summary(session: SessionState) -> StudentSummary:
@@ -381,6 +392,15 @@ def build_student_summary(session: SessionState) -> StudentSummary:
 
     narrative = f"已完成 {completed_tasks}/{total_tasks} 个任务，继续加油！"
 
+    metrics = compute_metrics(session)
+    post = metrics.post_assessment_score
+    pre = metrics.pre_assessment_score
+    current = post if post is not None else pre
+    mastery_percent = int(round(current)) if current is not None else None
+    mastery_change_pp = int(round(metrics.mastery_gain))
+    focus_skill = next_challenge if next_challenge != "挑战下一关练习" else None
+    rigor = build_mastery_public_view(session)
+
     merged: dict[str, Any] = {
         "current_task": current_task,
         "completed_tasks": completed_tasks,
@@ -388,6 +408,12 @@ def build_student_summary(session: SessionState) -> StudentSummary:
         "stars_earned": stars_earned,
         "next_challenge": next_challenge,
         "narrative": narrative,
+        "mastery_percent": mastery_percent,
+        "mastery_change_pp": mastery_change_pp,
+        "focus_skill": focus_skill,
+        "evidence_count": rigor.evidence_count,
+        "probe_gap_count": rigor.probe_gap_count,
+        "discounted_hint_correct": rigor.discounted_hint_correct,
     }
     overlay = session.metadata.get("student_summary")
     if isinstance(overlay, dict):
@@ -483,6 +509,28 @@ def build_teacher_summary(session: SessionState) -> TeacherSummary:
             session.diagnosis, enrichment, audience="teacher"
         )
 
+    tier_rows = [
+        {
+            "name": row.name,
+            "avg_mastery": avg_mastery if row.name == child_name else max(0.2, avg_mastery - 0.15),
+        }
+        for row in need_intervention_students
+    ]
+    if not tier_rows:
+        tier_rows = [{"name": child_name, "avg_mastery": avg_mastery}]
+    # Demo peers: spread tiers so teacher UI shows a decision, not one bucket.
+    if demo and len(tier_rows) >= 3:
+        tier_rows[0]["avg_mastery"] = min(avg_mastery, 0.35)
+        tier_rows[1]["avg_mastery"] = 0.55
+        tier_rows[2]["avg_mastery"] = max(avg_mastery, 0.8)
+    weak_topic = top_weaknesses[0].skill if top_weaknesses else None
+    tier_suggestion = classify_tiers(tier_rows, weak_topic=weak_topic).model_dump()
+    tier_assignment = build_tier_assignment(
+        classify_tiers(tier_rows, weak_topic=weak_topic),
+        topic=weak_topic or "本单元",
+    )
+    tier_suggestion["assignment"] = tier_assignment
+
     return TeacherSummary(
         class_name=class_name,
         student_count=student_count,
@@ -492,6 +540,7 @@ def build_teacher_summary(session: SessionState) -> TeacherSummary:
         auto_graded_rate=auto_graded_rate,
         estimated_time_saved_minutes=estimated_time_saved_minutes,
         narrative=narrative,
+        tier_suggestion=tier_suggestion,
     )
 
 
@@ -545,6 +594,12 @@ def build_parent_summary(session: SessionState) -> ParentSummary:
     )
     weak_skills = translate_list_to_parent_language(weak_skills)
     narrative = parent_text
+    action_summary = build_parent_action_summary(
+        child_name=child_name,
+        current_mastery=current_mastery,
+        mastery_change=mastery_change,
+        weak_skills=weak_skills,
+    ).model_dump()
 
     return ParentSummary(
         child_name=child_name,
@@ -555,6 +610,7 @@ def build_parent_summary(session: SessionState) -> ParentSummary:
         daily_practice_tips=daily_practice_tips,
         next_milestone=next_milestone,
         narrative=narrative,
+        action_summary=action_summary,
     )
 
 

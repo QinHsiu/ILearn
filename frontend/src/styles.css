@@ -337,6 +337,22 @@ textarea {
   letter-spacing: -0.02em;
 }
 
+.tutor-ethics {
+  margin: 0.65rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border-left: 3px solid var(--il-blue, #002fa7);
+  background: color-mix(in srgb, var(--il-blue, #002fa7) 7%, transparent);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.tutor-soft-exit {
+  margin: 0.85rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px dashed color-mix(in srgb, var(--il-blue, #002fa7) 45%, transparent);
+  line-height: 1.5;
+}
+
 .tutor-turn-message {
   margin: 0;
   line-height: 1.55;
@@ -368,8 +384,36 @@ textarea {
   text-transform: uppercase;
 }
 
+.student-mastery-strip {
+  margin: 0 0 0.85rem;
+  padding: 0.55rem 0.75rem;
+  border-left: 3px solid var(--il-blue, #002fa7);
+  background: color-mix(in srgb, var(--il-blue, #002fa7) 6%, transparent);
+  line-height: 1.45;
+}
+
+.teacher-next-step {
+  margin: 0 0 1.25rem;
+}
+
+.teacher-next-step .tier-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--il-muted, #556);
+  font-size: 0.9rem;
+}
+
 .student-summary-grid {
   gap: 0.75rem;
+}
+
+.summary-block-challenge {
+  outline: 1px solid color-mix(in srgb, var(--il-blue, #002fa7) 40%, transparent);
+  background: color-mix(in srgb, var(--il-blue, #002fa7) 5%, transparent);
 }
 
 .student-summary-narrative {
@@ -1619,6 +1663,20 @@ html[data-band='senior'] .brand {
   transition: background-color 180ms ease, color 180ms ease;
 }
 
+button.role-card {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  appearance: none;
+}
+
+button.role-card:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
 .role-card-marker {
   grid-row: span 2;
   display: grid;
@@ -1823,6 +1881,218 @@ html[data-band='senior'] .brand {
   .workflow-strip li, .workflow-strip li:first-child { padding: 0; border-left: 0; }
   .demo-card { grid-template-columns: 2.5rem 1fr; }
   .demo-card .btn { grid-column: 1 / -1; grid-row: auto; }
+}
+
+.landing-promise {
+  display: grid;
+  gap: 0.35rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--il-ink-muted, #445);
+  font-size: 0.95rem;
+}
+
+.landing-promise li::before {
+  content: "▸ ";
+  color: var(--il-blue, #002fa7);
+}
+
+.quality-gate-strip {
+  margin: 0.85rem 0 0;
+  font-size: 0.9rem;
+  color: var(--il-muted, #5f6368);
+}
+
+.quality-gate-strip a {
+  color: var(--il-blue, #002fa7);
+}
+
+.pilot-badge {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--il-blue, #002fa7) 35%, transparent);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.step-review-list {
+  margin: 1.25rem 0;
+}
+
+.step-review-cards {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.step-review-card {
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--il-blue, #002fa7);
+  background: color-mix(in srgb, var(--il-ink, #111) 3%, transparent);
+}
+
+.step-review-index {
+  display: inline-block;
+  margin-right: 0.5rem;
+  font: 0.7rem/1 'JetBrains Mono', monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.step-review-steps {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  line-height: 1.5;
+}
+
+.step-align-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.step-align {
+  margin: 0.35rem 0;
+  padding: 0.35rem 0.55rem;
+  border-left: 3px solid var(--il-line, #c9ccd2);
+}
+
+.step-align--matched {
+  border-left-color: var(--ok, #0f7a4c);
+  background: color-mix(in srgb, var(--ok, #0f7a4c) 8%, transparent);
+}
+
+.step-align--missing {
+  border-left-color: var(--il-danger, #b42318);
+  background: color-mix(in srgb, var(--il-danger, #b42318) 8%, transparent);
+}
+
+.step-align--extra {
+  border-left-color: #a15c00;
+  background: color-mix(in srgb, #a15c00 8%, transparent);
+}
+
+.step-review-guard {
+  margin: 0.55rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.student-mastery-kicker {
+  font-weight: 600;
+}
+
+.companion-strip {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+}
+
+.concept-micro {
+  margin: 0.75rem 0;
+  padding: 0.75rem 0.85rem;
+  border-left: 3px solid var(--il-blue, #002fa7);
+  background: color-mix(in srgb, var(--il-blue, #002fa7) 6%, transparent);
+  line-height: 1.45;
+}
+
+.concept-micro ol {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.concept-poster {
+  margin: 0.75rem 0;
+  padding: 0;
+}
+
+.concept-poster img {
+  display: block;
+  width: 100%;
+  max-width: 40rem;
+  height: auto;
+  border: 1px solid var(--il-ink, #222);
+  background: #f7f4ee;
+}
+
+.concept-poster figcaption {
+  margin-top: 0.35rem;
+  color: var(--il-muted, #666);
+  font-size: 0.85rem;
+}
+
+.waitlist-strip {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--il-ink, #111) 12%, transparent);
+}
+
+.waitlist-form {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr auto;
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: 1rem;
+}
+
+.waitlist-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.waitlist-form input,
+.waitlist-form select {
+  min-height: 2.5rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.waitlist-ok {
+  margin-top: 0.75rem;
+  color: var(--il-blue, #002fa7);
+}
+
+.landing-footer {
+  margin: 2.5rem 0 1rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.landing-footer a {
+  color: inherit;
+}
+
+.parent-action-pack {
+  margin-bottom: 1.25rem;
+}
+
+.tier-suggestion {
+  margin-top: 1rem;
+}
+
+.tier-suggestion ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.tier-timeline {
+  margin-top: 0.75rem;
+}
+
+.tier-timeline ol {
+  margin: 0.35rem 0 0;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--il-muted, #5f6368);
+}
+
+@media (max-width: 640px) {
+  .waitlist-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

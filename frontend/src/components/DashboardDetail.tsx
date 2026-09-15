@@ -10,6 +10,7 @@ import MarkdownView from '../MarkdownView'
 import { EnhancedStudentPanel } from './Enhanced'
 import EffectivenessDashboard from './EffectivenessDashboard'
 import EvidenceChain from './EvidenceChain'
+import TeacherCurriculumPreview from './TeacherCurriculumPreview'
 
 type DashboardDetailProps = {
   detail: DashboardStudentDetail
@@ -79,6 +80,9 @@ export default function DashboardDetail({ detail, surface = 'teacher' }: Dashboa
       <p className="lede">
         {detail.profile.grade} 年级 · 阶段：{detail.phase} · 巩固轮次：{detail.loop_count}
       </p>
+      {surface === 'teacher' && detail.paper?.items?.length ? (
+        <TeacherCurriculumPreview items={detail.paper.items} />
+      ) : null}
       {unitId && surface === 'teacher' ? (
         <div className="demo-class-panel">
           <h3>备课概览</h3>

@@ -65,6 +65,19 @@ describe('StudentSummaryPanel', () => {
     expect(screen.getByText('今天又进步啦，继续加油！')).toBeInTheDocument()
   })
 
+  it('renders mastery strip when mastery_percent is present', async () => {
+    vi.mocked(api.getStudentSummary).mockResolvedValue({
+      ...SUMMARY,
+      mastery_percent: 72,
+      mastery_change_pp: 8,
+      focus_skill: '小数乘法',
+    })
+    render(<StudentSummaryPanel sessionId="s1" />)
+    expect(await screen.findByLabelText('掌握度进展')).toHaveTextContent(/72%/)
+    expect(screen.getByLabelText('掌握度进展')).toHaveTextContent(/\+8pp/)
+    expect(screen.getByLabelText('掌握度进展')).toHaveTextContent(/小数乘法/)
+  })
+
   it('shows loading until the summary arrives', async () => {
     let resolveSummary: (value: StudentSummary) => void = () => undefined
     vi.mocked(api.getStudentSummary).mockImplementation(

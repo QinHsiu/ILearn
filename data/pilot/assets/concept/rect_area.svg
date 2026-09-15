@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360" role="img" aria-label="长方形面积">
+  <rect width="960" height="360" fill="#F7F4EE"/>
+  <text x="32" y="42" font-family="Georgia, serif" font-size="22" fill="#1A2B4A">长方形面积</text>
+  <text x="32" y="68" font-family="Segoe UI, sans-serif" font-size="13" fill="#5A6A7A">约 60 秒 · 不含终答 · ILearn 概念分镜海报</text>
+  <rect x="32" y="96" width="280" height="220" fill="#FFFFFF" stroke="#1A2B4A" stroke-width="2"/>
+  <text x="48" y="128" font-family="Segoe UI, sans-serif" font-size="14" fill="#1A2B4A">1 / 统一单位</text>
+  <rect x="340" y="96" width="280" height="220" fill="#FFFFFF" stroke="#1A2B4A" stroke-width="2"/>
+  <text x="356" y="128" font-family="Segoe UI, sans-serif" font-size="14" fill="#1A2B4A">2 / 长×宽</text>
+  <rect x="648" y="96" width="280" height="220" fill="#FFFFFF" stroke="#1A2B4A" stroke-width="2"/>
+  <text x="664" y="128" font-family="Segoe UI, sans-serif" font-size="14" fill="#1A2B4A">3 / 平方单位</text>
+</svg>

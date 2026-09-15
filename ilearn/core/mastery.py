@@ -23,18 +23,35 @@ def apply_evidence_to_mastery(
     *,
     alpha: float = 0.3,
 ) -> LearnerPortrait:
+    """Update mastery; hinted corrects never raise probe_mastery (P2 win-bar)."""
     for ev in events:
         rec = portrait.mastery_records.get(ev.knowledge_id) or MasteryRecord()
         observed = 1.0 if ev.correct else 0.0
         observed *= ev.confidence
-        if ev.lane == "probe":
+        hinted = bool(ev.hint_level and ev.hint_level != "none")
+        if ev.lane == "probe" and not hinted:
             rec.probe_mastery = _ema(rec.probe_mastery, observed, alpha=alpha)
             rec.last_probe_at = ev.created_at
         else:
-            rec.practice_score = _ema(rec.practice_score, observed, alpha=alpha)
+            # practice lane, or probe-with-hint → discounted practice only
+            practice_obs = observed * (0.5 if hinted and ev.correct else 1.0)
+            rec.practice_score = _ema(rec.practice_score, practice_obs, alpha=alpha)
         rec.evidence_count += 1
         portrait.mastery_records[ev.knowledge_id] = rec
-        portrait.knowledge_state[ev.knowledge_id] = max(
-            rec.practice_score, rec.probe_mastery
-        )
+        # Mastered signal prefers unassisted probe; never treat hinted success as mastery peak
+        if hinted and ev.correct:
+            portrait.knowledge_state[ev.knowledge_id] = rec.practice_score
+        else:
+            portrait.knowledge_state[ev.knowledge_id] = max(
+                rec.practice_score, rec.probe_mastery
+            )
     return portrait
+
+
+def assert_hint_correct_does_not_raise_probe(
+    before: MasteryRecord,
+    after: MasteryRecord,
+) -> None:
+    """Helper for P2 tests."""
+    assert after.probe_mastery <= before.probe_mastery + 1e-9
+

@@ -10,6 +10,8 @@ import type {
 import { api } from '../api/client'
 import DashboardDetail from '../components/DashboardDetail'
 import EffectivenessDashboard from '../components/EffectivenessDashboard'
+import SoftPdfButton from '../components/SoftPdfButton'
+import UnlockRequestsPanel from '../components/UnlockRequestsPanel'
 import StudentList from '../components/StudentList'
 import DashboardHome, { updateDashboardQuery } from './DashboardHome'
 
@@ -27,22 +29,81 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   const [selectedStudentId, setSelectedStudentId] = useState(studentId || '')
   const [classMetrics, setClassMetrics] = useState<TeacherSummary | null>(null)
   const [activeTab, setActiveTab] = useState<TeacherTab>('scan')
+  const [assignReceipt, setAssignReceipt] = useState<string | null>(null)
+  const [batchBusy, setBatchBusy] = useState(false)
+  const [timeline, setTimeline] = useState<Array<Record<string, unknown>>>([])
+  const [classTimeline, setClassTimeline] = useState<
+    Array<{
+      session_id: string
+      student_name: string
+      assigned_at?: string | null
+      topic?: string | null
+      item_counts?: Record<string, number>
+    }>
+  >([])
+
+  function loadTimeline(sessionId: string) {
+    void api
+      .getTierTimeline(sessionId)
+      .then((data) => setTimeline(data.timeline || []))
+      .catch(() => setTimeline([]))
+  }
+
+  function runTierAssign(sessionId: string) {
+    void api
+      .assignTierPapers(sessionId)
+      .then((res) => {
+        setError(null)
+        const summary = Object.entries(res.item_counts)
+          .map(([k, n]) => `${k}:${n}题`)
+          .join(' · ')
+        setAssignReceipt(`已布置 ${summary} · ${String((res.receipt as { assigned_at?: string }).assigned_at || '')}`)
+        loadTimeline(sessionId)
+        if (classId) loadClassTimeline(classId)
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+  }
+
+  function runBatchAssign(sessionIds?: string[]) {
+    if (!classId) return
+    setBatchBusy(true)
+    setError(null)
+    void dashboardApi
+      .assignClassBatch(userId, classId, sessionIds?.length ? { session_ids: sessionIds } : {})
+      .then((res) => {
+        setAssignReceipt(res.summary)
+        loadClassTimeline(classId)
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setBatchBusy(false))
+  }
+
+  function loadClassMetrics(sessionId: string) {
+    void api
+      .getTeacherSummary(sessionId)
+      .then((data) => {
+        setClassMetrics(data)
+        setError(null)
+      })
+      .catch(() => setClassMetrics(null))
+    loadTimeline(sessionId)
+  }
 
   useEffect(() => {
-    if (!selected?.session_id) {
-      setClassMetrics(null)
+    if (selected?.session_id) {
+      loadClassMetrics(selected.session_id)
       return
     }
-    let cancelled = false
-    void api.getTeacherSummary(selected.session_id).then((data) => {
-      if (!cancelled) setClassMetrics(data)
-    }).catch(() => {
-      if (!cancelled) setClassMetrics(null)
-    })
-    return () => {
-      cancelled = true
+    const first = students?.[0]?.session_id
+    if (first) {
+      loadClassMetrics(first)
+      return
     }
-  }, [selected?.session_id])
+    if (!classId) {
+      setClassMetrics(null)
+      setTimeline([])
+    }
+  }, [selected?.session_id, students, classId])
 
   useEffect(() => {
     void dashboardApi.teacherClasses(userId).then(setClasses).catch((err) => {
@@ -57,15 +118,24 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
     }
   }, [classes, initialClassId])
 
+  function loadClassTimeline(id: string) {
+    void dashboardApi
+      .classAssignmentTimeline(userId, id)
+      .then((data) => setClassTimeline(data.timeline || []))
+      .catch(() => setClassTimeline([]))
+  }
+
   function selectClass(id: string) {
     setClassId(id)
     setSelected(null)
     setActiveTab('scan')
     updateDashboardQuery({ class_id: id, student_id: null })
+    loadClassTimeline(id)
     void dashboardApi.teacherStudents(userId, id).then((next) => {
       setStudents(next)
       const target = studentId ? next.find((student) => student.session_id === studentId) : undefined
       if (target) selectStudent(id, target)
+      else if (next.length) setActiveTab('overview')
     }).catch((err) => setError(err instanceof Error ? err.message : String(err)))
   }
 
@@ -80,9 +150,14 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
 
   async function bind(e: FormEvent) {
     e.preventDefault()
-    if (!classId || !bindSessionId.trim()) return
+    const code = bindSessionId.trim()
+    if (!classId || !code) return
     try {
-      await dashboardApi.bindTeacher(userId, classId, bindSessionId.trim())
+      if (code.length <= 8 && !code.includes('-')) {
+        await dashboardApi.bindTeacherByCode(userId, classId, code)
+      } else {
+        await dashboardApi.bindTeacher(userId, classId, code)
+      }
       setBindSessionId('')
       selectClass(classId)
     } catch (err) {
@@ -117,6 +192,18 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
               <span>自动批改率</span>
               <strong>{Math.round(classMetrics.auto_graded_rate * 100)}%</strong>
             </article>
+          </section>
+        ) : null}
+
+        {classMetrics?.tier_suggestion?.next_step ? (
+          <section className="teacher-next-step panel" aria-labelledby="teacher-next-step-title">
+            <h2 id="teacher-next-step-title">下一步行动</h2>
+            <p className="lede">{classMetrics.tier_suggestion.next_step}</p>
+            <ul className="tier-inline">
+              <li>基础组 {classMetrics.tier_suggestion.basic.length} 人</li>
+              <li>提高组 {classMetrics.tier_suggestion.advanced.length} 人</li>
+              <li>挑战组 {classMetrics.tier_suggestion.challenge.length} 人</li>
+            </ul>
           </section>
         ) : null}
 
@@ -171,10 +258,25 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
             ) : null}
             {error ? <p className="error dashboard-error" role="alert" aria-live="polite">{error}</p> : null}
             <form className="dashboard-bind" onSubmit={(e) => void bind(e)}>
-              <label htmlFor="teacher-session">绑定学生会话</label>
-              <input id="teacher-session" value={bindSessionId} onChange={(e) => setBindSessionId(e.target.value)} />
-              <button className="btn" type="submit">绑定学生并刷新</button>
+              <label htmlFor="teacher-session">教师绑定码（6 位）</label>
+              <input
+                id="teacher-session"
+                value={bindSessionId}
+                onChange={(e) => setBindSessionId(e.target.value)}
+                placeholder="例如 A3K9Q2"
+                autoComplete="off"
+              />
+              <button className="btn" type="submit">用绑定码加入班级</button>
             </form>
+            {classId && students?.length ? (
+              <p>
+                <SoftPdfButton
+                  sessionId={students[0].session_id}
+                  kind="grading-receipts"
+                  label="导出班级批改回执 PDF"
+                />
+              </p>
+            ) : null}
           </section>
         ) : null}
 
@@ -203,7 +305,93 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
                 {Math.round(classMetrics.auto_graded_rate * 100)}%。
               </p>
               {classMetrics.narrative ? <p>{classMetrics.narrative}</p> : null}
+              {classMetrics.tier_suggestion ? (
+                <div className="tier-suggestion">
+                  <h3>下一步分层建议</h3>
+                  <p>{classMetrics.tier_suggestion.next_step}</p>
+                  <ul>
+                    <li>基础组：{classMetrics.tier_suggestion.basic.join('、') || '—'}</li>
+                    <li>提高组：{classMetrics.tier_suggestion.advanced.join('、') || '—'}</li>
+                    <li>挑战组：{classMetrics.tier_suggestion.challenge.join('、') || '—'}</li>
+                  </ul>
+                  {classMetrics.tier_suggestion.assignment ? (
+                    <div className="tier-assignment" aria-label="分层布置">
+                      <h4>一键分层布置</h4>
+                      <ul>
+                        {(['basic', 'advanced', 'challenge'] as const).map((key) => {
+                          const draft = classMetrics.tier_suggestion?.assignment?.[key]
+                          if (!draft) return null
+                          return (
+                            <li key={key}>
+                              {draft.title} · {draft.item_count} 题 · {draft.difficulty} · {draft.focus}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                      {selected?.session_id ? (
+                        <button
+                          type="button"
+                          className="btn"
+                          onClick={() => runTierAssign(selected.session_id)}
+                        >
+                          确认布置并生成回执
+                        </button>
+                      ) : null}
+                      {assignReceipt ? (
+                        <p className="lede" role="status">
+                          回执：{assignReceipt}
+                        </p>
+                      ) : null}
+                      {timeline.length > 0 ? (
+                        <div className="tier-timeline" aria-label="布置回执时间线">
+                          <h4>布置回执时间线</h4>
+                          <ol>
+                            {timeline.slice(0, 5).map((row, index) => (
+                              <li key={`${String(row.assigned_at || index)}-${index}`}>
+                                {String(row.assigned_at || '—')} · {String(row.topic || '巩固')} ·{' '}
+                                {row.item_counts
+                                  ? Object.entries(row.item_counts as Record<string, number>)
+                                      .map(([k, n]) => `${k}:${n}`)
+                                      .join(' ')
+                                  : '—'}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </article>
+          </section>
+        ) : null}
+
+        {activeTab === 'overview' && classId ? (
+          <section className="panel class-assignment-timeline" aria-labelledby="class-timeline-title">
+            <h2 id="class-timeline-title">班级布置回执（跨学生）</h2>
+            <p className="lede">汇总本班所有学生会话的分层布置记录，不只看当前选中学生。</p>
+            {classTimeline.length ? (
+              <ol>
+                {classTimeline.slice(0, 12).map((row, index) => (
+                  <li key={`${row.session_id}-${row.assigned_at || index}`}>
+                    <strong>{row.student_name}</strong>
+                    {' · '}
+                    {String(row.assigned_at || '—')}
+                    {' · '}
+                    {String(row.topic || '巩固')}
+                    {' · '}
+                    {row.item_counts
+                      ? Object.entries(row.item_counts)
+                          .map(([k, n]) => `${k}:${n}`)
+                          .join(' ')
+                      : '—'}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="dashboard-empty">暂无班级级布置回执，点「布置巩固」后会出现在这里。</p>
+            )}
           </section>
         ) : null}
 
@@ -211,35 +399,68 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
           <section className="panel teacher-intervention-panel">
             <h2>需要干预的学生</h2>
             {classMetrics.need_intervention_students.length ? (
-              <ul className="intervention-list">
-                {classMetrics.need_intervention_students.map((student) => (
-                  <li key={`${student.session_id}-${student.name}`} className="intervention-row">
-                    <div>
-                      <strong>{student.name}</strong>
-                      <span>薄弱：{student.weakness}</span>
-                    </div>
-                    <button
-                      className="btn secondary"
-                      type="button"
-                      onClick={() => {
-                        const match = students?.find((s) => s.session_id === student.session_id)
-                        if (match && classId) selectStudent(classId, match)
-                      }}
-                    >
-                      查看学情
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <div className="actions" style={{ marginBottom: '0.75rem' }}>
+                  <button
+                    className="btn"
+                    type="button"
+                    disabled={batchBusy || !classId}
+                    onClick={() =>
+                      runBatchAssign(
+                        classMetrics.need_intervention_students
+                          .map((s) => s.session_id)
+                          .filter((id) => students?.some((row) => row.session_id === id)),
+                      )
+                    }
+                  >
+                    {batchBusy ? '批量布置中…' : '一键给干预名单布置巩固'}
+                  </button>
+                  <button
+                    className="btn secondary"
+                    type="button"
+                    disabled={batchBusy || !classId || !students?.length}
+                    onClick={() => runBatchAssign(students?.map((s) => s.session_id))}
+                  >
+                    全班布置巩固
+                  </button>
+                </div>
+                <ul className="intervention-list">
+                  {classMetrics.need_intervention_students.map((student) => (
+                    <li key={`${student.session_id}-${student.name}`} className="intervention-row">
+                      <div>
+                        <strong>{student.name}</strong>
+                        <span>薄弱：{student.weakness}</span>
+                      </div>
+                      <button
+                        className="btn secondary"
+                        type="button"
+                        onClick={() => {
+                          const match = students?.find((s) => s.session_id === student.session_id)
+                          if (match && classId) selectStudent(classId, match)
+                          runTierAssign(student.session_id)
+                        }}
+                      >
+                        布置巩固
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
             ) : (
               <p className="dashboard-empty">当前无需特殊干预</p>
             )}
+            {assignReceipt ? (
+              <p className="lede intervention-receipt" role="status">
+                当面回执：{assignReceipt}
+              </p>
+            ) : null}
           </section>
         ) : null}
 
         {activeTab === 'detail' && selected ? (
           <>
             <DashboardDetail detail={selected} surface="teacher" />
+            <UnlockRequestsPanel sessionId={selected.session_id} />
             {selected.metadata?.demo_unit ? (
               <section className="panel teacher-effectiveness-panel">
                 <h2>教学效果验证</h2>

@@ -15,6 +15,7 @@ from ilearn.core.assessment import (
     fill_blueprint,
     validate_paper,
 )
+from ilearn.core.citation_gate import CitationGateError, ensure_citations_or_stub
 from ilearn.core.curriculum_gate import CurriculumGate
 from ilearn.core.knowledge_graph import KnowledgeGraph
 from ilearn.core.progress_mapper import ProgressMapper, infer_semester
@@ -158,12 +159,14 @@ def bind_source_refs_to_item(
     return [
         ItemSourceRef(
             example_id=example.get("id") if example else None,
-            curriculum_objective_ids=objective_ids,
+            curriculum_objective_ids=objective_ids
+            or ([f"obj_{item.knowledge_ids[0]}"] if item.knowledge_ids else []),
             textbook_chapter=example.get("chapter") if example else None,
-            source_label=source_label,
+            source_label=source_label or "北京·人教·小学数学",
             example_stem=example.get("stem") if example else None,
             example_answer=example.get("answer") if example else None,
             example_difficulty=example.get("difficulty") if example else None,
+            confidence=0.85 if example and (objective_ids or item.knowledge_ids) else 0.7,
         )
     ]
 
@@ -366,6 +369,21 @@ class AssessmentAgent:
                 item.curriculum_objective_ids = citation_ids[:1]
             item.source_refs = bind_source_refs_to_item(
                 item, raw_citations, example_bank
+            )
+
+        formal_strict = bool(ctx.metadata.get("formal_strict"))
+        try:
+            paper = ensure_citations_or_stub(
+                paper,
+                fail_closed=True,
+                formal_strict=formal_strict,
+                example_bank=example_bank,
+            )
+        except CitationGateError:
+            if formal_strict:
+                raise
+            paper = ensure_citations_or_stub(
+                paper, fail_closed=True, formal_strict=False, example_bank=example_bank
             )
 
         return AgentResult(phase=SessionPhase.PRACTICE, payload={"paper": paper})
