@@ -10,13 +10,8 @@ frontend/dist/
 node_modules/
 package-lock.json
 
-# Local design notes and agent workspace (not for public repo)
-# Ignore contents of doc/, but keep competition deliverables trackable.
-doc/*
-!doc/submit/
-!doc/submit/**
-!doc/goai-submit-deck/
-!doc/goai-submit-deck/**
+# Local design notes / competition drafts — never upload
+doc/
 docs/*
 !docs/superpowers/
 !docs/superpowers/**
