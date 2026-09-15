@@ -67,8 +67,6 @@ uvicorn ilearn.api.app:app --host 0.0.0.0 --port 8000
 # 探活: GET /healthz
 ```
 
-商业化文档：`docs/commercial/` · 隔夜计划：`docs/superpowers/plans/2026-09-14-ilearn-overnight-commercial.md`
-
 | 入口 | 地址 |
 | --- | --- |
 | Web 向导 | http://127.0.0.1:5173 |
