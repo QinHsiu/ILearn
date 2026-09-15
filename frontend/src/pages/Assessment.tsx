@@ -575,7 +575,9 @@ export default function Assessment({
         const elapsedServerSec = startedAt
           ? (Date.now() - Date.parse(String(startedAt))) / 1000
           : 0
-        const remainingSec = ASSESSMENT_SECONDS - elapsedServerSec
+        // Whole seconds only: the countdown renders mm:ss and must never show
+        // fractional drift; ceil so wall re-seed never rounds time away from the student.
+        const remainingSec = Math.ceil(ASSESSMENT_SECONDS - elapsedServerSec)
         if (remainingSec <= 0) {
           uiDeadlineCrossedRef.current = true
           // Emit once before gating; reset() clears useCountdown firedRef and would re-fire

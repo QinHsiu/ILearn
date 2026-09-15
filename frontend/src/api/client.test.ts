@@ -317,6 +317,7 @@ describe('api.exportEffectivenessPdf', () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
+      headers: new Headers(),
       blob: () => Promise.resolve(blob),
     } as Response)
     const createObjectURL = vi.fn(() => 'blob:effectiveness')

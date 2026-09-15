@@ -11,6 +11,9 @@ vi.mock('../api/client', async () => {
       ...actual.api,
       adaptiveStart: vi.fn(),
       adaptiveContinue: vi.fn(),
+      // Telemetry flushes on unmount; keep it off the network in jsdom.
+      appendTimerTelemetry: vi.fn(() => Promise.resolve(undefined)),
+      appendTimerTelemetryKeepalive: vi.fn(() => 'keepalive' as const),
     },
   }
 })

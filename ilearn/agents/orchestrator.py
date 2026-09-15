@@ -291,13 +291,14 @@ class MultiAgentOrchestrator:
         )
         revised_paper = result.paper
         revised = revised_paper.items != paper.items or result.fallback_used
+        pilot_dir = getattr(
+            self._curriculum,
+            "_data_dir",
+            Path(__file__).resolve().parents[2] / "data" / "pilot",
+        )
+        # Needed by ensure_citations_or_stub below even when nothing was revised.
+        example_bank = load_example_bank(Path(pilot_dir))
         if revised:
-            pilot_dir = getattr(
-                self._curriculum,
-                "_data_dir",
-                Path(__file__).resolve().parents[2] / "data" / "pilot",
-            )
-            example_bank = load_example_bank(Path(pilot_dir))
             for item in revised_paper.items:
                 item.source_refs = bind_source_refs_to_item(
                     item,
