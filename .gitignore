@@ -22,8 +22,10 @@ data/sessions/*
 data/waitlist.jsonl
 data/relationships.json
 
-# Evidence / demo media / smoke notes — keep on disk, not in git
-runtime_evidence/
+# Evidence / demo media — keep on disk, not in git
+# Exception: README preview GIF only (videos stay on GitHub Releases)
+runtime_evidence/*
+!runtime_evidence/demo_preview.gif
 
 # Competition / video tooling (not required to run the product)
 scripts/build_goai_demo_video.py
