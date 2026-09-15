@@ -20,6 +20,19 @@ type ChatMessage = {
   content: string
 }
 
+type ConceptLesson = {
+  knowledge_id: string
+  title: string
+  duration_sec: number
+  script_steps: string[]
+  asset_url?: string | null
+  storyboard_url?: string | null
+  poster_url?: string | null
+  video_slot_url?: string | null
+  media_status?: 'video' | 'poster' | 'storyboard' | 'slot'
+  no_final_answer?: boolean
+}
+
 export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -32,6 +45,7 @@ export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps)
   const [started, setStarted] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lesson, setLesson] = useState<ConceptLesson | null>(null)
 
   const remaining = Math.max(0, MAX_HINTS - usedCount)
 
@@ -46,7 +60,24 @@ export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps)
     setUsedCount(0)
     setStarted(false)
     setError(null)
+    setLesson(null)
   }, [itemId])
+
+  useEffect(() => {
+    if (remaining > 0) return
+    let cancelled = false
+    void api
+      .getConceptLesson(sessionId, itemId)
+      .then((data) => {
+        if (!cancelled) setLesson(data.lesson)
+      })
+      .catch(() => {
+        if (!cancelled) setLesson(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [remaining, sessionId, itemId])
 
   async function ensureStarted(): Promise<TutorTurn | null> {
     if (started) return null
@@ -102,7 +133,9 @@ export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps)
     <div className="socratic-panel">
       <div className="socratic-head">
         <strong>苏格拉底助教</strong>
-        <span>剩余提示 {remaining}/{MAX_HINTS}</span>
+        <span>
+          剩余提示 {remaining}/{MAX_HINTS}
+        </span>
       </div>
       <div className="socratic-hint-progress" aria-label="提示进度">
         {HINT_LEVELS.map((level, index) => (
@@ -131,6 +164,55 @@ export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps)
         ))}
       </div>
       {error ? <p className="error">{error}</p> : null}
+      {remaining <= 0 ? (
+        <div className="concept-micro" role="complementary" aria-label="概念微课入口">
+          <p>
+            提示次数已用完。先看 {lesson?.duration_sec || 60}{' '}
+            秒概念卡，再独立重试——我们仍不会直接给最终答案。
+          </p>
+          {lesson ? (
+            <>
+              <p className="concept-micro-title">
+                <strong>{lesson.title}</strong>
+                {lesson.storyboard_url ? (
+                  <>
+                    {' · '}
+                    <a href={lesson.storyboard_url} target="_blank" rel="noreferrer">
+                      打开概念分镜
+                    </a>
+                  </>
+                ) : null}
+                {lesson.media_status === 'poster' ? (
+                  <span className="concept-asset-slot"> · 分镜海报已就绪</span>
+                ) : lesson.media_status === 'video' ? (
+                  <span className="concept-asset-slot"> · 微课视频已就绪</span>
+                ) : lesson.media_status === 'storyboard' ? (
+                  <span className="concept-asset-slot"> · 文案分镜已就绪</span>
+                ) : (
+                  <span className="concept-asset-slot"> · 视频位已预留</span>
+                )}
+              </p>
+              {lesson.poster_url ? (
+                <figure className="concept-poster">
+                  <img src={lesson.poster_url} alt={`${lesson.title} 分镜海报`} />
+                  <figcaption>视觉分镜海报（不含终答；mp4 仍为预留位）</figcaption>
+                </figure>
+              ) : null}
+              <ol>
+                {lesson.script_steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </>
+          ) : (
+            <ol>
+              <li>用自己的话复述本题相关概念</li>
+              <li>对照 rubric 步骤口述思路</li>
+              <li>请教家长/老师检查卡点（不要要终答）</li>
+            </ol>
+          )}
+        </div>
+      ) : null}
       <div className="socratic-actions">
         {!started ? (
           <button className="btn secondary" type="button" disabled={busy} onClick={() => void onStartOnly()}>

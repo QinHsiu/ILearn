@@ -1,0 +1,42 @@
+{
+  "pack": "concept-micro-lessons",
+  "version": "1.1.0",
+  "note": "Storyboard markdown + SVG posters ship now; mp4 remains reserved until real video lands.",
+  "lessons": [
+    {
+      "knowledge_id": "mult_3digit",
+      "storyboard": "mult_3digit.md",
+      "poster": "mult_3digit.svg",
+      "video_slot": "mult_3digit.mp4",
+      "media_status": "poster"
+    },
+    {
+      "knowledge_id": "frac_add_same",
+      "storyboard": "frac_add_same.md",
+      "poster": "frac_add_same.svg",
+      "video_slot": "frac_add_same.mp4",
+      "media_status": "poster"
+    },
+    {
+      "knowledge_id": "frac_mult",
+      "storyboard": "frac_mult.md",
+      "poster": "frac_mult.svg",
+      "video_slot": "frac_mult.mp4",
+      "media_status": "poster"
+    },
+    {
+      "knowledge_id": "frac_div",
+      "storyboard": "frac_div.md",
+      "poster": "frac_div.svg",
+      "video_slot": "frac_div.mp4",
+      "media_status": "poster"
+    },
+    {
+      "knowledge_id": "rect_area",
+      "storyboard": "rect_area.md",
+      "poster": "rect_area.svg",
+      "video_slot": "rect_area.mp4",
+      "media_status": "poster"
+    }
+  ]
+}

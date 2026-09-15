@@ -42,6 +42,18 @@ def test_summary_student(tmp_path: Path):
     assert body["total_tasks"] == 5
     assert body["stars_earned"] == 5
     assert "current_task" in body
+    assert body.get("mastery_percent") is not None
+
+
+def test_summary_parent_action_and_teacher_tier(tmp_path: Path):
+    client = _client(tmp_path)
+    sid = client.post("/demo/units/math_5_1/session").json()["session_id"]
+    parent = client.get(f"/sessions/{sid}/summary/parent").json()
+    assert parent.get("action_summary")
+    assert parent["action_summary"]["actions"]
+    teacher = client.get(f"/sessions/{sid}/summary/teacher").json()
+    assert teacher.get("tier_suggestion")
+    assert teacher["tier_suggestion"]["next_step"]
 
 
 def test_summary_student_missing_404(tmp_path: Path):

@@ -17,13 +17,18 @@ doc/*
 !doc/submit/**
 !doc/goai-submit-deck/
 !doc/goai-submit-deck/**
-docs/
+docs/*
+!docs/superpowers/
+!docs/superpowers/**
+!docs/commercial/
+!docs/commercial/**
 .superpowers/
 .pr-body-*.md
 
 # Runtime session artifacts
 data/sessions/*
 !data/sessions/.gitkeep
+data/waitlist.jsonl
 
 # Competition local evidence / demo artifacts (keep on disk, not in git)
 # Ignore contents, but allow Demo mp4 uploads for GitHub / GOAI.
@@ -32,6 +37,10 @@ runtime_evidence/*
 !runtime_evidence/demo_720p.mp4
 !runtime_evidence/demo_1080p.mp4
 !runtime_evidence/demo_preview.gif
+!runtime_evidence/launch_smoke.md
+!runtime_evidence/soft_launch_hand_path.md
+!runtime_evidence/activation_why_use.md
+!runtime_evidence/browser_path_activation.md
 
 # External curriculum dumps (Edition 0826)
 data/raw/*
@@ -40,3 +49,7 @@ data/raw/*
 
 # Git worktrees
 .worktrees/
+
+# Local tunnel binaries
+tools/ngrok/
+

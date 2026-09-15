@@ -87,11 +87,25 @@ def _attempts_for_grade(
 
 
 def evidence_from_grades(
-    session_id: str, grades: list[GradeResult]
+    session_id: str,
+    grades: list[GradeResult],
+    hint_interactions: dict[str, list] | None = None,
 ) -> list[KnowledgeEvidence]:
-    """Build KnowledgeEvidence events from graded items."""
+    """Build KnowledgeEvidence events from graded items.
+
+    Any prior Tutor/hint interaction on an item marks evidence as assisted
+    so probe_mastery cannot rise from hint-then-correct (P2).
+    """
+    assisted: set[str] = set()
+    if hint_interactions:
+        for item_id, rows in hint_interactions.items():
+            if rows:
+                assisted.add(str(item_id))
     events: list[KnowledgeEvidence] = []
     for grade in grades:
+        hint_level = grade.hint_level_suggestion
+        if grade.item_id in assisted and (not hint_level or hint_level == "none"):
+            hint_level = "low"
         for knowledge_id in grade.knowledge_ids:
             events.append(
                 KnowledgeEvidence(
@@ -102,7 +116,7 @@ def evidence_from_grades(
                     lane=grade.lane,
                     correct=grade.final_correct,
                     error_tag=grade.error_tags[0] if grade.error_tags else None,
-                    hint_level=grade.hint_level_suggestion,
+                    hint_level=hint_level,
                     confidence=0.5 if grade.grading_degraded else 1.0,
                 )
             )
@@ -211,6 +225,10 @@ class PracticeAgent:
                 "grades": grades,
                 "hints": hints,
                 "step_attempts": all_attempts,
-                "evidence": evidence_from_grades(ctx.session_id, grades),
+                "evidence": evidence_from_grades(
+                    ctx.session_id,
+                    grades,
+                    getattr(ctx, "hint_interactions", None),
+                ),
             },
         )

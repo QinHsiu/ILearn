@@ -13,12 +13,21 @@ import HistoryList from './components/HistoryList'
 import ReportColumnsView from './components/ReportColumnsView'
 import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
+import SocraticPanel from './components/SocraticPanel'
+import ConceptMicroCard from './components/ConceptMicroCard'
+import StepReviewList from './components/StepReviewList'
+import SoftPdfButton from './components/SoftPdfButton'
+import GradingReceiptPanel from './components/GradingReceiptPanel'
 import StudentSummaryPanel from './components/StudentSummaryPanel'
+import MasteryEvidencePanel from './components/MasteryEvidencePanel'
+import ReplanExplainPanel from './components/ReplanExplainPanel'
 import EvidenceChain from './components/EvidenceChain'
 import PDFExportButton from './components/PDFExportButton'
 import ParentDashboard from './pages/ParentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import LandingPage from './pages/LandingPage'
+import LegalPrivacy from './pages/LegalPrivacy'
+import TrustPage from './pages/TrustPage'
 import LoginPage from './pages/LoginPage'
 import Assessment from './pages/Assessment'
 import type { AssessmentCompletePayload } from './pages/Assessment'
@@ -65,12 +74,18 @@ function wrongItemEntries(session: SessionState) {
     .map((g) => {
       const item = byId[g.item_id]
       if (!item) return null
-      return { itemId: item.id, stem: item.stem, sourceRefs: item.source_refs || [] }
+      return {
+        itemId: item.id,
+        stem: item.stem,
+        sourceRefs: item.source_refs || [],
+        rubricSteps: item.rubric_steps || [],
+      }
     })
     .filter(Boolean) as Array<{
     itemId: string
     stem: string
     sourceRefs: NonNullable<SessionState['paper']>['items'][number]['source_refs']
+    rubricSteps: string[]
   }>
 }
 
@@ -85,6 +100,12 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
+  if (params.get('privacy') === '1') {
+    return <LegalPrivacy />
+  }
+  if (params.get('trust') === '1') {
+    return <TrustPage />
+  }
   if (isParent && userId) {
     return <ParentDashboard userId={userId} studentId={params.get('student_id') || undefined} />
   }
@@ -130,6 +151,9 @@ function StudentApp() {
     backend: string
     fallback_active: boolean
   } | null>(null)
+  const [inviteCode, setInviteCode] = useState<string | null>(null)
+  const [inviteHint, setInviteHint] = useState<string | null>(null)
+  const [replanRefresh, setReplanRefresh] = useState(0)
 
   const [profile, setProfile] = useState<StudentProfile>({
     region: 'beijing',
@@ -305,6 +329,32 @@ function StudentApp() {
     }
   }
 
+  useEffect(() => {
+    if (!sessionId || step < 2) {
+      setInviteCode(null)
+      setInviteHint(null)
+      return
+    }
+    let cancelled = false
+    void api
+      .getInvite(sessionId)
+      .then((data) => {
+        if (!cancelled) {
+          setInviteCode(data.invite_code)
+          setInviteHint(data.hint)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setInviteCode(null)
+          setInviteHint(null)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [sessionId, step])
+
   async function onReplan() {
     if (!sessionId) return
     setBusy(true)
@@ -314,6 +364,7 @@ function StudentApp() {
       const nextReport = await api.getReport(sessionId)
       setReport(nextReport)
       setSession(nextReport.session)
+      setReplanRefresh((n) => n + 1)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -582,13 +633,55 @@ function StudentApp() {
 
           <EvidenceChain detail={session} />
 
+          {sessionId ? <MasteryEvidencePanel sessionId={sessionId} /> : null}
+
+          {sessionId ? <GradingReceiptPanel sessionId={sessionId} /> : null}
+
+          {inviteCode ? (
+            <section className="panel invite-bind-panel" aria-labelledby="invite-bind-title">
+              <h3 id="invite-bind-title" className="student-section-title">
+                家长 / 教师绑定码
+              </h3>
+              <p className="lede">
+                把下面 6 位码发给家长或老师，对方在端内输入即可绑定，无需粘贴会话 ID。
+              </p>
+              <p className="invite-code-display" aria-label="绑定码">
+                <strong>{inviteCode}</strong>
+              </p>
+              {inviteHint ? <p className="lede">{inviteHint}</p> : null}
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(inviteCode).catch(() => undefined)
+                }}
+              >
+                复制绑定码
+              </button>
+            </section>
+          ) : null}
+
           {wrongItems.length > 0 && (
             <>
+              <StepReviewList
+                sessionId={sessionId || undefined}
+                items={wrongItems.map((entry) => ({
+                  itemId: entry.itemId,
+                  stem: entry.stem,
+                  rubricSteps: entry.rubricSteps,
+                  studentAnswer: answers[entry.itemId] || '',
+                }))}
+                allowUnlockRequest
+              />
               <CitationPanel items={wrongItems} />
-              <section className="student-tutor-block" aria-label="苏格拉底助教">
+              <section className="student-tutor-block" aria-label="辅导与苏格拉底">
                 {wrongItems.map((entry) =>
                   sessionId ? (
-                    <TutorPanel key={entry.itemId} sessionId={sessionId} itemId={entry.itemId} />
+                    <div key={entry.itemId} className="student-tutor-pair">
+                      <ConceptMicroCard sessionId={sessionId} itemId={entry.itemId} />
+                      <TutorPanel sessionId={sessionId} itemId={entry.itemId} />
+                      <SocraticPanel sessionId={sessionId} itemId={entry.itemId} />
+                    </div>
                   ) : null,
                 )}
               </section>
@@ -596,7 +689,42 @@ function StudentApp() {
           )}
 
           <div className="actions">
-            <button className="btn" type="button" onClick={() => setStep(3)}>
+            {sessionId ? (
+              <>
+                <SoftPdfButton
+                  sessionId={sessionId}
+                  kind="parent-card"
+                  label="今晚给家长：亲子题卡 PDF"
+                  className="btn"
+                />
+                <SoftPdfButton
+                  sessionId={sessionId}
+                  kind="error-notebook"
+                  label="导出错题本 PDF"
+                />
+                <button
+                  className="btn"
+                  type="button"
+                  onClick={() => {
+                    void api
+                      .activateRepractice(sessionId)
+                      .then((next) => {
+                        setSession(next)
+                        setAnswers(answersFromSession(next))
+                        lastSyncedAnswersRef.current = answersFromSession(next)
+                        setPaper(next.paper || null)
+                        setStep(1)
+                      })
+                      .catch((err) => {
+                        setError(err instanceof Error ? err.message : String(err))
+                      })
+                  }}
+                >
+                  开始错题重练（进入作答）
+                </button>
+              </>
+            ) : null}
+            <button className="btn secondary" type="button" onClick={() => setStep(3)}>
               查看学习计划
             </button>
           </div>
@@ -608,10 +736,23 @@ function StudentApp() {
           <p className="student-panel-eyebrow">PLAN / NEXT STEP</p>
           <h2>学习计划</h2>
           <p className="lede">
-            状态：{session.plan?.status || 'draft'}
+            状态：
+            {
+              (
+                {
+                  draft: '草稿 · 可调整',
+                  approved: '已确认',
+                  superseded: '已替代（见新版本）',
+                  ready: '可执行',
+                } as Record<string, string>
+              )[session.plan?.status || 'draft'] || session.plan?.status || '草稿'
+            }
             {profile.nickname ? ` · ${profile.nickname}` : ''}
           </p>
-          {sessionId ? <StudentSummaryPanel sessionId={sessionId} /> : null}
+          {sessionId ? (
+            <StudentSummaryPanel sessionId={sessionId} nickname={profile.nickname} />
+          ) : null}
+          {sessionId ? <ReplanExplainPanel sessionId={sessionId} refreshKey={replanRefresh} /> : null}
           <div className="plan-body student-report-body">
             <ReportColumnsView
               source={report?.markdown || session.plan?.markdown || '暂无计划内容'}
@@ -651,10 +792,15 @@ function StudentApp() {
                   disabled={busy}
                   nickname={profile.nickname ?? undefined}
                 />
+                <SoftPdfButton
+                  sessionId={sessionId}
+                  kind="parent-card"
+                  label="亲子题卡 PDF"
+                />
               </>
             ) : null}
             <button className="btn" type="button" onClick={() => void onReplan()} disabled={busy}>
-              {busy ? '规划中…' : '重新规划'}
+              {busy ? '规划中…' : '重新规划（更新计划）'}
             </button>
             <button
               className="btn"

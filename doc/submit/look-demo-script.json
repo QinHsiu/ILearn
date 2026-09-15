@@ -1,0 +1,83 @@
+{
+  "scenes": [
+    {
+      "name": "landing",
+      "url": "http://127.0.0.1:5173/",
+      "duration": 5,
+      "narration": "各位评委好，现在为您演示 ILearn 的完整教学闭环。",
+      "actions": [
+        { "type": "wait", "duration": 2 },
+        { "type": "screenshot", "name": "01_landing_page", "path": "runtime_evidence/demo_screenshots/01_landing_page.png" },
+        { "type": "scroll", "direction": "down", "amount": 520 }
+      ]
+    },
+    {
+      "name": "teacher_entry",
+      "url": "http://127.0.0.1:5173/",
+      "duration": 12,
+      "narration": "我们预置了五年级小数乘法单元，一键进入，无需注册。这是教师端——班级平均掌握度清晰可见，薄弱点排行与干预名单帮助老师精准定位。",
+      "actions": [
+        { "type": "wait", "duration": 1 },
+        { "type": "scroll", "direction": "down", "amount": 520 },
+        { "type": "click", "selector": "input[name='demo-role'][value='teacher']" },
+        { "type": "wait", "duration": 0.5 },
+        { "type": "click", "selector": ".demo-unit button.btn" },
+        { "type": "wait", "duration": 4 },
+        { "type": "screenshot", "name": "02_teacher_dashboard", "path": "runtime_evidence/demo_screenshots/02_teacher_dashboard.png" },
+        { "type": "click", "selector": "button.teacher-tab:nth-of-type(3)" },
+        { "type": "wait", "duration": 2 },
+        { "type": "scroll", "direction": "down", "amount": 240 }
+      ]
+    },
+    {
+      "name": "student_entry",
+      "url": "http://127.0.0.1:5173/",
+      "duration": 10,
+      "narration": "切换到学生端——系统自适应组卷，错题可走苏格拉底引导，最多三级提示。",
+      "actions": [
+        { "type": "scroll", "direction": "down", "amount": 520 },
+        { "type": "click", "selector": "input[name='demo-role'][value='student']" },
+        { "type": "wait", "duration": 0.5 },
+        { "type": "click", "selector": ".demo-unit button.btn" },
+        { "type": "wait", "duration": 4 },
+        { "type": "scroll", "direction": "down", "amount": 200 }
+      ]
+    },
+    {
+      "name": "parent_entry",
+      "url": "http://127.0.0.1:5173/",
+      "duration": 10,
+      "narration": "家长端——技术术语已译成日常用语，家长看到的是可操作的家庭辅导建议，而不是内部知识点编号。",
+      "actions": [
+        { "type": "scroll", "direction": "down", "amount": 520 },
+        { "type": "click", "selector": "input[name='demo-role'][value='parent']" },
+        { "type": "wait", "duration": 0.5 },
+        { "type": "click", "selector": ".demo-unit button.btn" },
+        { "type": "wait", "duration": 4 },
+        { "type": "screenshot", "name": "03_parent_dashboard", "path": "runtime_evidence/demo_screenshots/03_parent_dashboard.png" },
+        { "type": "scroll", "direction": "down", "amount": 280 }
+      ]
+    },
+    {
+      "name": "effectiveness_and_pdf",
+      "url": "http://127.0.0.1:5173/",
+      "duration": 12,
+      "narration": "效果量化——掌握度前后对比、批改时间节省、诊断置信度与证据可追溯。以上就是 ILearn 从测评到巩固的完整闭环：一条链路，三端协同，数据驱动。",
+      "actions": [
+        { "type": "scroll", "direction": "down", "amount": 520 },
+        { "type": "click", "selector": "input[name='demo-role'][value='teacher']" },
+        { "type": "wait", "duration": 0.5 },
+        { "type": "click", "selector": ".demo-unit button.btn" },
+        { "type": "wait", "duration": 4 },
+        { "type": "click", "selector": "button.teacher-tab:nth-of-type(4)" },
+        { "type": "wait", "duration": 2 },
+        { "type": "scroll", "direction": "down", "amount": 360 },
+        { "type": "screenshot", "name": "04_effectiveness_panel", "path": "runtime_evidence/demo_screenshots/04_effectiveness_panel.png" },
+        { "type": "wait", "duration": 1 },
+        { "type": "click", "selector": ".effectiveness-dashboard button" },
+        { "type": "wait", "duration": 2 },
+        { "type": "screenshot", "name": "05_pdf_export", "path": "runtime_evidence/demo_screenshots/05_pdf_export.png" }
+      ]
+    }
+  ]
+}

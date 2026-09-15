@@ -23,6 +23,7 @@ export type SourceRef = {
   example_answer?: string | null
   example_difficulty?: string | null
   source_label?: string | null
+  confidence?: number | null
 }
 
 export type AssessmentItem = {
@@ -32,6 +33,7 @@ export type AssessmentItem = {
   difficulty: string
   knowledge_ids: string[]
   answer_key?: string | null
+  rubric_steps?: string[]
   choices?: string[] | null
   source_refs?: SourceRef[]
   situation_tag?: string | null
@@ -144,6 +146,7 @@ export type TutorTurn = {
   phase: string
   message: string
   error_tag?: string | null
+  action?: string | null
 }
 
 export type SessionSummary = {
@@ -263,6 +266,22 @@ export type TeacherSummary = {
   auto_graded_rate: number
   estimated_time_saved_minutes: number
   narrative: string
+  tier_suggestion?: {
+    basic: string[]
+    advanced: string[]
+    challenge: string[]
+    next_step: string
+    assignment?: Record<
+      string,
+      { title: string; item_count: number; difficulty: string; focus: string; students?: string[] }
+    >
+  } | null
+}
+export type ParentActionSummary = {
+  headline: string
+  wins: string[]
+  focus: string[]
+  actions: string[]
 }
 export type ParentSummary = {
   child_name: string
@@ -273,6 +292,7 @@ export type ParentSummary = {
   daily_practice_tips: string[]
   next_milestone: string
   narrative: string
+  action_summary?: ParentActionSummary | null
 }
 export type StudentSummary = {
   current_task: string
@@ -281,6 +301,13 @@ export type StudentSummary = {
   stars_earned: number
   next_challenge: string
   narrative: string
+  mastery_percent?: number | null
+  mastery_change_pp?: number | null
+  focus_skill?: string | null
+  evidence_count?: number | null
+  probe_gap_count?: number | null
+  discounted_hint_correct?: number | null
+  enhanced_profile?: EnhancedProfile
 }
 
 export type EnhancedProfile = {
@@ -450,6 +477,16 @@ export const api = {
       body: JSON.stringify(profile),
     })
   },
+  submitWaitlist(payload: {
+    email: string
+    role: 'parent' | 'teacher' | 'other'
+    note?: string
+  }) {
+    return request<{ ok: boolean }>('/waitlist', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
   createDemoSession(unitId: string) {
     return request<DemoSessionResponse>(`/demo/units/${unitId}/session`, {
       method: 'POST',
@@ -509,6 +546,47 @@ export const api = {
   getReport(sessionId: string) {
     return request<ReportResponse>(`/sessions/${sessionId}/report`)
   },
+  getGradingReceipts(sessionId: string) {
+    return request<{ session_id: string; receipts: Array<{
+      item_id: string
+      final_correct: boolean
+      grading_degraded?: boolean
+      lane?: string
+      receipt: Record<string, unknown> | null
+    }> }>(`/sessions/${sessionId}/grading-receipts`)
+  },
+  assignTierPapers(sessionId: string, body?: { topic?: string; students?: Array<Record<string, unknown>> }) {
+    return request<{
+      session_id: string
+      receipt: Record<string, unknown>
+      paper_keys: string[]
+      item_counts: Record<string, number>
+    }>(`/sessions/${sessionId}/tiers/assign`, {
+      method: 'POST',
+      body: JSON.stringify(body || {}),
+    })
+  },
+  getTierReceipt(sessionId: string) {
+    return request<{ session_id: string; receipt: Record<string, unknown> }>(
+      `/sessions/${sessionId}/tiers/receipt`,
+    )
+  },
+  getTierTimeline(sessionId: string) {
+    return request<{
+      session_id: string
+      timeline: Array<Record<string, unknown>>
+      count: number
+    }>(`/sessions/${sessionId}/tiers/timeline`)
+  },
+  buildRepractice(sessionId: string) {
+    return request<{ session_id: string; paper: Record<string, unknown>; item_count: number }>(
+      `/sessions/${sessionId}/error-notebook/repractice`,
+      { method: 'POST' },
+    )
+  },
+  exportUrl(sessionId: string, kind: 'grading-receipts' | 'parent-card' | 'error-notebook') {
+    return `/sessions/${sessionId}/export/${kind}.pdf`
+  },
   tutorStart(sessionId: string, itemId: string) {
     return request<TutorTurn>(`/sessions/${sessionId}/tutor`, {
       method: 'POST',
@@ -526,6 +604,47 @@ export const api = {
       `/sessions/${sessionId}/replan`,
       { method: 'POST' },
     )
+  },
+  getReplanExplain(sessionId: string) {
+    return request<{ session_id: string; explain: Record<string, unknown> }>(
+      `/sessions/${sessionId}/replan/explain`,
+    )
+  },
+  getConceptLesson(sessionId: string, itemId: string) {
+    return request<{
+      session_id: string
+      item_id: string
+      lesson: {
+        knowledge_id: string
+        title: string
+        duration_sec: number
+        script_steps: string[]
+        asset_url?: string | null
+        storyboard_url?: string | null
+        poster_url?: string | null
+        video_slot_url?: string | null
+        media_status?: 'video' | 'poster' | 'storyboard' | 'slot'
+        no_final_answer?: boolean
+      }
+    }>(`/sessions/${sessionId}/items/${itemId}/concept-lesson`)
+  },
+  getQualityGates() {
+    return request<{
+      product: string
+      eval_suite: string
+      gates: Array<{ id: string; name: string; status: string; suite: string }>
+      summary: { total: number; enforced: number }
+      how_to_verify: string[]
+    }>('/quality-gates')
+  },
+  getMasteryPublic(sessionId: string) {
+    return request<{
+      session_id: string
+      mastery_percent: number | null
+      evidence_count: number
+      probe_gap_count: number
+      discounted_hint_correct: number
+    }>(`/sessions/${sessionId}/mastery-public`)
   },
   listSessions(nickname: string) {
     const q = new URLSearchParams({ nickname })
@@ -558,6 +677,16 @@ export const api = {
   getStudentSummary(sessionId: string, options?: SummaryOptions) {
     return request<StudentSummary>(summaryPath(sessionId, 'student', options))
   },
+  getLearnerContinuity(nickname: string) {
+    return request<{
+      nickname: string
+      session_count: number
+      streak_days: number
+      next_challenge: string
+      recent_session_ids: string[]
+      seven_day_chain: Array<{ day_index: number; focus: string; session_id?: string | null }>
+    }>(`/learners/${encodeURIComponent(nickname)}/continuity`)
+  },
   heartbeat(sessionId: string) {
     return request<{ ok: boolean; phase: string; server_time: string }>(
       `/sessions/${sessionId}/heartbeat`,
@@ -586,6 +715,42 @@ export const api = {
         : `/sessions/${sessionId}/export/report.pdf`
     return downloadBlob(path, filename)
   },
+  downloadSoftPdf(
+    sessionId: string,
+    kind: 'grading-receipts' | 'parent-card' | 'error-notebook',
+    filename: string,
+  ) {
+    return downloadBlob(`/sessions/${sessionId}/export/${kind}.pdf`, filename)
+  },
+  getInvite(sessionId: string) {
+    return request<{ session_id: string; invite_code: string; hint: string }>(
+      `/sessions/${sessionId}/invite`,
+    )
+  },
+  activateRepractice(sessionId: string) {
+    return request<SessionState>(`/sessions/${sessionId}/repractice/activate`, {
+      method: 'POST',
+    })
+  },
+  requestUnlock(sessionId: string, itemId: string) {
+    return request<{ session_id: string; request: Record<string, unknown> }>(
+      `/sessions/${sessionId}/unlock-requests`,
+      { method: 'POST', body: JSON.stringify({ item_id: itemId }) },
+    )
+  },
+  listUnlockRequests(sessionId: string) {
+    return request<{ session_id: string; requests: Array<Record<string, unknown>> }>(
+      `/sessions/${sessionId}/unlock-requests`,
+    )
+  },
+  approveUnlock(sessionId: string, itemId: string) {
+    return request<{
+      session_id: string
+      item_id: string
+      status: string
+      answer_key: string | null
+    }>(`/sessions/${sessionId}/unlock-requests/${itemId}/approve`, { method: 'POST' })
+  },
 }
 
 export const authApi = {
@@ -604,10 +769,22 @@ export const dashboardApi = {
       body: JSON.stringify({ parent_id: parentId, session_id: sessionId }),
     })
   },
+  bindParentByCode(parentId: string, code: string) {
+    return request<void>('/dashboard/parent/bind-by-code', {
+      method: 'POST',
+      body: JSON.stringify({ parent_id: parentId, code }),
+    })
+  },
   bindTeacher(teacherId: string, classId: string, sessionId: string) {
     return request<void>('/dashboard/teacher/bind', {
       method: 'POST',
       body: JSON.stringify({ teacher_id: teacherId, class_id: classId, session_id: sessionId }),
+    })
+  },
+  bindTeacherByCode(teacherId: string, classId: string, code: string) {
+    return request<void>('/dashboard/teacher/bind-by-code', {
+      method: 'POST',
+      body: JSON.stringify({ teacher_id: teacherId, class_id: classId, code }),
     })
   },
   parentChildren(parentId: string) {
@@ -628,5 +805,40 @@ export const dashboardApi = {
     return request<DashboardStudentDetail>(
       `/dashboard/teacher/${teacherId}/class/${classId}/student/${sessionId}`,
     )
+  },
+  classAssignmentTimeline(teacherId: string, classId: string, limit = 30) {
+    return request<{
+      teacher_id: string
+      class_id: string
+      count: number
+      total_events: number
+      session_count: number
+      timeline: Array<{
+        session_id: string
+        student_name: string
+        assigned_at?: string | null
+        topic?: string | null
+        item_counts?: Record<string, number>
+      }>
+    }>(
+      `/dashboard/teacher/${teacherId}/class/${classId}/assignment-timeline?limit=${limit}`,
+    )
+  },
+  assignClassBatch(
+    teacherId: string,
+    classId: string,
+    body?: { session_ids?: string[]; topic?: string },
+  ) {
+    return request<{
+      teacher_id: string
+      class_id: string
+      assigned_count: number
+      failed: Array<{ session_id: string; error: string }>
+      results: Array<Record<string, unknown>>
+      summary: string
+    }>(`/dashboard/teacher/${teacherId}/class/${classId}/tiers/assign-batch`, {
+      method: 'POST',
+      body: JSON.stringify(body || {}),
+    })
   },
 }

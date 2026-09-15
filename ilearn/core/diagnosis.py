@@ -402,17 +402,28 @@ class PortraitUpdater:
             if not evidence:
                 observed = 1.0 if grade_row.final_correct else 0.0
                 quality = _sm2_quality(grade_row)
+                hinted = bool(
+                    grade_row.hint_level_suggestion
+                    and grade_row.hint_level_suggestion != "none"
+                )
                 for kid in grade_row.knowledge_ids:
                     record = _get_mastery_record(portrait, kid)
                     record.evidence_count += 1
-                    if grade_row.lane == "probe":
+                    if grade_row.lane == "probe" and not hinted:
                         record.probe_mastery = _ema_update(record.probe_mastery, observed)
                         record.last_probe_at = now
                     else:
-                        record.practice_score = _ema_update(record.practice_score, observed)
+                        practice_obs = observed * (0.5 if hinted and grade_row.final_correct else 1.0)
+                        record.practice_score = _ema_update(record.practice_score, practice_obs)
 
                     review_state = portrait.review_states.get(kid, ReviewState())
                     portrait.review_states[kid] = sm2_update(review_state, quality)
+                    if hinted and grade_row.final_correct:
+                        portrait.knowledge_state[kid] = record.practice_score
+                    else:
+                        portrait.knowledge_state[kid] = max(
+                            record.practice_score, record.probe_mastery
+                        )
             else:
                 quality = _sm2_quality(grade_row)
                 for kid in grade_row.knowledge_ids:

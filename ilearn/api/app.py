@@ -12,6 +12,8 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
+from ilearn.core.companion_continuity import build_learner_continuity
+from ilearn.core.error_notebook import build_error_notebook
 from ilearn.core.audience_summary import (
     build_parent_summary_safe,
     build_student_summary_safe,
@@ -49,6 +51,7 @@ from ilearn.core.validators import validate_submit_answers
 from ilearn.api.auth import create_auth_router
 from ilearn.api.dashboard import create_dashboard_router
 from ilearn.api.demo import create_demo_router
+from ilearn.api.waitlist import create_waitlist_router
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
@@ -215,6 +218,12 @@ def create_app(
     app.include_router(create_auth_router(auth_credentials))
     app.include_router(create_dashboard_router(store, relationships))
     app.include_router(create_demo_router(store, relationships))
+    waitlist_path = _PROJECT_ROOT / "data" / "waitlist.jsonl"
+    app.include_router(create_waitlist_router(path=waitlist_path))
+
+    @app.get("/healthz")
+    def healthz() -> dict[str, str]:
+        return {"status": "ok", "service": "ilearn"}
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(_WEB_ORIGINS),
@@ -266,7 +275,26 @@ def create_app(
     @app.get("/capabilities")
     def capabilities() -> dict:
         """Offline / hybrid / online feature tiers for UI transparency."""
-        return FeatureRegistry.capabilities_payload(llm_available=llm is not None)
+        from ilearn.core.quality_gates_public import quality_gates_payload
+
+        payload = FeatureRegistry.capabilities_payload(llm_available=llm is not None)
+        payload["quality_gates"] = quality_gates_payload()["summary"]
+        payload["quality_gates_url"] = "/quality-gates"
+        return payload
+
+    @app.get("/quality-gates")
+    def quality_gates() -> dict:
+        from ilearn.core.quality_gates_public import quality_gates_payload
+
+        return quality_gates_payload()
+
+    @app.get("/sessions/{session_id}/mastery-public")
+    def get_mastery_public(session_id: str) -> dict:
+        from ilearn.core.mastery_public import build_mastery_public_view
+
+        session = store.load(session_id)
+        view = build_mastery_public_view(session)
+        return {"session_id": session_id, **view.model_dump()}
 
     @app.get("/system/pdf-backend")
     def pdf_backend_status() -> dict:
@@ -477,6 +505,38 @@ def create_app(
     def replan(session_id: str) -> LearningPlanReport:
         return orchestrator.request_replan(session_id)
 
+    @app.get("/sessions/{session_id}/replan/explain")
+    def replan_explain(session_id: str) -> dict:
+        session = store.load(session_id)
+        explain = (session.metadata or {}).get("replan_explain")
+        if not explain:
+            from ilearn.core.replan_explain import build_replan_explanation
+
+            built = build_replan_explanation(
+                portrait=session.portrait,
+                diagnosis=session.diagnosis,
+                previous_plan=None,
+                new_plan=session.plan,
+            )
+            return {"session_id": session_id, "explain": built.model_dump()}
+        return {"session_id": session_id, "explain": explain}
+
+    @app.get("/sessions/{session_id}/items/{item_id}/concept-lesson")
+    def get_concept_lesson(session_id: str, item_id: str) -> dict:
+        from ilearn.core.concept_lesson import concept_lesson_for_item
+
+        session = store.load(session_id)
+        paper = session.paper
+        if paper is None:
+            raise HTTPException(status_code=404, detail="paper not found")
+        item = next((i for i in paper.items if i.id == item_id), None)
+        if item is None:
+            raise HTTPException(status_code=404, detail="item not found")
+        lesson = concept_lesson_for_item(item)
+        if lesson is None:
+            raise HTTPException(status_code=404, detail="concept lesson not found")
+        return {"session_id": session_id, "item_id": item_id, "lesson": lesson.model_dump()}
+
     @app.get("/sessions/{session_id}/report", response_model=ReportResponse)
     def report(session_id: str) -> ReportResponse:
         session = store.load(session_id)
@@ -488,27 +548,91 @@ def create_app(
         session = store.load(session_id)
         return effectiveness_payload(session)
 
+    @app.get("/learners/{nickname}/continuity")
+    def get_learner_continuity(nickname: str) -> dict:
+        sessions = store.list_by_nickname(nickname)
+        return build_learner_continuity(nickname, sessions).model_dump()
+
+    @app.get("/sessions/{session_id}/grading-receipts")
+    def get_grading_receipts(session_id: str) -> dict:
+        session = store.load(session_id)
+        rows = []
+        for grade in session.grades or []:
+            receipt = grade.receipt.model_dump(mode="json") if grade.receipt else None
+            rows.append(
+                {
+                    "item_id": grade.item_id,
+                    "final_correct": grade.final_correct,
+                    "grading_degraded": grade.grading_degraded,
+                    "lane": grade.lane,
+                    "receipt": receipt,
+                }
+            )
+        return {"session_id": session_id, "receipts": rows}
+
+    @app.get("/sessions/{session_id}/error-notebook")
+    def get_error_notebook(session_id: str) -> dict:
+        session = store.load(session_id)
+        return {
+            "session_id": session_id,
+            "items": build_error_notebook(session),
+        }
+
+    @app.get("/sessions/{session_id}/decision-log/summary")
+    def get_decision_log_summary(session_id: str) -> dict:
+        session = store.load(session_id)
+        phases: list[str] = []
+        agents: list[str] = []
+        for row in session.decision_log or []:
+            agent = getattr(row, "agent", None) or getattr(row, "agent_name", None)
+            phase = getattr(row, "phase", None)
+            if hasattr(phase, "value"):
+                phase = phase.value
+            if phase and str(phase) not in phases:
+                phases.append(str(phase))
+            if agent and str(agent) not in agents:
+                agents.append(str(agent))
+        history = session.metadata.get("phase_history") if isinstance(session.metadata, dict) else None
+        if isinstance(history, list):
+            for p in history:
+                if str(p) not in phases:
+                    phases.append(str(p))
+        if not phases:
+            phases = [session.phase.value if hasattr(session.phase, "value") else str(session.phase)]
+        return {
+            "session_id": session_id,
+            "phases": phases,
+            "agents": agents,
+            "decision_count": len(session.decision_log or []),
+        }
+
     @app.get("/sessions/{session_id}/summary/teacher")
     def get_teacher_summary(session_id: str, enhanced: bool = False) -> dict:
         session = _load_session_optional(session_id)
+        if session is None:
+            raise HTTPException(status_code=404, detail="session not found")
         payload = build_teacher_summary_safe(session).model_dump()
-        if enhanced_api_active(enhanced) and session is not None:
+        if enhanced_api_active(enhanced):
             return attach_enhanced_fields(payload, session)
         return payload
 
     @app.get("/sessions/{session_id}/summary/parent")
     def get_parent_summary(session_id: str, enhanced: bool = False) -> dict:
         session = _load_session_optional(session_id)
+        if session is None:
+            raise HTTPException(status_code=404, detail="session not found")
         payload = build_parent_summary_safe(session).model_dump()
-        if enhanced_api_active(enhanced) and session is not None:
+        if enhanced_api_active(enhanced):
             return attach_enhanced_fields(payload, session)
         return payload
 
     @app.get("/sessions/{session_id}/summary/student")
     def get_student_summary(session_id: str, enhanced: bool = False) -> dict:
         session = _load_session_optional(session_id)
+        if session is None:
+            raise HTTPException(status_code=404, detail="session not found")
         payload = build_student_summary_safe(session).model_dump()
-        if enhanced_api_active(enhanced) and session is not None:
+        if enhanced_api_active(enhanced):
             return attach_enhanced_fields(payload, session)
         return payload
 
@@ -562,6 +686,179 @@ def create_app(
         pdf = _render_pdf_bytes(_render)
         return _pdf_response(pdf, "ILearn-effectiveness.pdf")
 
+    @app.get("/sessions/{session_id}/export/grading-receipts.pdf")
+    def export_grading_receipts_pdf(session_id: str) -> Response:
+        from ilearn.core.winbar_exports import grading_receipts_markdown
+
+        session = store.load(session_id)
+        markdown = grading_receipts_markdown(session)
+        pdf = _render_pdf_bytes(lambda: markdown_to_pdf(markdown))
+        return _pdf_response(pdf, "ILearn-grading-receipts.pdf")
+
+    @app.get("/sessions/{session_id}/export/parent-card.pdf")
+    def export_parent_card_pdf(session_id: str) -> Response:
+        from ilearn.core.audience_summary import build_parent_summary_safe
+        from ilearn.core.parent_action_summary import ParentActionSummary
+        from ilearn.core.winbar_exports import parent_action_card_markdown
+
+        session = store.load(session_id)
+        parent = build_parent_summary_safe(session)
+        action = None
+        if parent.action_summary:
+            action = ParentActionSummary.model_validate(parent.action_summary)
+        markdown = parent_action_card_markdown(session, summary=action)
+        pdf = _render_pdf_bytes(lambda: markdown_to_pdf(markdown))
+        return _pdf_response(pdf, "ILearn-parent-card.pdf")
+
+    @app.get("/sessions/{session_id}/export/error-notebook.pdf")
+    def export_error_notebook_pdf(session_id: str) -> Response:
+        from ilearn.core.winbar_exports import error_notebook_markdown
+
+        session = store.load(session_id)
+        markdown = error_notebook_markdown(session)
+        pdf = _render_pdf_bytes(lambda: markdown_to_pdf(markdown))
+        return _pdf_response(pdf, "ILearn-error-notebook.pdf")
+
+    @app.post("/sessions/{session_id}/tiers/assign")
+    def assign_tier_papers(session_id: str, body: dict | None = None) -> dict:
+        from ilearn.core.class_receipts import apply_tier_assign_and_save
+
+        session = store.load(session_id)
+        payload = body or {}
+        topic = payload.get("topic") if isinstance(payload, dict) else None
+        students = payload.get("students") if isinstance(payload, dict) else None
+        return apply_tier_assign_and_save(
+            store,
+            session,
+            topic=topic if isinstance(topic, str) else None,
+            students=students if isinstance(students, list) else None,
+        )
+
+    @app.get("/sessions/{session_id}/tiers/receipt")
+    def get_tier_receipt(session_id: str) -> dict:
+        session = store.load(session_id)
+        receipt = (session.metadata or {}).get("tier_assignment_receipt")
+        if not receipt:
+            raise HTTPException(status_code=404, detail="tier assignment not found")
+        return {"session_id": session_id, "receipt": receipt}
+
+    @app.get("/sessions/{session_id}/tiers/timeline")
+    def get_tier_timeline(session_id: str) -> dict:
+        session = store.load(session_id)
+        timeline = (session.metadata or {}).get("tier_assignment_timeline") or []
+        return {
+            "session_id": session_id,
+            "timeline": timeline,
+            "count": len(timeline),
+        }
+
+    @app.post("/sessions/{session_id}/error-notebook/repractice")
+    def build_error_repractice(session_id: str) -> dict:
+        from ilearn.core.winbar_exports import build_repractice_paper
+
+        session = store.load(session_id)
+        paper = build_repractice_paper(session)
+        meta = dict(session.metadata or {})
+        meta["repractice_paper"] = paper
+        session.metadata = meta
+        store.save(session)
+        return {"session_id": session_id, "paper": paper, "item_count": len(paper.get("items") or [])}
+
+    @app.post("/sessions/{session_id}/repractice/activate")
+    def activate_repractice(session_id: str) -> SessionState:
+        """Swap session paper to repractice set and reset answers/grades for a new attempt."""
+        from ilearn.core.schemas import AssessmentPaper
+
+        session = store.load(session_id)
+        raw = (session.metadata or {}).get("repractice_paper")
+        if not raw:
+            from ilearn.core.winbar_exports import build_repractice_paper
+
+            raw = build_repractice_paper(session)
+            meta = dict(session.metadata or {})
+            meta["repractice_paper"] = raw
+            session.metadata = meta
+        paper = AssessmentPaper.model_validate(raw)
+        session.paper = paper
+        session.answers = []
+        session.image_answers = []
+        session.grades = []
+        session.diagnosis = None
+        session.plan = None
+        from ilearn.core.schemas import SessionPhase
+
+        session.phase = SessionPhase.PRACTICE
+        store.save(session)
+        return session
+
+    @app.get("/sessions/{session_id}/invite")
+    def get_session_invite(session_id: str) -> dict:
+        from ilearn.core.invite import ensure_session_invite
+
+        session = store.load(session_id)
+        code = ensure_session_invite(session, store)
+        return {
+            "session_id": session_id,
+            "invite_code": code,
+            "hint": "把绑定码发给家长/老师，无需粘贴完整会话 ID",
+        }
+
+    @app.post("/sessions/{session_id}/unlock-requests")
+    def create_unlock_request(session_id: str, body: dict | None = None) -> dict:
+        session = store.load(session_id)
+        payload = body or {}
+        item_id = str(payload.get("item_id") or "").strip()
+        if not item_id:
+            raise HTTPException(status_code=400, detail="item_id required")
+        meta = dict(session.metadata or {})
+        rows = list(meta.get("unlock_requests") or [])
+        from datetime import datetime, timezone
+
+        row = {
+            "item_id": item_id,
+            "status": "pending",
+            "requested_at": datetime.now(timezone.utc).isoformat(),
+        }
+        rows = [r for r in rows if r.get("item_id") != item_id] + [row]
+        meta["unlock_requests"] = rows[-50:]
+        session.metadata = meta
+        store.save(session)
+        return {"session_id": session_id, "request": row}
+
+    @app.get("/sessions/{session_id}/unlock-requests")
+    def list_unlock_requests(session_id: str) -> dict:
+        session = store.load(session_id)
+        rows = (session.metadata or {}).get("unlock_requests") or []
+        return {"session_id": session_id, "requests": rows}
+
+    @app.post("/sessions/{session_id}/unlock-requests/{item_id}/approve")
+    def approve_unlock_request(session_id: str, item_id: str) -> dict:
+        session = store.load(session_id)
+        meta = dict(session.metadata or {})
+        rows = list(meta.get("unlock_requests") or [])
+        found = False
+        for row in rows:
+            if row.get("item_id") == item_id:
+                row["status"] = "approved"
+                found = True
+        if not found:
+            rows.append({"item_id": item_id, "status": "approved"})
+        meta["unlock_requests"] = rows
+        session.metadata = meta
+        store.save(session)
+        answer_key = None
+        if session.paper:
+            for item in session.paper.items:
+                if item.id == item_id:
+                    answer_key = item.answer_key
+                    break
+        return {
+            "session_id": session_id,
+            "item_id": item_id,
+            "status": "approved",
+            "answer_key": answer_key,
+        }
+
     @app.post("/sessions/{session_id}/run", response_model=SessionState)
     def run(session_id: str, background_tasks: BackgroundTasks) -> SessionState:
         state = orchestrator.run_after_submit(session_id)
@@ -600,6 +897,12 @@ def create_app(
                 "openapi.json",
                 "assets",
                 "pilot-assets",
+                "waitlist",
+                "healthz",
+                "demo",
+                "auth",
+                "dashboard",
+                "learners",
             )
             first = spa_path.split("/", 1)[0]
             if first in blocked or spa_path.startswith("api"):

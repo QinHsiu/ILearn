@@ -1,0 +1,77 @@
+version: v2
+title: ILearn · GOAI 2026 项目方案
+size: [960, 540]
+theme:
+  colors:
+    primary: "#002FA7"
+    accent: "#4CAF50"
+    text: "#1A2332"
+    muted: "#5F6B7A"
+    line: "#C9CCD2"
+    soft: "#EEF1F7"
+    white: "#FFFFFF"
+    warn: "#F5A623"
+  textStyles:
+    title:
+      fontSize: 28
+      bold: true
+      color: "$primary"
+      fontFamily: {latin: MiSans, ea: MiSans}
+    body:
+      fontSize: 18
+      color: "$text"
+      lineHeight: 1.4
+      fontFamily: {latin: MiSans, ea: MiSans}
+    caption:
+      fontSize: 14
+      color: "$muted"
+      fontFamily: {latin: MiSans, ea: MiSans}
+    hero:
+      fontSize: 52
+      bold: true
+      color: "$white"
+      fontFamily: {latin: MiSans, ea: MiSans}
+    heroSub:
+      fontSize: 18
+      color: "#D6DDF0"
+      lineHeight: 1.45
+      fontFamily: {latin: MiSans, ea: MiSans}
+    cardTitle:
+      fontSize: 18
+      bold: true
+      color: "$primary"
+      fontFamily: {latin: MiSans, ea: MiSans}
+  tableStyles:
+    default:
+      cellStyle:
+        fontSize: 14
+        color: "$text"
+        fontFamily: {latin: MiSans, ea: MiSans}
+        align: [left, middle]
+        border:
+          style: solid
+          width: 1
+          color: "$line"
+      firstRowStyle:
+        fill:
+          type: solid
+          color: "$primary"
+        color: "#FFFFFF"
+        bold: true
+        fontSize: 14
+      bodyStyles:
+        - fill:
+            type: solid
+            color: "#FFFFFF"
+        - fill:
+            type: solid
+            color: "$soft"
+pages:
+  - pages/01_cover.page
+  - pages/02_pain.page
+  - pages/03_solution.page
+  - pages/04_agents.page
+  - pages/05_pipeline.page
+  - pages/06_roles.page
+  - pages/07_effectiveness.page
+  - pages/08_closing.page

@@ -1,0 +1,55 @@
+pageType: content
+background:
+  type: solid
+  color: "$soft"
+elements:
+  - elementId: accent-bar
+    elementType: shape
+    bounds: [48, 32, 56, 4]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$primary"
+  - elementId: page-title
+    elementType: text
+    bounds: [48, 48, 860, 36]
+    content:
+      style: "$title"
+      wrap: false
+      text: 完整任务链路：从诊断到巩固
+  - elementId: chain-bg
+    elementType: shape
+    bounds: [48, 110, 864, 330]
+    shapeName: roundRect
+    fill:
+      type: solid
+      color: "$white"
+    border:
+      style: solid
+      width: 1
+      color: "$line"
+  - elementId: chain
+    elementType: text
+    bounds: [72, 130, 816, 280]
+    content:
+      fontSize: 17
+      color: "$text"
+      lineHeight: 1.55
+      fontFamily: {latin: MiSans, ea: MiSans}
+      text: |
+        <p><strong style="color:#002FA7;">01 用户输入</strong>　选择年级 / 学科 → 开始测评</p>
+        <p style="margin-top:10px"><strong style="color:#002FA7;">02 Agent 处理</strong>　自适应组卷 → 智能批改 → 证据诊断</p>
+        <p style="margin-top:10px"><strong style="color:#002FA7;">03 工具与知识库</strong>　课标检索 → 题库匹配 → 知识图谱</p>
+        <p style="margin-top:10px"><strong style="color:#002FA7;">04 结果交付</strong>　个性化学习计划 → 三端报告 → PDF 导出</p>
+        <p style="margin-top:10px"><strong style="color:#002FA7;">05 异常处理</strong>　LLM 降级 → 规则引擎备用 → 超时自动提交</p>
+        <p style="margin-top:10px"><strong style="color:#002FA7;">06 效果验证</strong>　前后对比 → 掌握度提升 → 批改时间节省</p>
+  - elementId: badge
+    elementType: text
+    bounds: [48, 460, 864, 40]
+    content:
+      fontSize: 18
+      bold: true
+      color: "$accent"
+      fontFamily: {latin: MiSans, ea: MiSans}
+      wrap: false
+      text: 一条链路，完整闭环，可验证

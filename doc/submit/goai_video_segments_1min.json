@@ -1,0 +1,75 @@
+{
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "rate": "+12%",
+  "width": 1920,
+  "height": 1080,
+  "base_url": "http://127.0.0.1:5173",
+  "inter_clip_silence_sec": 0.3,
+  "tail_pad_sec": 0.25,
+  "segments": [
+    {
+      "id": "01_opening",
+      "title": "开场",
+      "narration": "各位评委好，我们是ILearn。课标在环，自适应个性化学习。",
+      "mode": "card",
+      "card_query": "k=opening_1min",
+      "actions": [{"type": "wait", "sec": 1}, {"type": "hold_to_audio"}]
+    },
+    {
+      "id": "02_triplet_assess",
+      "title": "三组答题",
+      "narration": "同一个单元，三套不同的题。小明做基础题，小红做中等题，小华做高难题，题目完全不同。",
+      "mode": "card",
+      "card_query": "k=triplet_assess",
+      "actions": [{"type": "wait", "sec": 1}, {"type": "hold_to_audio"}]
+    },
+    {
+      "id": "03_triplet_diag",
+      "title": "三份诊断",
+      "narration": "三个起点，三份诊断，三个计划。掌握度分别提升到百分之四十八、七十六和九十三。",
+      "mode": "card",
+      "card_query": "k=triplet_diag",
+      "actions": [{"type": "wait", "sec": 1}, {"type": "hold_to_audio"}]
+    },
+    {
+      "id": "04_bar_compare",
+      "title": "提升对比",
+      "narration": "三组学生平均掌握度提升十四个百分点，效果清晰可见。",
+      "mode": "card",
+      "card_query": "k=bar_compare",
+      "actions": [{"type": "wait", "sec": 1}, {"type": "hold_to_audio"}]
+    },
+    {
+      "id": "05_triplet_plan",
+      "title": "三份计划",
+      "narration": "因材施教，千人千面。基础巩固、能力提升、综合挑战，三份个性化计划。",
+      "mode": "card",
+      "card_query": "k=triplet_plan",
+      "actions": [{"type": "wait", "sec": 1}, {"type": "hold_to_audio"}]
+    },
+    {
+      "id": "06_parent",
+      "title": "家长端",
+      "narration": "家长端无术语翻译，看到的是理解程度，收到可操作的家庭辅导建议。",
+      "mode": "card",
+      "card_query": "k=parent_simple",
+      "actions": [{"type": "wait", "sec": 0.8}, {"type": "hold_to_audio"}]
+    },
+    {
+      "id": "07_effect_time",
+      "title": "批改节省",
+      "narration": "批改时间从九十分钟压缩到十五分钟，节省百分之七十。",
+      "mode": "card",
+      "card_query": "k=effect_time",
+      "actions": [{"type": "wait", "sec": 0.8}, {"type": "hold_to_audio"}]
+    },
+    {
+      "id": "08_closing",
+      "title": "收尾",
+      "narration": "ILearn已开源，GitHub搜索QinHsiu ILearn。感谢评委，欢迎体验！",
+      "mode": "card",
+      "card_query": "k=closing_github",
+      "actions": [{"type": "wait", "sec": 0.8}, {"type": "hold_to_audio"}]
+    }
+  ]
+}

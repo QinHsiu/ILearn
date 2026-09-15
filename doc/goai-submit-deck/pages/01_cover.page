@@ -1,0 +1,64 @@
+pageType: cover
+background:
+  type: solid
+  color: "$primary"
+elements:
+  - elementId: top-label
+    elementType: text
+    bounds: [48, 48, 860, 28]
+    content:
+      fontSize: 16
+      color: "#A8B6E0"
+      fontFamily: {latin: MiSans, ea: MiSans}
+      wrap: false
+      text: 2026 世界人工智能开源大赛　·　GOAI 2026
+  - elementId: brand-bar
+    elementType: shape
+    bounds: [48, 160, 72, 5]
+    shapeName: rect
+    fill:
+      type: solid
+      color: "$accent"
+  - elementId: brand
+    elementType: text
+    bounds: [48, 180, 860, 70]
+    content:
+      style: "$hero"
+      wrap: false
+      text: ILearn
+  - elementId: tagline
+    elementType: text
+    bounds: [48, 260, 860, 50]
+    content:
+      style: "$heroSub"
+      wrap: false
+      text: 课标在环 · 多 Agent 协同 · 自适应学习引擎
+  - elementId: track-pill
+    elementType: shape
+    bounds: [48, 340, 220, 36]
+    shapeName: roundRect
+    fill:
+      type: solid
+      color: "#1A4BC4"
+  - elementId: track-text
+    elementType: text
+    bounds: [48, 345, 220, 28]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$white"
+      align: center
+      fontFamily: {latin: MiSans, ea: MiSans}
+      wrap: false
+      text: 赛道二 | AI+教育
+  - elementId: meta
+    elementType: text
+    bounds: [48, 430, 860, 60]
+    content:
+      fontSize: 15
+      color: "#A8B6E0"
+      lineHeight: 1.5
+      fontFamily: {latin: MiSans, ea: MiSans}
+      text: |
+        <p>第 16 队　·　2026.09.06</p>
+        <p>https://github.com/QinHsiu/ILearn</p>

@@ -21,10 +21,21 @@ class ParentBinding(BaseModel):
     session_id: str
 
 
+class ParentBindByCode(BaseModel):
+    parent_id: str
+    code: str
+
+
 class TeacherBinding(BaseModel):
     teacher_id: str
     class_id: str
     session_id: str
+
+
+class TeacherBindByCode(BaseModel):
+    teacher_id: str
+    class_id: str
+    code: str
 
 
 class TeacherClass(BaseModel):
@@ -65,11 +76,29 @@ def create_dashboard_router(
     def bind_parent(binding: ParentBinding) -> None:
         relationships.bind_parent(binding.parent_id, binding.session_id)
 
+    @router.post("/parent/bind-by-code", status_code=204)
+    def bind_parent_by_code(body: ParentBindByCode) -> None:
+        from ilearn.core.invite import resolve_invite_code
+
+        session_id = resolve_invite_code(sessions, body.code)
+        if not session_id:
+            raise HTTPException(status_code=404, detail="绑定码无效或已过期")
+        relationships.bind_parent(body.parent_id, session_id)
+
     @router.post("/teacher/bind", status_code=204)
     def bind_teacher(binding: TeacherBinding) -> None:
         relationships.bind_teacher(
             binding.teacher_id, binding.class_id, binding.session_id
         )
+
+    @router.post("/teacher/bind-by-code", status_code=204)
+    def bind_teacher_by_code(body: TeacherBindByCode) -> None:
+        from ilearn.core.invite import resolve_invite_code
+
+        session_id = resolve_invite_code(sessions, body.code)
+        if not session_id:
+            raise HTTPException(status_code=404, detail="绑定码无效或已过期")
+        relationships.bind_teacher(body.teacher_id, body.class_id, session_id)
 
     @router.get(
         "/parent/{parent_id}/children",
@@ -158,6 +187,40 @@ def create_dashboard_router(
         if session_id not in relationships.students_for_class(teacher_id, class_id):
             raise HTTPException(status_code=404, detail="student not found")
         return _session_payload(_load_or_404(session_id), enhanced=enhanced)
+
+    @router.get("/teacher/{teacher_id}/class/{class_id}/assignment-timeline")
+    def teacher_class_assignment_timeline(
+        teacher_id: str, class_id: str, limit: int = 30
+    ) -> dict:
+        from ilearn.core.class_receipts import aggregate_class_assignment_timeline
+
+        return aggregate_class_assignment_timeline(
+            sessions=sessions,
+            relationships=relationships,
+            teacher_id=teacher_id,
+            class_id=class_id,
+            limit=limit,
+        )
+
+    class BatchAssignBody(BaseModel):
+        session_ids: list[str] | None = None
+        topic: str | None = None
+
+    @router.post("/teacher/{teacher_id}/class/{class_id}/tiers/assign-batch")
+    def teacher_class_assign_batch(
+        teacher_id: str, class_id: str, body: BatchAssignBody | None = None
+    ) -> dict:
+        from ilearn.core.class_receipts import batch_assign_class_tiers
+
+        payload = body or BatchAssignBody()
+        return batch_assign_class_tiers(
+            sessions=sessions,
+            relationships=relationships,
+            teacher_id=teacher_id,
+            class_id=class_id,
+            session_ids=payload.session_ids,
+            topic=payload.topic,
+        )
 
     @router.get("/teacher/{teacher_id}/student/{session_id}")
     def teacher_student_any_class(

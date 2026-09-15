@@ -860,7 +860,7 @@ export default function Assessment({
   }
 
   const layoutClass = `panel student-panel assessment-layout assessment-layout--${breakpoint} assessment-container ${
-    breakpoint === 'mobile' ? 'single-column' : 'two-column'
+    breakpoint === 'mobile' ? 'single-column assessment-one-at-a-time' : 'two-column'
   }`
   const counterCurrent = String(currentIndex + 1).padStart(2, '0')
   const counterTotal = String(paper.items.length).padStart(2, '0')
@@ -939,6 +939,9 @@ export default function Assessment({
             {profile.nickname ? `${profile.nickname} · ` : ''}
             {paper.curriculum_label} · 共 {paper.items.length} 题
             {meta ? ` · ${meta}` : ''}
+            {breakpoint === 'mobile'
+              ? ' · 一次一题，反馈不计时'
+              : ' · 反馈动画不计作答时间'}
           </p>
         </div>
         <div className="countdown" aria-live="polite">
