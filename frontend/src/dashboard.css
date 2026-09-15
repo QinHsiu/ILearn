@@ -493,8 +493,45 @@
   font-size: 0.9rem;
 }
 
-.invite-code-display {
+.companion-continuity-panel {
+  margin: 1.25rem 0;
+}
+
+.companion-continuity-panel .companion-line {
+  font-size: 1.05rem;
+}
+
+.seven-day-chain {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.seven-day-chain li {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--il-ink, #111) 18%, transparent);
+}
+
+.seven-day-chain .day-index {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 1.6rem;
-  letter-spacing: 0.18em;
+  font-size: 0.8rem;
+  color: var(--il-muted, #666);
+}
+
+.seven-day-chain .empty-day {
+  opacity: 0.55;
+}
+
+.parent-vs-last {
+  margin-top: 0.85rem;
+}
+
+.parent-vs-last h4 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
 }

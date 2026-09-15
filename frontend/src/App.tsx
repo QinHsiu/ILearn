@@ -20,6 +20,7 @@ import SoftPdfButton from './components/SoftPdfButton'
 import GradingReceiptPanel from './components/GradingReceiptPanel'
 import StudentSummaryPanel from './components/StudentSummaryPanel'
 import MasteryEvidencePanel from './components/MasteryEvidencePanel'
+import CompanionContinuityPanel from './components/CompanionContinuityPanel'
 import ReplanExplainPanel from './components/ReplanExplainPanel'
 import EvidenceChain from './components/EvidenceChain'
 import PDFExportButton from './components/PDFExportButton'
@@ -635,6 +636,10 @@ function StudentApp() {
 
           {sessionId ? <MasteryEvidencePanel sessionId={sessionId} /> : null}
 
+          {(profile.nickname || '').trim() ? (
+            <CompanionContinuityPanel nickname={(profile.nickname || '').trim()} />
+          ) : null}
+
           {sessionId ? <GradingReceiptPanel sessionId={sessionId} /> : null}
 
           {inviteCode ? (
@@ -753,6 +758,12 @@ function StudentApp() {
             <StudentSummaryPanel sessionId={sessionId} nickname={profile.nickname} />
           ) : null}
           {sessionId ? <ReplanExplainPanel sessionId={sessionId} refreshKey={replanRefresh} /> : null}
+          {(profile.nickname || '').trim() ? (
+            <CompanionContinuityPanel
+              nickname={(profile.nickname || '').trim()}
+              title="下次回来从这里继续"
+            />
+          ) : null}
           <div className="plan-body student-report-body">
             <ReportColumnsView
               source={report?.markdown || session.plan?.markdown || '暂无计划内容'}

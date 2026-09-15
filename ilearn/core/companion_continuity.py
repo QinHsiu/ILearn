@@ -7,6 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from ilearn.core.mastery_public import build_mastery_public_view
 from ilearn.core.schemas import SessionState
 
 
@@ -28,15 +29,29 @@ class PortraitSnapshot(BaseModel):
     source_session_id: str | None = None
 
 
+class ProgressDelta(BaseModel):
+    """Latest session vs previous — evidence over raw accuracy."""
+
+    has_baseline: bool = False
+    evidence_delta: int | None = None
+    probe_gap_delta: int | None = None
+    mastery_delta: int | None = None
+    previous_session_id: str | None = None
+    current_session_id: str | None = None
+    narrative: str = "完成第二次学习后，这里会显示比上次的变化。"
+
+
 class ContinuityView(BaseModel):
     nickname: str
     session_count: int = 0
     streak_days: int = 0
     next_challenge: str = "继续今日挑战"
+    companion_line: str = "我在，卡住时慢慢问，终答不会直接给你。"
     recent_session_ids: list[str] = Field(default_factory=list)
     seven_day_chain: list[ContinuityDay] = Field(default_factory=list)
     portrait_snapshot: PortraitSnapshot | None = None
     latest_replan_explain: dict[str, Any] | None = None
+    progress_delta: ProgressDelta | None = None
 
 
 def _session_stamp(session: SessionState) -> datetime:
@@ -64,7 +79,6 @@ def _next_challenge_from(session: SessionState) -> str:
 def _portrait_snapshot(session: SessionState) -> PortraitSnapshot | None:
     portrait = session.portrait
     if portrait is None:
-        # Fall back to diagnosis weak list
         weak: list[str] = []
         if session.diagnosis is not None:
             for row in session.diagnosis.knowledge_mastery or []:
@@ -105,6 +119,68 @@ def _portrait_snapshot(session: SessionState) -> PortraitSnapshot | None:
         ),
         source_session_id=session.session_id,
     )
+
+
+def _fmt_delta(n: int | None, *, unit: str = "", invert_good: bool = False) -> str:
+    if n is None:
+        return "—"
+    if n == 0:
+        return f"持平{unit}"
+    sign = "+" if n > 0 else ""
+    good = (n < 0) if invert_good else (n > 0)
+    tone = "更好" if good else "需关注"
+    return f"{sign}{n}{unit}（{tone}）"
+
+
+def _build_progress_delta(ordered: list[SessionState]) -> ProgressDelta:
+    if not ordered:
+        return ProgressDelta()
+    current = ordered[0]
+    cur_view = build_mastery_public_view(current)
+    if len(ordered) < 2:
+        return ProgressDelta(
+            has_baseline=False,
+            current_session_id=current.session_id,
+            narrative="再学一次后，这里会对比证据与探针缺口，而不只看正确率。",
+        )
+    previous = ordered[1]
+    prev_view = build_mastery_public_view(previous)
+    ev = cur_view.evidence_count - prev_view.evidence_count
+    gap = cur_view.probe_gap_count - prev_view.probe_gap_count
+    mastery_delta = None
+    if cur_view.mastery_percent is not None and prev_view.mastery_percent is not None:
+        mastery_delta = cur_view.mastery_percent - prev_view.mastery_percent
+    parts = [
+        f"证据{_fmt_delta(ev, unit='条')}",
+        f"探针缺口{_fmt_delta(gap, unit='', invert_good=True)}",
+    ]
+    if mastery_delta is not None:
+        parts.append(f"掌握度{_fmt_delta(mastery_delta, unit='%')}")
+    return ProgressDelta(
+        has_baseline=True,
+        evidence_delta=ev,
+        probe_gap_delta=gap,
+        mastery_delta=mastery_delta,
+        previous_session_id=previous.session_id,
+        current_session_id=current.session_id,
+        narrative="比上次：" + "；".join(parts) + "。提示后做对仍不计入掌握。",
+    )
+
+
+def _companion_line(
+    *,
+    streak: int,
+    next_challenge: str,
+    snapshot: PortraitSnapshot | None,
+    session_count: int,
+) -> str:
+    if session_count <= 0:
+        return "我在，完成首次测评后，会陪你记住下一挑战——不直接给终答。"
+    if snapshot and snapshot.frustration >= 0.4:
+        return f"先把「{next_challenge}」变轻松一点；卡住就问我，终答先藏着。"
+    if streak >= 2:
+        return f"已连学 {streak} 天。下一挑战：{next_challenge}。"
+    return f"下一挑战：{next_challenge}。我会记着，你慢慢来。"
 
 
 def build_learner_continuity(
@@ -154,15 +230,25 @@ def build_learner_continuity(
         if isinstance(raw, dict):
             replan_explain = raw
 
+    progress = _build_progress_delta(ordered)
+    line = _companion_line(
+        streak=streak,
+        next_challenge=next_challenge,
+        snapshot=snapshot,
+        session_count=len(ordered),
+    )
+
     return ContinuityView(
         nickname=name,
         session_count=len(ordered),
         streak_days=streak,
         next_challenge=next_challenge,
+        companion_line=line,
         recent_session_ids=recent_ids,
         seven_day_chain=chain,
         portrait_snapshot=snapshot,
         latest_replan_explain=replan_explain,
+        progress_delta=progress,
     )
 
 
