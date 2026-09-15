@@ -15,6 +15,7 @@ import CitationPanel from './components/CitationPanel'
 import TutorPanel from './components/TutorPanel'
 import SocraticPanel from './components/SocraticPanel'
 import ConceptMicroCard from './components/ConceptMicroCard'
+import ErrorNotebookBlock from './components/ErrorNotebookBlock'
 import StepReviewList from './components/StepReviewList'
 import SoftPdfButton from './components/SoftPdfButton'
 import GradingReceiptPanel from './components/GradingReceiptPanel'
@@ -173,6 +174,23 @@ function StudentApp() {
     () => (session ? wrongItemEntries(session) : []),
     [session],
   )
+
+  /** P12/W4: swap to the retry paper (no answer keys) and jump back into answering. */
+  function startRepractice() {
+    if (!sessionId) return
+    void api
+      .activateRepractice(sessionId)
+      .then((next) => {
+        setSession(next)
+        setAnswers(answersFromSession(next))
+        lastSyncedAnswersRef.current = answersFromSession(next)
+        setPaper(next.paper || null)
+        setStep(1)
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : String(err))
+      })
+  }
 
   useEffect(() => {
     applyTheme(profile.grade, profile.gender || 'unspecified')
@@ -666,6 +684,10 @@ function StudentApp() {
             </section>
           ) : null}
 
+          {sessionId ? (
+            <ErrorNotebookBlock sessionId={sessionId} onRepractice={startRepractice} />
+          ) : null}
+
           {wrongItems.length > 0 && (
             <>
               <StepReviewList
@@ -707,24 +729,7 @@ function StudentApp() {
                   kind="error-notebook"
                   label="导出错题本 PDF"
                 />
-                <button
-                  className="btn"
-                  type="button"
-                  onClick={() => {
-                    void api
-                      .activateRepractice(sessionId)
-                      .then((next) => {
-                        setSession(next)
-                        setAnswers(answersFromSession(next))
-                        lastSyncedAnswersRef.current = answersFromSession(next)
-                        setPaper(next.paper || null)
-                        setStep(1)
-                      })
-                      .catch((err) => {
-                        setError(err instanceof Error ? err.message : String(err))
-                      })
-                  }}
-                >
+                <button className="btn" type="button" onClick={startRepractice}>
                   开始错题重练（进入作答）
                 </button>
               </>

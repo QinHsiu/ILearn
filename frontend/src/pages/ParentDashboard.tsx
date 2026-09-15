@@ -10,6 +10,8 @@ import DashboardDetail from '../components/DashboardDetail'
 import SoftPdfButton from '../components/SoftPdfButton'
 import UnlockRequestsPanel from '../components/UnlockRequestsPanel'
 import CompanionContinuityPanel from '../components/CompanionContinuityPanel'
+import WeeklyReportPanel from '../components/WeeklyReportPanel'
+import ErrorNotebookBlock from '../components/ErrorNotebookBlock'
 import StudentList from '../components/StudentList'
 import DashboardHome, { updateDashboardQuery } from './DashboardHome'
 
@@ -199,6 +201,11 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
             showParentDelta
           />
         ) : null}
+        {selected?.profile?.nickname || summaryStudent?.nickname ? (
+          <WeeklyReportPanel
+            nickname={String(selected?.profile?.nickname || summaryStudent?.nickname || '')}
+          />
+        ) : null}
         {summaryStudent ? (
           <section className="parent-summary" aria-labelledby="parent-summary-title">
             <h2 id="parent-summary-title">事实摘要</h2>
@@ -268,6 +275,13 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
             <button className="btn" type="submit">用绑定码绑定孩子</button>
           </form>
         </section>
+        {(selectedSessionId || selected?.session_id) ? (
+          <ErrorNotebookBlock
+            sessionId={selectedSessionId || selected!.session_id}
+            readOnly
+            title="孩子的错题本"
+          />
+        ) : null}
         {selected ? <DashboardDetail detail={selected} surface="parent" /> : null}
         {(selectedSessionId || selected?.session_id) ? (
           <UnlockRequestsPanel sessionId={selectedSessionId || selected!.session_id} />

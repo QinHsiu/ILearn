@@ -71,3 +71,29 @@ def test_p12_repractice_and_pdf(tmp_path: Path):
     pdf = client.get("/sessions/s12/export/error-notebook.pdf")
     assert pdf.status_code == 200
     assert pdf.content[:4] == b"%PDF"
+
+
+def test_w4_error_notebook_api_has_block_summary_and_masks_final_answer(tmp_path: Path):
+    """W4: notebook block payload — count, knowledge focus, mask note; 3.6 never leaks."""
+    store = SessionStore(tmp_path)
+    session = _session()
+    session.session_id = "s13"
+    store.save(session)
+    client = TestClient(
+        create_app(
+            sessions_dir=tmp_path,
+            pilot_data_dir=PILOT,
+            relationships_path=tmp_path / "relationships.json",
+            llm=None,
+        )
+    )
+    r = client.get("/sessions/s13/error-notebook")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["count"] == 1
+    assert body["knowledge_focus"] == ["kp1"]
+    assert "终答" in body["mask_note"]
+    assert body["repractice_ready"] is True
+    assert body["items"][0]["answer_key"] is None
+    assert body["items"][0]["student_answer"] == "3"
+    assert "3.6" not in r.text

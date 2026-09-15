@@ -255,6 +255,54 @@ export type LoginResponse = {
   user_id: string
 }
 
+export type ErrorNotebookItem = {
+  item_id: string
+  stem: string
+  rubric_steps: string[]
+  knowledge_ids: string[]
+  citation_label?: string | null
+  answer_key: null
+  student_answer?: string | null
+}
+
+export type ErrorNotebookPayload = {
+  session_id: string
+  count: number
+  knowledge_focus: string[]
+  mask_note: string
+  repractice_ready: boolean
+  items: ErrorNotebookItem[]
+}
+
+export type WeekBucket = {
+  label: string
+  start: string
+  end: string
+  session_count: number
+  active_days: number
+  evidence_count: number
+  probe_correct_count: number
+  hinted_correct_count: number
+  probe_gap_count?: number | null
+  mastery_percent?: number | null
+  accuracy_percent?: number | null
+  focus: string[]
+  session_ids: string[]
+}
+
+export type WeeklyReport = {
+  nickname: string
+  generated_at: string
+  week_start: string
+  week_end: string
+  this_week: WeekBucket
+  last_week: WeekBucket
+  has_baseline: boolean
+  delta: Record<string, number | null | undefined>
+  narrative: string
+  honesty_note: string
+}
+
 export type WeaknessStat = { skill: string; affected_students: number }
 export type InterventionStudent = { name: string; weakness: string; session_id: string }
 export type TeacherSummary = {
@@ -578,6 +626,9 @@ export const api = {
       count: number
     }>(`/sessions/${sessionId}/tiers/timeline`)
   },
+  getErrorNotebook(sessionId: string) {
+    return request<ErrorNotebookPayload>(`/sessions/${sessionId}/error-notebook`)
+  },
   buildRepractice(sessionId: string) {
     return request<{ session_id: string; paper: Record<string, unknown>; item_count: number }>(
       `/sessions/${sessionId}/error-notebook/repractice`,
@@ -698,6 +749,9 @@ export const api = {
       portrait_snapshot?: Record<string, unknown> | null
       latest_replan_explain?: Record<string, unknown> | null
     }>(`/learners/${encodeURIComponent(nickname)}/continuity`)
+  },
+  getLearnerWeeklyReport(nickname: string) {
+    return request<WeeklyReport>(`/learners/${encodeURIComponent(nickname)}/weekly-report`)
   },
   heartbeat(sessionId: string) {
     return request<{ ok: boolean; phase: string; server_time: string }>(
@@ -825,12 +879,18 @@ export const dashboardApi = {
       count: number
       total_events: number
       session_count: number
+      completion_summary?: Record<'not_started' | 'in_repractice' | 'submitted', number>
       timeline: Array<{
         session_id: string
         student_name: string
         assigned_at?: string | null
         topic?: string | null
         item_counts?: Record<string, number>
+        completion?: {
+          state: 'not_started' | 'in_repractice' | 'submitted'
+          label: string
+          at?: string | null
+        } | null
       }>
     }>(
       `/dashboard/teacher/${teacherId}/class/${classId}/assignment-timeline?limit=${limit}`,

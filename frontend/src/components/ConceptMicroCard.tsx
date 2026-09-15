@@ -1,7 +1,8 @@
-"""Concept micro-lesson card for soft-exit / report (no final answers)."""
+/** Concept micro-lesson card for soft-exit / report (no final answers). */
 
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
+import ConceptStoryboardFlip from './ConceptStoryboardFlip'
 
 type ConceptMicroCardProps = {
   sessionId: string
@@ -40,26 +41,12 @@ export default function ConceptMicroCard({ sessionId, itemId }: ConceptMicroCard
       <p className="concept-micro-title">
         <strong>{lesson.title}</strong>
         <span> · 约 {lesson.duration_sec} 秒</span>
-        {lesson.storyboard_url ? (
-          <>
-            {' · '}
-            <a href={lesson.storyboard_url} target="_blank" rel="noreferrer">
-              打开分镜
-            </a>
-          </>
-        ) : null}
       </p>
-      {lesson.poster_url ? (
-        <figure className="concept-poster">
-          <img src={lesson.poster_url} alt={`${lesson.title} 分镜海报`} />
-          <figcaption>不含终答 · 独立重试前先看一眼</figcaption>
-        </figure>
-      ) : null}
-      <ol>
-        {lesson.script_steps.map((step) => (
-          <li key={step}>{step}</li>
-        ))}
-      </ol>
+      <ConceptStoryboardFlip
+        title={lesson.title}
+        scriptSteps={lesson.script_steps}
+        posterUrl={lesson.poster_url}
+      />
     </aside>
   )
 }

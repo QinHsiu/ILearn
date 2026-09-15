@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
 from ilearn.core.companion_continuity import build_learner_continuity
-from ilearn.core.error_notebook import build_error_notebook
+from ilearn.core.error_notebook import error_notebook_block
 from ilearn.core.audience_summary import (
     build_parent_summary_safe,
     build_student_summary_safe,
@@ -553,6 +553,14 @@ def create_app(
         sessions = store.list_by_nickname(nickname)
         return build_learner_continuity(nickname, sessions).model_dump()
 
+    @app.get("/learners/{nickname}/weekly-report")
+    def get_learner_weekly_report(nickname: str) -> dict:
+        """W3: calendar-week (Mon–Sun, Beijing) evidence report, this week vs last week."""
+        from ilearn.core.weekly_report import build_weekly_report
+
+        sessions = store.list_by_nickname(nickname)
+        return build_weekly_report(nickname, sessions).model_dump()
+
     @app.get("/sessions/{session_id}/grading-receipts")
     def get_grading_receipts(session_id: str) -> dict:
         session = store.load(session_id)
@@ -573,10 +581,7 @@ def create_app(
     @app.get("/sessions/{session_id}/error-notebook")
     def get_error_notebook(session_id: str) -> dict:
         session = store.load(session_id)
-        return {
-            "session_id": session_id,
-            "items": build_error_notebook(session),
-        }
+        return error_notebook_block(session)
 
     @app.get("/sessions/{session_id}/decision-log/summary")
     def get_decision_log_summary(session_id: str) -> dict:
@@ -788,6 +793,9 @@ def create_app(
         from ilearn.core.schemas import SessionPhase
 
         session.phase = SessionPhase.PRACTICE
+        from ilearn.core.class_receipts import mark_repractice_activated
+
+        mark_repractice_activated(session)
         store.save(session)
         return session
 

@@ -43,3 +43,24 @@ def build_error_notebook(session: SessionState) -> list[dict[str, Any]]:
             }
         )
     return rows
+
+
+MASK_NOTE = "终答已遮罩：错题本只保留题干、步骤、来源与你的作答，重练时也不给最终答案。"
+
+
+def error_notebook_block(session: SessionState) -> dict[str, Any]:
+    """W4: error-notebook home payload — count, knowledge focus, mask note, repractice flag."""
+    rows = build_error_notebook(session)
+    focus: list[str] = []
+    for row in rows:
+        for kid in row.get("knowledge_ids") or []:
+            if kid not in focus:
+                focus.append(kid)
+    return {
+        "session_id": session.session_id,
+        "count": len(rows),
+        "knowledge_focus": focus[:5],
+        "mask_note": MASK_NOTE,
+        "repractice_ready": bool(rows),
+        "items": rows,
+    }
