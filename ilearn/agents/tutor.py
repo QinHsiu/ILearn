@@ -32,6 +32,10 @@ _CALM_PREFIX = (
 class TutorAgent:
     name = "tutor"
 
+    def __init__(self, llm: Any | None = None) -> None:
+        """Optional free-LLM client (``available`` / ``chat_text``); else rule engine."""
+        self._llm = llm
+
     @staticmethod
     def _redact_answer(message: str, item: AssessmentItem) -> str:
         key = (item.answer_key or "").strip()
@@ -82,6 +86,9 @@ class TutorAgent:
         frustration: float = 0.0,
     ) -> TutorTurn:
         tag: ErrorTag | None = error_tag  # type: ignore[assignment]
+        llm_turn = self._try_llm_step(state, user_message, item, tag, frustration=frustration)
+        if llm_turn is not None:
+            return llm_turn
         if state == "locate_gap":
             _, hint_text = hint_for_error(tag, fail_streak=0)
             skill_hint = intervention_hint_for_item(item, tag)
@@ -135,6 +142,44 @@ class TutorAgent:
 
         message = self._redact_answer("辅导已结束。如有疑问可以继续提问。", item)
         return TutorTurn(phase="done", message=message, error_tag=tag)
+
+    def _try_llm_step(
+        self,
+        state: TutorPhase,
+        user_message: str,
+        item: AssessmentItem,
+        error_tag: ErrorTag | None,
+        *,
+        frustration: float,
+    ) -> TutorTurn | None:
+        """Ask the free LLM for a Socratic hint; never put answer_key in the prompt."""
+        if state not in {"locate_gap", "hint_1"}:
+            return None
+        llm = self._llm
+        if llm is None or not getattr(llm, "available", lambda: False)():
+            return None
+        next_phase: TutorPhase = "hint_1" if state == "locate_gap" else "hint_2"
+        system = (
+            "你是小学数学苏格拉底助教。只用提问引导学生，"
+            "禁止给出最终数值答案或可直接抄写的结论。中文简短回复。"
+        )
+        steps = " → ".join(item.rubric_steps or []) or "（无分步）"
+        user = (
+            f"题目：{item.stem}\n"
+            f"评分步骤：{steps}\n"
+            f"学生说：{user_message}\n"
+            f"可能错因：{error_tag or '未知'}\n"
+            "请只给一句引导性问题，不要写出最终答案。"
+        )
+        try:
+            raw = llm.chat_text(system, user)
+        except Exception:
+            return None
+        message = self._redact_answer(str(raw or "").strip(), item)
+        if not message:
+            return None
+        message = self._with_calm_tone(message, frustration)
+        return TutorTurn(phase=next_phase, message=message, error_tag=error_tag)
 
     def get_socratic_hint_with_diagnosis(
         self,

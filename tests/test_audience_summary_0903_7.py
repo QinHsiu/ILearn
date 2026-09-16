@@ -25,10 +25,12 @@ def test_build_teacher_summary_safe_returns_default_when_session_missing():
     assert summary.student_count == 0
 
 
-def test_parent_summary_api_degrades_for_missing_session(tmp_path):
+def test_parent_summary_api_404_for_missing_session(tmp_path):
+    """Missing session stays 404 at the HTTP edge; soft defaults live in helpers."""
     client = TestClient(create_app(sessions_dir=tmp_path, llm=None))
     response = client.get("/sessions/missing-id/summary/parent")
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["child_name"] == default_parent_summary().child_name
-    assert payload["weak_skills"] == default_parent_summary().weak_skills
+    assert response.status_code == 404
+    # Helpers still degrade when the caller already holds no session.
+    summary = build_parent_summary_safe(None)
+    assert summary.child_name == default_parent_summary().child_name
+    assert summary.weak_skills == default_parent_summary().weak_skills

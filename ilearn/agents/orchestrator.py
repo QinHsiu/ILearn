@@ -86,7 +86,7 @@ class MultiAgentOrchestrator:
         self._practice = PracticeAgent(llm)
         self._diagnosis = DiagnosisAgent(curriculum)
         self._planning = PlanningAgent(curriculum)
-        self._tutor = tutor or TutorAgent()
+        self._tutor = tutor or TutorAgent(llm=llm)
         self._guard = GuardAgent()
         stub_mode = llm is None or not getattr(llm, "available", lambda: False)()
         from ilearn.agents.enhanced.diagnosis import ErrorDiagnosisAgent
