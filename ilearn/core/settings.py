@@ -17,6 +17,7 @@ class ILearnSettings(BaseModel):
     llm_base_url: str | None = None
     llm_api_key: str | None = None
     llm_model: str = "gpt-4o-mini"
+    llm_provider: str | None = None
     vision_model: str | None = None
 
     mastery_threshold: float = Field(default=0.7, ge=0.0, le=1.0)
@@ -67,11 +68,31 @@ def _env_optional(name: str) -> str | None:
 
 
 def load_settings() -> ILearnSettings:
-    """Build settings from the current process environment."""
+    """Build settings from the current process environment.
+
+    Explicit ``ILEARN_LLM_*`` wins; otherwise free-catalog keys (Groq / OpenRouter / …)
+    from ``resolve_free_llm`` fill ``llm_api_key`` / ``llm_base_url`` / ``llm_provider``.
+    """
+    from ilearn.providers.free_llm import resolve_free_llm
+
+    llm_api_key = _env_optional("ILEARN_LLM_API_KEY")
+    llm_base_url = _env_optional("ILEARN_LLM_BASE_URL")
+    llm_model = os.getenv("ILEARN_LLM_MODEL") or "gpt-4o-mini"
+    llm_provider: str | None = _env_optional("ILEARN_LLM_PROVIDER")
+    resolved = resolve_free_llm()
+    if resolved is not None:
+        if not llm_api_key:
+            llm_api_key = resolved.api_key
+            llm_base_url = llm_base_url or resolved.base_url
+            if resolved.provider != "ilearn" and not os.getenv("ILEARN_LLM_MODEL"):
+                llm_model = resolved.model
+        llm_provider = llm_provider or resolved.provider
+
     return ILearnSettings(
-        llm_base_url=_env_optional("ILEARN_LLM_BASE_URL"),
-        llm_api_key=_env_optional("ILEARN_LLM_API_KEY"),
-        llm_model=os.getenv("ILEARN_LLM_MODEL") or "gpt-4o-mini",
+        llm_base_url=llm_base_url,
+        llm_api_key=llm_api_key,
+        llm_model=llm_model,
+        llm_provider=llm_provider,
         vision_model=_env_optional("ILEARN_VISION_MODEL"),
         mastery_threshold=float(os.getenv("ILEARN_MASTERY_THRESHOLD", "0.7")),
         max_hint_per_question=int(os.getenv("ILEARN_MAX_HINT_PER_QUESTION", "3")),

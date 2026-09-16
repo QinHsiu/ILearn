@@ -420,10 +420,14 @@ class PortraitUpdater:
                     portrait.review_states[kid] = sm2_update(review_state, quality)
                     if hinted and grade_row.final_correct:
                         portrait.knowledge_state[kid] = record.practice_score
-                    else:
-                        portrait.knowledge_state[kid] = max(
-                            record.practice_score, record.probe_mastery
-                        )
+                    elif grade_row.final_correct:
+                        # Correct unhinted: only refresh an already-tracked skill.
+                        # A single correct grade must not invent knowledge_state entries.
+                        if kid in portrait.knowledge_state:
+                            portrait.knowledge_state[kid] = max(
+                                record.practice_score, record.probe_mastery
+                            )
+                    # Incorrect: capped to 0.4 in the weakness block below.
             else:
                 quality = _sm2_quality(grade_row)
                 for kid in grade_row.knowledge_ids:
