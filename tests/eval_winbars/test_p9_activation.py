@@ -30,3 +30,19 @@ def test_p9_browser_path_script_max_two_clicks():
     assert "max_user_clicks" in script or "clicks<=2" in script
     assert "pilot-assets/concept" in script
     assert "_assert_link_is_shallow" in script
+
+
+def test_w5_activation_screenshot_script_stays_local():
+    """W5: script produces social-proof shots under runtime_evidence (gitignored)."""
+    script_path = ROOT / "scripts/capture_activation_screenshots.py"
+    assert script_path.is_file()
+    script = script_path.read_text(encoding="utf-8")
+    assert "runtime_evidence" in script
+    assert "activation_screenshots" in script
+    assert "student" in script and "parent" in script and "teacher" in script
+    assert "max_user_clicks" in script or "clicks<=2" in script
+    assert "gitignore" in script.lower() or "不入库" in script or "not tracked" in script.lower()
+    # Binary shots must not live under tracked product paths
+    assert "data/pilot" not in script or "activation_screenshots" in script
+    gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    assert "runtime_evidence/*" in gitignore
