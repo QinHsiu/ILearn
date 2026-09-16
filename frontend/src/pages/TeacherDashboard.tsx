@@ -8,6 +8,8 @@ import type {
   TeacherSummary,
 } from '../api/client'
 import { api } from '../api/client'
+import ClassAssignmentTimeline from '../components/ClassAssignmentTimeline'
+import type { ClassTimelineRow, CompletionSummary } from '../components/ClassAssignmentTimeline'
 import DashboardDetail from '../components/DashboardDetail'
 import EffectivenessDashboard from '../components/EffectivenessDashboard'
 import SoftPdfButton from '../components/SoftPdfButton'
@@ -32,15 +34,8 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   const [assignReceipt, setAssignReceipt] = useState<string | null>(null)
   const [batchBusy, setBatchBusy] = useState(false)
   const [timeline, setTimeline] = useState<Array<Record<string, unknown>>>([])
-  const [classTimeline, setClassTimeline] = useState<
-    Array<{
-      session_id: string
-      student_name: string
-      assigned_at?: string | null
-      topic?: string | null
-      item_counts?: Record<string, number>
-    }>
-  >([])
+  const [classTimeline, setClassTimeline] = useState<ClassTimelineRow[]>([])
+  const [completionSummary, setCompletionSummary] = useState<CompletionSummary | null>(null)
 
   function loadTimeline(sessionId: string) {
     void api
@@ -121,8 +116,14 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
   function loadClassTimeline(id: string) {
     void dashboardApi
       .classAssignmentTimeline(userId, id)
-      .then((data) => setClassTimeline(data.timeline || []))
-      .catch(() => setClassTimeline([]))
+      .then((data) => {
+        setClassTimeline(data.timeline || [])
+        setCompletionSummary(data.completion_summary || null)
+      })
+      .catch(() => {
+        setClassTimeline([])
+        setCompletionSummary(null)
+      })
   }
 
   function selectClass(id: string) {
@@ -370,28 +371,10 @@ export default function TeacherDashboard({ userId, classId: initialClassId, stud
         {activeTab === 'overview' && classId ? (
           <section className="panel class-assignment-timeline" aria-labelledby="class-timeline-title">
             <h2 id="class-timeline-title">班级布置回执（跨学生）</h2>
-            <p className="lede">汇总本班所有学生会话的分层布置记录，不只看当前选中学生。</p>
-            {classTimeline.length ? (
-              <ol>
-                {classTimeline.slice(0, 12).map((row, index) => (
-                  <li key={`${row.session_id}-${row.assigned_at || index}`}>
-                    <strong>{row.student_name}</strong>
-                    {' · '}
-                    {String(row.assigned_at || '—')}
-                    {' · '}
-                    {String(row.topic || '巩固')}
-                    {' · '}
-                    {row.item_counts
-                      ? Object.entries(row.item_counts)
-                          .map(([k, n]) => `${k}:${n}`)
-                          .join(' ')
-                      : '—'}
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="dashboard-empty">暂无班级级布置回执，点「布置巩固」后会出现在这里。</p>
-            )}
+            <p className="lede">
+              汇总本班所有学生会话的分层布置记录，并回访每份卷子是否已开始重练、是否已提交。
+            </p>
+            <ClassAssignmentTimeline rows={classTimeline} summary={completionSummary} />
           </section>
         ) : null}
 

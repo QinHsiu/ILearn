@@ -2,12 +2,56 @@
 
 from __future__ import annotations
 
-from typing import Any
+from datetime import datetime, timezone
+from typing import Any, Literal
 
 from ilearn.core.schemas import SessionState
 from ilearn.core.winbar_exports import assign_tiers_for_session
 from ilearn.storage.relationships import RelationshipStore
 from ilearn.storage.sessions import SessionStore
+
+CompletionState = Literal["not_started", "in_repractice", "submitted"]
+
+COMPLETION_LABELS: dict[CompletionState, str] = {
+    "not_started": "未开始",
+    "in_repractice": "重练中",
+    "submitted": "已提交",
+}
+
+
+def _parse_ts(value: Any) -> datetime | None:
+    if not value or not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def mark_repractice_activated(session: SessionState) -> None:
+    """Stamp the session so class receipts can tell '布置了' from '开始重练了'."""
+    meta = dict(session.metadata or {})
+    meta["repractice_activated_at"] = datetime.now(timezone.utc).isoformat()
+    session.metadata = meta
+
+
+def derive_completion(session: SessionState, assigned_at: Any) -> dict[str, Any]:
+    """Follow-up state for one assignment: did the student start / submit after it?
+
+    Evidence-first: only the repractice activation stamp and the answers written
+    after it count. Nothing here reads or exposes final answers.
+    """
+    assigned = _parse_ts(assigned_at)
+    activated = _parse_ts((session.metadata or {}).get("repractice_activated_at"))
+    state: CompletionState = "not_started"
+    at: str | None = None
+    if activated is not None and (assigned is None or activated >= assigned):
+        state = "submitted" if (session.answers or session.grades) else "in_repractice"
+        at = activated.isoformat()
+    return {"state": state, "label": COMPLETION_LABELS[state], "at": at}
 
 
 def apply_tier_assign_and_save(
@@ -79,16 +123,21 @@ def aggregate_class_assignment_timeline(
                         for k in ("assigned_at", "topic", "teacher_note")
                         if entry.get(k) is not None
                     },
+                    "completion": derive_completion(session, entry.get("assigned_at")),
                 }
             )
     rows.sort(key=lambda r: str(r.get("assigned_at") or ""), reverse=True)
     clipped = rows[: max(1, limit)]
+    summary: dict[str, int] = {"not_started": 0, "in_repractice": 0, "submitted": 0}
+    for row in clipped:
+        summary[row["completion"]["state"]] += 1
     return {
         "teacher_id": teacher_id,
         "class_id": class_id,
         "count": len(clipped),
         "total_events": len(rows),
         "session_count": len(session_ids),
+        "completion_summary": summary,
         "timeline": clipped,
     }
 

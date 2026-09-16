@@ -35,23 +35,22 @@ describe('landing and login routes', () => {
   it('shows role selection at the root path', () => {
     render(<App />)
 
-    expect(screen.getByRole('heading', { name: '把学习看清楚，再决定下一步' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /家长端.*孩子成长/ })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /老师端.*班级运营/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '敢给孩子用的证据化学习闭环' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /家长 · 今晚就能陪/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /教师 · 布置就能办完/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /学生 · 敢问敢练/ })).toBeInTheDocument()
     expect(screen.getByText('/ 00 · START HERE')).toBeInTheDocument()
     expect(screen.getByText('/ 01 · CHOOSE ROLE')).toBeInTheDocument()
     expect(screen.getByText('/ 02 · HOW IT WORKS')).toBeInTheDocument()
     expect(screen.getByText('/ 03 · DEMO UNIT')).toBeInTheDocument()
     expect(screen.getByText('诊断')).toBeInTheDocument()
-    expect(screen.getByText('识别知识点掌握情况')).toBeInTheDocument()
+    expect(screen.getByText('课标约束组卷，识别掌握缺口')).toBeInTheDocument()
     expect(screen.getByText('计划')).toBeInTheDocument()
-    expect(screen.getByText('生成下一步学习路径')).toBeInTheDocument()
-    expect(screen.getByText('反馈')).toBeInTheDocument()
-    expect(screen.getByText('根据练习结果持续调整')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /学生端.*下一步学习/ })).toHaveAttribute(
-      'href',
-      '?student=1',
-    )
+    expect(screen.getByText('生成可追溯的下一步路径')).toBeInTheDocument()
+    expect(screen.getByText('巩固')).toBeInTheDocument()
+    expect(screen.getByText('证据化掌握度，报告可带走')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '家长登录' })).toHaveAttribute('href', '?login=1&role=parent')
+    expect(screen.getByRole('link', { name: '教师登录' })).toHaveAttribute('href', '?login=1&role=teacher')
   })
 
   it('opens the existing student app from the student entry', () => {
@@ -65,19 +64,15 @@ describe('landing and login routes', () => {
     expect(screen.getByRole('navigation', { name: '向导步骤' })).toBeInTheDocument()
   })
 
-  it('renders parent and teacher role cards on the login entry', () => {
+  it('renders the landing (role cards + login links) on the bare login entry', () => {
     setSearch('/?login=1')
     render(<App />)
 
-    expect(screen.getByRole('heading', { name: '把学习看清楚，再决定下一步' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /家长端.*孩子成长/ })).toHaveAttribute(
-      'href',
-      '?login=1&role=parent',
-    )
-    expect(screen.getByRole('link', { name: /老师端.*班级运营/ })).toHaveAttribute(
-      'href',
-      '?login=1&role=teacher',
-    )
+    expect(screen.getByRole('heading', { name: '敢给孩子用的证据化学习闭环' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /家长 · 今晚就能陪/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /教师 · 布置就能办完/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '家长登录' })).toHaveAttribute('href', '?login=1&role=parent')
+    expect(screen.getByRole('link', { name: '教师登录' })).toHaveAttribute('href', '?login=1&role=teacher')
   })
 
   it('shows the API error when login fails', async () => {

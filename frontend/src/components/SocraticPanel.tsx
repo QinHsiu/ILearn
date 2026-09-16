@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { TutorTurn } from '../api/client'
+import ConceptStoryboardFlip from './ConceptStoryboardFlip'
 
 const MAX_HINTS = 3
 
@@ -174,14 +175,6 @@ export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps)
             <>
               <p className="concept-micro-title">
                 <strong>{lesson.title}</strong>
-                {lesson.storyboard_url ? (
-                  <>
-                    {' · '}
-                    <a href={lesson.storyboard_url} target="_blank" rel="noreferrer">
-                      打开概念分镜
-                    </a>
-                  </>
-                ) : null}
                 {lesson.media_status === 'poster' ? (
                   <span className="concept-asset-slot"> · 分镜海报已就绪</span>
                 ) : lesson.media_status === 'video' ? (
@@ -192,24 +185,21 @@ export default function SocraticPanel({ sessionId, itemId }: SocraticPanelProps)
                   <span className="concept-asset-slot"> · 视频位已预留</span>
                 )}
               </p>
-              {lesson.poster_url ? (
-                <figure className="concept-poster">
-                  <img src={lesson.poster_url} alt={`${lesson.title} 分镜海报`} />
-                  <figcaption>视觉分镜海报（不含终答；mp4 仍为预留位）</figcaption>
-                </figure>
-              ) : null}
-              <ol>
-                {lesson.script_steps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
+              <ConceptStoryboardFlip
+                title={lesson.title}
+                scriptSteps={lesson.script_steps}
+                posterUrl={lesson.poster_url}
+              />
             </>
           ) : (
-            <ol>
-              <li>用自己的话复述本题相关概念</li>
-              <li>对照 rubric 步骤口述思路</li>
-              <li>请教家长/老师检查卡点（不要要终答）</li>
-            </ol>
+            <ConceptStoryboardFlip
+              title="概念回顾"
+              scriptSteps={[
+                '用自己的话复述本题相关概念',
+                '对照 rubric 步骤口述思路',
+                '请教家长/老师检查卡点（不要要终答）',
+              ]}
+            />
           )}
         </div>
       ) : null}
