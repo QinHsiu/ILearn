@@ -7,6 +7,9 @@ name = "ilearn"
 version = "0.1.0"
 description = "Personalized learning agent MVP for elementary math (grades 4-6)"
 requires-python = ">=3.11"
+# Orchestration stance (2026): host state machine + event log.
+# Do NOT add pyautogen/autogen (maintenance-mode / merged into Microsoft Agent Framework).
+# Do NOT add langgraph as a default dependency; optional adapters stay out-of-tree.
 dependencies = [
   "pydantic>=2.6",
   "fastapi>=0.110",

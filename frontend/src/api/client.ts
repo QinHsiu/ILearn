@@ -274,6 +274,18 @@ export type ErrorNotebookPayload = {
   items: ErrorNotebookItem[]
 }
 
+export type SessionClosePayload = {
+  closed: boolean
+  closed_at?: string | null
+  headline: string
+  next_challenge: string
+  evidence_count: number
+  probe_gap_count: number
+  parent_line: string
+  honesty_note: string
+  session_id?: string | null
+}
+
 export type WeekBucket = {
   label: string
   start: string
@@ -628,6 +640,14 @@ export const api = {
   },
   getErrorNotebook(sessionId: string) {
     return request<ErrorNotebookPayload>(`/sessions/${sessionId}/error-notebook`)
+  },
+  getSessionClose(sessionId: string) {
+    return request<SessionClosePayload>(`/sessions/${sessionId}/session-close`)
+  },
+  stampSessionClose(sessionId: string) {
+    return request<SessionClosePayload>(`/sessions/${sessionId}/session-close`, {
+      method: 'POST',
+    })
   },
   buildRepractice(sessionId: string) {
     return request<{ session_id: string; paper: Record<string, unknown>; item_count: number }>(

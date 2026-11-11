@@ -226,6 +226,20 @@ class GradingReceipt(BaseModel):
     ocr_confidence: float | None = None
     ocr_degraded: bool | None = None
     math_verify_result: dict | None = None
+    content_hash: str | None = None
+    # Layered contract: objective items use this receipt; open-ended items may
+    # additionally carry rubric/judge path fields without changing objectivity semantics.
+    receipt_kind: Literal["objective", "open_ended"] = "objective"
+    rubric_version: str | None = None
+    judge_trace_snapshot: str | None = None
+
+
+class OpenEndedGradingReceipt(GradingReceipt):
+    """Open-ended grading path: auditable decision trail, not bit-identical replay."""
+
+    receipt_kind: Literal["objective", "open_ended"] = "open_ended"
+    rubric_version: str = "unspecified"
+    judge_trace_snapshot: str = ""
 
 
 class MasteryRecord(BaseModel):
@@ -389,6 +403,9 @@ class CurriculumCitation(BaseModel):
     excerpt: str
     source_label: str
     source_id: str | None = None
+    # Disambiguate multi source-pack coexistence (region curriculum packs).
+    region: str | None = None
+    edition: str | None = None
 
 
 class AgentDecision(BaseModel):
@@ -398,6 +415,26 @@ class AgentDecision(BaseModel):
     evidence_ids: list[str] = Field(default_factory=list)
     ok: bool = True
     degraded: bool = False
+
+
+class OrchestrationEvent(BaseModel):
+    """Append-only orchestration event (event-sourcing primitive)."""
+
+    event_id: str = Field(default_factory=lambda: uuid4().hex)
+    kind: str = "decision"
+    agent: str
+    stage: SessionPhase
+    reason: str = ""
+    input_digest: str = ""
+    output_digest: str = ""
+    content_hash: str = ""
+    span_id: str = Field(default_factory=lambda: uuid4().hex)
+    parent_span_id: str | None = None
+    ts: datetime = Field(default_factory=utc_now)
+    ok: bool = True
+    degraded: bool = False
+    evidence_ids: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class PendingQuestion(BaseModel):
@@ -424,6 +461,7 @@ class SessionState(BaseModel):
     loop_count: int = 0
     evidence_log: list[KnowledgeEvidence] = Field(default_factory=list)
     decision_log: list[AgentDecision] = Field(default_factory=list)
+    event_log: list[OrchestrationEvent] = Field(default_factory=list)
     pending_questions: list[PendingQuestion] = Field(default_factory=list)
     tutor_by_item: dict[str, TutorTurn] = Field(default_factory=dict)
     hint_interactions: dict[str, list[HintInteraction]] = Field(default_factory=dict)

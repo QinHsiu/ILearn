@@ -2177,6 +2177,42 @@ button.role-card:disabled {
   margin: 1rem 0;
 }
 
+.session-close-ritual {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--il-ink, #222);
+  background: #fffdf8;
+}
+
+.session-close-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.session-close-head .student-section-title {
+  margin: 0 0 0.25rem;
+}
+
+.session-close-mask {
+  border-color: var(--il-blue, #002fa7);
+  color: var(--il-blue, #002fa7);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.session-close-next,
+.session-close-parent,
+.session-close-honesty {
+  margin: 0.4rem 0;
+}
+
+.session-close-honesty {
+  font-size: 0.9rem;
+  color: var(--il-muted, #666);
+}
+
 .weekly-report-range,
 .weekly-report-focus,
 .weekly-report-honesty {

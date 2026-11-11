@@ -300,6 +300,46 @@ describe('api.getTeacherSummary / getParentSummary', () => {
       expect.anything(),
     )
   })
+
+  it('GETs session close ritual', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        closed: false,
+        headline: '今天先到这里 · 证据 1 条',
+        next_challenge: '小数乘法',
+        evidence_count: 1,
+        probe_gap_count: 1,
+        parent_line: '孩子今天还没收工。下一挑战：小数乘法。',
+        honesty_note: '提示后做对不计入掌握；收工卡不含终答。',
+      }),
+    )
+    await api.getSessionClose('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/s1/session-close',
+      expect.anything(),
+    )
+  })
+
+  it('POSTs session close stamp', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        closed: true,
+        headline: '今天收工了 · 证据 1 条',
+        next_challenge: '小数乘法',
+        evidence_count: 1,
+        probe_gap_count: 1,
+        parent_line: '孩子今天收工了。下一挑战：小数乘法。不含终答。',
+        honesty_note: '提示后做对不计入掌握；收工卡不含终答。',
+      }),
+    )
+    await api.stampSessionClose('s1')
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/sessions/s1/session-close',
+      expect.objectContaining({ method: 'POST' }),
+    )
+  })
 })
 
 describe('api.exportEffectivenessPdf', () => {

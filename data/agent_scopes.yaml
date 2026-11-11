@@ -1,0 +1,28 @@
+# Offline / demo RBAC signal: separate agent scopes and optional API keys.
+# When api_key_env is unset or empty in the environment, scope membership is
+# still enforced; key matching is skipped (zero-LLM / offline friendly).
+# Set ILEARN_AGENT_SCOPES_PATH to override this file.
+# Quote scope tokens so PyYAML does not parse "a:b" as a mapping.
+enforcement: hard
+agents:
+  curriculum:
+    scopes: ["curriculum:retrieve"]
+    api_key_env: ILEARN_SCOPE_CURRICULUM_KEY
+  assessment:
+    scopes: ["assessment:generate"]
+    api_key_env: ILEARN_SCOPE_ASSESSMENT_KEY
+  practice:
+    scopes: ["practice:grade"]
+    api_key_env: ILEARN_SCOPE_PRACTICE_KEY
+  diagnosis:
+    scopes: ["diagnosis:run"]
+    api_key_env: ILEARN_SCOPE_DIAGNOSIS_KEY
+  planning:
+    scopes: ["planning:run"]
+    api_key_env: ILEARN_SCOPE_PLANNING_KEY
+  tutor:
+    scopes: ["tutor:hint"]
+    api_key_env: ILEARN_SCOPE_TUTOR_KEY
+  eval:
+    scopes: ["eval:run"]
+    api_key_env: ILEARN_SCOPE_EVAL_KEY

@@ -72,6 +72,13 @@ class DiagnosisAgent:
             )
 
     def run(self, ctx: AgentContext) -> AgentResult:
+        from ilearn.core.scopes import assert_agent_scope
+
+        assert_agent_scope(
+            self.name,
+            "diagnosis:run",
+            api_key=ctx.metadata.get("scope_api_key"),
+        )
         if ctx.paper is None:
             raise ValueError("DiagnosisAgent requires paper in context")
         evidence = list(ctx.evidence_log)
@@ -116,6 +123,7 @@ class DiagnosisAgent:
         enrichment["hint_effectiveness"] = self._summarize_hint_effectiveness(
             ctx.metadata.get("hint_interactions")
         )
+        enrichment["context_compaction"] = self._compact_context_presentation(ctx)
         from ilearn.core.audience_summary import generate_audience_summary
 
         enrichment["parent_summary"] = generate_audience_summary(
@@ -154,6 +162,45 @@ class DiagnosisAgent:
                 "diagnosis_enrichment": enrichment,
             },
         )
+
+    @staticmethod
+    def _compact_context_presentation(ctx: AgentContext) -> dict[str, Any]:
+        """Compress presentation of bulky context; evidence_log itself is untouched."""
+        from ilearn.core.context_compactor import ContextCompactor
+
+        raw_messages = ctx.metadata.get("context_messages")
+        messages: list[dict[str, Any]]
+        if isinstance(raw_messages, list) and raw_messages:
+            messages = [m for m in raw_messages if isinstance(m, dict)]
+        else:
+            messages = []
+            for event in ctx.evidence_log:
+                messages.append(
+                    {
+                        "role": "tool",
+                        "content": (
+                            f"item={event.item_id}; knowledge={event.knowledge_id}; "
+                            f"correct={event.correct}; tag={event.error_tag}"
+                        ),
+                        "evidence_id": event.evidence_id,
+                    }
+                )
+        occupancy = float(ctx.metadata.get("context_occupancy") or 0.0)
+        if occupancy <= 0.0:
+            # Rough occupancy proxy: many evidence rows or long tool payloads.
+            bulky = sum(
+                1
+                for m in messages
+                if m.get("role") == "tool" and len(str(m.get("content") or "")) > 400
+            )
+            occupancy = min(1.0, (len(messages) / 40.0) + (0.2 * bulky))
+        compacted = ContextCompactor().present_for_agent(messages, occupancy=occupancy)
+        return {
+            "layer": compacted.layer,
+            "placeholders": compacted.placeholders,
+            "message_count": len(compacted.messages),
+            "occupancy": occupancy,
+        }
 
     @staticmethod
     def _classify_evidence_volume(

@@ -29,9 +29,10 @@ Curriculum · Assessment · Practice · Diagnosis · Planning
 ## 特性
 
 - **课标在环** — 建议可追溯到课标条目与例题来源
-- **批改可审计** — OCR 与判分分离，`GradingReceipt` 可复现
+- **批改可审计** — OCR 与判分分离，`GradingReceipt` 可复现并带内容哈希
 - **掌握度严谨** — practice / probe 双轨 + 证据日志
-- **辅导不泄题** — 状态机驱动的苏格拉底提示（Guard 护栏）
+- **辅导不泄题** — 状态机驱动的苏格拉底提示（Guard / TutorRail 护栏）
+- **编排可替换** — 默认宿主状态机 + 事件日志；不绑定 AutoGen / LangGraph 运行时
 - **报告可带走** — 一键导出做题复盘 PDF 与学习报告 PDF
 - **多形态交付** — CLI · REST API · React 向导
 - **零 LLM 可跑** — 无 API Key 亦可离线演示全流程
@@ -77,6 +78,7 @@ uvicorn ilearn.api.app:app --host 0.0.0.0 --port 8000
 | 文档 | 内容 |
 | --- | --- |
 | **[INTRODUCTION.md](INTRODUCTION.md)** | 架构、能力、API / CLI、环境变量、目录说明 |
+| **[AUDIT.md](AUDIT.md)** | 可审计性 / GAF-AI-EDU / EduAgentBench 映射与缺口 |
 | **[VERSION.md](VERSION.md)** | 版本范围、更新日志、近期 Todo |
 | **[REFERENCE.md](REFERENCE.md)** | 致谢与参考项目 |
 | OpenAPI | 启动 API 后见 `/docs` |

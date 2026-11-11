@@ -59,15 +59,26 @@ def load_curriculum_sources(pilot_dir: str | Path) -> list[dict]:
 
 def source_to_citation(entry: dict) -> CurriculumCitation:
     source_id = entry.get("source_id", entry.get("citation_id", "unknown"))
+    region = entry.get("region")
+    edition = entry.get("edition")
+    source_label = entry.get(
+        "source_label",
+        f"{entry.get('region', '北京')}·人教·小学数学",
+    )
+    if region is None or edition is None:
+        parts = [p for p in str(source_label).split("·") if p]
+        if region is None and parts:
+            region = parts[0]
+        if edition is None and len(parts) > 1:
+            edition = parts[1]
     return CurriculumCitation(
         citation_id=source_id,
         source_id=source_id,
         title=entry.get("title", ""),
         excerpt=entry.get("excerpt", ""),
-        source_label=entry.get(
-            "source_label",
-            f"{entry.get('region', '北京')}·人教·小学数学",
-        ),
+        source_label=source_label,
+        region=region,
+        edition=edition,
     )
 
 

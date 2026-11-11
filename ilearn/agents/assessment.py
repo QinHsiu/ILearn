@@ -334,6 +334,13 @@ class AssessmentAgent:
         return load_multimodal_bank(pilot_dir)
 
     def run(self, ctx: AgentContext) -> AgentResult:
+        from ilearn.core.scopes import assert_agent_scope
+
+        assert_agent_scope(
+            self.name,
+            "assessment:generate",
+            api_key=ctx.metadata.get("scope_api_key"),
+        )
         paper_type = ctx.metadata.get("paper_type", "diagnostic")
         if paper_type == "followup":
             weak_ids = ctx.metadata.get("weak_knowledge_ids", [])

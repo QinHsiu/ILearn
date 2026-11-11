@@ -12,6 +12,7 @@ from ilearn.core.hints import fail_streak_for_item, hint_for_error
 from ilearn.core.ocr import OcrExtractor
 from ilearn.core.schemas import (
     AssessmentItem,
+    AssessmentPaper,
     EvidenceLane,
     GradeResult,
     KnowledgeEvidence,
@@ -130,6 +131,46 @@ class PracticeAgent:
         self._text_grader = ItemGrader(llm)
         self._ocr = OcrExtractor(llm)
 
+    def grade_perception_outputs(
+        self,
+        paper: AssessmentPaper,
+        outputs: list[Any],
+        *,
+        lane: EvidenceLane = "practice",
+    ) -> list[GradeResult]:
+        """Grade structured perception outputs (text/speech/image→text) without state-machine changes."""
+        from ilearn.perception.adapter import PerceptionOutput
+
+        item_by_id = {item.id: item for item in paper.items}
+        grades: list[GradeResult] = []
+        for index, output in enumerate(outputs):
+            if not isinstance(output, PerceptionOutput):
+                continue
+            # Prefer explicit item_id on raw_ref like "item:q1"; else map by order.
+            item_id = None
+            raw_ref = output.raw_ref or ""
+            if raw_ref.startswith("item:"):
+                item_id = raw_ref.split(":", 1)[1].split("|", 1)[0].strip() or None
+            item = item_by_id.get(item_id) if item_id else None
+            if item is None and index < len(paper.items):
+                item = paper.items[index]
+            if item is None:
+                continue
+            grade = self._text_grader.grade_item(
+                item,
+                output.text,
+                paper_created_at=paper.created_at,
+                lane=lane,
+            )
+            if grade.receipt is not None:
+                grade.receipt.ocr_confidence = float(output.confidence)
+                grade.receipt.ocr_degraded = output.source_type != "text" and output.confidence < 0.5
+                from ilearn.audit.attestation import compute_receipt_content_hash
+
+                grade.receipt.content_hash = compute_receipt_content_hash(grade.receipt)
+            grades.append(grade)
+        return grades
+
     def analyze_geo_interaction(
         self,
         interaction_log: list[dict[str, Any]],
@@ -157,6 +198,13 @@ class PracticeAgent:
         return {"status": "misguided", "diagnosis": "可能误解了题目要求"}
 
     def run(self, ctx: AgentContext) -> AgentResult:
+        from ilearn.core.scopes import assert_agent_scope
+
+        assert_agent_scope(
+            self.name,
+            "practice:grade",
+            api_key=ctx.metadata.get("scope_api_key"),
+        )
         if ctx.paper is None:
             raise ValueError("PracticeAgent requires paper in context")
         # First-pass grading of the diagnostic paper (loop_count == 0) is unassisted
@@ -194,6 +242,9 @@ class PracticeAgent:
             if grade.receipt is not None:
                 grade.receipt.ocr_confidence = ocr_result.confidence
                 grade.receipt.ocr_degraded = ocr_result.degraded
+                from ilearn.audit.attestation import compute_receipt_content_hash
+
+                grade.receipt.content_hash = compute_receipt_content_hash(grade.receipt)
             if ocr_result.degraded or ocr_result.confidence < 0.5:
                 grade.grading_degraded = True
             # Do not clear grading_degraded based on OCR success alone: the text

@@ -19,12 +19,24 @@ _GRADE_DEFAULT_QUERY = {
 
 def _syllabus_to_citation(entry: dict) -> CurriculumCitation:
     citation_id = entry["citation_id"]
+    source_label = entry["source_label"]
+    region = entry.get("region")
+    edition = entry.get("edition")
+    if region is None or edition is None:
+        # Labels look like "北京·人教·小学数学"
+        parts = [p for p in str(source_label).split("·") if p]
+        if region is None and parts:
+            region = parts[0]
+        if edition is None and len(parts) > 1:
+            edition = parts[1]
     return CurriculumCitation(
         citation_id=citation_id,
         source_id=citation_id,
         title=entry["title"],
         excerpt=entry["excerpt"],
-        source_label=entry["source_label"],
+        source_label=source_label,
+        region=region,
+        edition=edition,
     )
 
 
@@ -41,6 +53,13 @@ class CurriculumAgent:
         self._retriever = CurriculumRagRetriever(pilot_dir, backend=resolved_backend)
 
     def run(self, ctx: AgentContext) -> AgentResult:
+        from ilearn.core.scopes import assert_agent_scope
+
+        assert_agent_scope(
+            self.name,
+            "curriculum:retrieve",
+            api_key=ctx.metadata.get("scope_api_key"),
+        )
         query = ctx.metadata.get("curriculum_query") or _GRADE_DEFAULT_QUERY.get(
             ctx.profile.grade, "小学数学"
         )

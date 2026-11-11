@@ -11,6 +11,7 @@ import SoftPdfButton from '../components/SoftPdfButton'
 import UnlockRequestsPanel from '../components/UnlockRequestsPanel'
 import CompanionContinuityPanel from '../components/CompanionContinuityPanel'
 import WeeklyReportPanel from '../components/WeeklyReportPanel'
+import SessionCloseRitual from '../components/SessionCloseRitual'
 import ErrorNotebookBlock from '../components/ErrorNotebookBlock'
 import StudentList from '../components/StudentList'
 import DashboardHome, { updateDashboardQuery } from './DashboardHome'
@@ -275,6 +276,13 @@ export default function ParentDashboard({ userId, studentId }: ParentDashboardPr
             <button className="btn" type="submit">用绑定码绑定孩子</button>
           </form>
         </section>
+        {(selectedSessionId || selected?.session_id) ? (
+          <SessionCloseRitual
+            sessionId={selectedSessionId || selected!.session_id}
+            readOnly
+            title="今天收工"
+          />
+        ) : null}
         {(selectedSessionId || selected?.session_id) ? (
           <ErrorNotebookBlock
             sessionId={selectedSessionId || selected!.session_id}

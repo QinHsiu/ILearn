@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from ilearn.core.companion_continuity import build_learner_continuity
 from ilearn.core.error_notebook import error_notebook_block
+from ilearn.core.session_close import build_session_close, stamp_session_close
 from ilearn.core.audience_summary import (
     build_parent_summary_safe,
     build_student_summary_safe,
@@ -582,6 +583,18 @@ def create_app(
     def get_error_notebook(session_id: str) -> dict:
         session = store.load(session_id)
         return error_notebook_block(session)
+
+    @app.get("/sessions/{session_id}/session-close")
+    def get_session_close(session_id: str) -> dict:
+        session = store.load(session_id)
+        return build_session_close(session).model_dump()
+
+    @app.post("/sessions/{session_id}/session-close")
+    def post_session_close(session_id: str) -> dict:
+        session = store.load(session_id)
+        stamp_session_close(session)
+        store.save(session)
+        return build_session_close(session).model_dump()
 
     @app.get("/sessions/{session_id}/decision-log/summary")
     def get_decision_log_summary(session_id: str) -> dict:
