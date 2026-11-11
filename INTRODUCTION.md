@@ -10,10 +10,10 @@
 | | |
 | --- | --- |
 | **课标在环** | 地区 / 年级课标约束 + 可切换 retriever（`keyword` / `hash_vector`）；多地区 source packs；计划可追溯到纲要依据 |
-| **批改可审计** | Host-owned `ItemGrader`；OCR 与判分分离；`GradingReceipt` 绑定试卷与 grader 版本 |
+| **批改可审计** | Host-owned `ItemGrader`；OCR 与判分分离；`GradingReceipt` 绑定试卷与 grader 版本，并写 `content_hash` / `attestation_log` |
 | **掌握度不糊弄** | practice / probe 双轨 + `KnowledgeEvidence`，避免「带提示做对」当成已掌握 |
-| **多 Agent 编排** | 流水线 Agent + Tutor + Eval，由状态机编排，而不是一个巨型 prompt |
-| **编排可观测** | 上下文预算、`decision_log`、阶段质量门、PendingQuestion 绑题、写能力白名单 |
+| **多 Agent 编排** | 流水线 Agent + Tutor + Eval，由**宿主会话状态机**编排（`HostStateMachineBackend`），而不是一个巨型 prompt；**不绑定** AutoGen / LangGraph / CrewAI 运行时 |
+| **编排可观测** | append-only `event_log`（span 可下钻）+ 兼容 `decision_log`、阶段质量门、PendingQuestion 绑题、写能力白名单 |
 | **开箱可跑** | 无 LLM 也能离线演示；配置 OpenAI 兼容 API 即升级构造题 / 手写 VL |
 | **建档与主题** | 昵称 / 性别；React 向导按性别 × 学段切换主题 |
 | **题目溯源** | 组卷绑定 `source_refs`；报告与向导可展开错题参考来源 |
@@ -40,7 +40,8 @@
 
 ## 多 Agent 架构
 
-由 `MultiAgentOrchestrator` 驱动（`ilearn.core.orchestrator.Orchestrator` 为兼容门面）：
+由 `MultiAgentOrchestrator` 驱动（`ilearn.core.orchestrator.Orchestrator` 为兼容门面）。  
+编排核心 = **会话阶段状态机 + append-only 事件日志**；`OrchestrationBackend` 可替换，默认 `HostStateMachineBackend`。LangGraph 仅作可选 stub（同构参照），AutoGen **不是**依赖或推荐后端（已维护态 / 并入 MAF）。
 
 | Agent | 角色 | 职责 |
 | --- | --- | --- |
@@ -49,8 +50,10 @@
 | **PracticeAgent** | 流水线 | 文本与图片作答批改 |
 | **DiagnosisAgent** | 流水线 | 掌握度、证据、画像、干预 |
 | **PlanningAgent** | 流水线 | 个性化计划与 replan |
-| **TutorAgent** | 辅导 | 苏格拉底提示；Guard 防泄题 |
+| **TutorAgent** | 辅导 | 苏格拉底提示；Guard / `TutorRail` 防泄题 |
 | **EvalAgent** | 离线评测 | CLI `ilearn eval`，不进会话流水线 |
+
+审计与追踪 CLI：`ilearn trace`、`ilearn audit replay`、`ilearn audit derailment`、`ilearn resume`（见 [AUDIT.md](AUDIT.md)）。
 
 ### 会话阶段
 

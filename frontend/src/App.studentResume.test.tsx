@@ -12,6 +12,16 @@ vi.mock('./api/client', async () => {
       ...actual.api,
       getReport: vi.fn(),
       createSession: vi.fn(),
+      getSessionClose: vi.fn().mockResolvedValue({
+        closed: false,
+        closed_at: null,
+        headline: '今天先到这里 · 证据 0 条',
+        next_challenge: '继续今日挑战',
+        evidence_count: 0,
+        probe_gap_count: 0,
+        parent_line: '孩子今天还没收工。下一挑战：继续今日挑战。',
+        honesty_note: '提示后做对不计入掌握；收工卡不含终答。',
+      }),
     },
   }
 })

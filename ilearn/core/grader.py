@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from ilearn.audit.attestation import compute_receipt_content_hash
 from ilearn.core.datetime_utils import utc_now
 from ilearn.core.grading import StepGrader, match_answer_detailed
 from ilearn.core.schemas import AssessmentItem, EvidenceLane, GradeResult, GradingReceipt
@@ -31,11 +32,29 @@ class ItemGrader:
         verify_payload = None
         if item.answer_key is not None:
             _, verify_payload = match_answer_detailed(answer_text, item.answer_key)
+        open_ended = item.type == "constructed"
+        judge_trace = None
+        rubric_version = None
+        if open_ended:
+            rubric_version = f"constructed-rubric:{GRADER_VERSION}"
+            steps = list(item.rubric_steps or [])
+            judge_trace = (
+                f"path=constructed; offline_or_llm={bool(getattr(self._step_grader._llm, 'available', lambda: False)())}; "
+                f"final_correct={result.final_correct}; "
+                f"degraded={result.grading_degraded}; "
+                f"rubric_steps={steps}; "
+                f"error_tags={list(result.error_tags)}; "
+                f"answer_digest_len={len(answer_text or '')}"
+            )
         receipt = GradingReceipt(
             paper_created_at=paper_created_at or utc_now(),
             grader_version=GRADER_VERSION,
             model_id=getattr(self._step_grader._llm, "model", None),
             math_verify_result=verify_payload,
+            receipt_kind="open_ended" if open_ended else "objective",
+            rubric_version=rubric_version,
+            judge_trace_snapshot=judge_trace,
         )
+        receipt.content_hash = compute_receipt_content_hash(receipt)
         result.receipt = receipt
         return result

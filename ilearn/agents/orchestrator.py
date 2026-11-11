@@ -44,7 +44,6 @@ from ilearn.core.report import render_full_report
 from ilearn.core.session_lock import with_session_lock
 from ilearn.core.schemas import (
     MAX_HINTS_PER_ITEM,
-    AgentDecision,
     AssessmentPaper,
     DiagnosisReport,
     GradeResult,
@@ -247,16 +246,22 @@ class MultiAgentOrchestrator:
         ok: bool = True,
         degraded: bool = False,
         evidence_ids: list[str] | None = None,
+        input_payload: dict | None = None,
+        output_payload: dict | None = None,
     ) -> None:
-        session.decision_log.append(
-            AgentDecision(
-                agent=agent,
-                phase=phase,
-                reason=reason,
-                evidence_ids=evidence_ids or [],
-                ok=ok,
-                degraded=degraded,
-            )
+        from ilearn.orchestration.events import append_orchestration_event
+
+        append_orchestration_event(
+            session,
+            agent=agent,
+            stage=phase,
+            reason=reason,
+            input_payload=input_payload or {},
+            output_payload=output_payload or {"reason": reason},
+            ok=ok,
+            degraded=degraded,
+            evidence_ids=evidence_ids or [],
+            kind="decision",
         )
 
     @with_session_lock
@@ -589,9 +594,36 @@ class MultiAgentOrchestrator:
             SessionPhase.GRADE,
             "answers graded",
             evidence_ids=[event.evidence_id for event in evidence_events],
+            input_payload={"n_answers": len(session.answers)},
+            output_payload={"n_grades": len(session.grades)},
         )
+        self._write_grade_attestations(session)
         self._store.save(session)
         return session.grades
+
+    def _attestation_dir(self, session_id: str) -> Path:
+        path = Path(self._store.root) / "attestations" / session_id
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _checkpoint_dir(self) -> Path:
+        path = Path(self._store.root) / "checkpoints"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _write_grade_attestations(self, session: SessionState) -> None:
+        from ilearn.audit.attestation import append_attestation
+
+        directory = self._attestation_dir(session.session_id)
+        for grade in session.grades or []:
+            if grade.receipt is None:
+                continue
+            append_attestation(
+                directory,
+                session_id=session.session_id,
+                receipt=grade.receipt,
+                item_id=grade.item_id,
+            )
 
     @staticmethod
     def _update_hint_outcomes(session: SessionState) -> None:
@@ -615,6 +647,48 @@ class MultiAgentOrchestrator:
             return 0.0
         return float(portrait.dimensions.emotional.get("frustration", 0.0) or 0.0)
 
+    @staticmethod
+    def _build_context_messages(session: SessionState) -> list[dict]:
+        """Assemble presentation messages for ContextCompactor (evidence kept separately)."""
+        messages: list[dict] = []
+        for citation in session.curriculum_citations or []:
+            excerpt = citation.excerpt or ""
+            messages.append(
+                {
+                    "role": "tool",
+                    "content": (
+                        f"citation={citation.citation_id}; "
+                        f"region={citation.region}; edition={citation.edition}; "
+                        f"title={citation.title}; excerpt={excerpt}"
+                    ),
+                    "evidence_id": citation.citation_id,
+                }
+            )
+        for grade in session.grades or []:
+            messages.append(
+                {
+                    "role": "tool",
+                    "content": (
+                        f"grade item={grade.item_id}; correct={grade.final_correct}; "
+                        f"tags={list(grade.error_tags)}; "
+                        f"receipt={getattr(grade.receipt, 'content_hash', None)}"
+                    ),
+                    "evidence_id": f"grade:{grade.item_id}",
+                }
+            )
+        for event in session.evidence_log or []:
+            messages.append(
+                {
+                    "role": "tool",
+                    "content": (
+                        f"evidence item={event.item_id}; knowledge={event.knowledge_id}; "
+                        f"correct={event.correct}; lane={event.lane}; tag={event.error_tag}"
+                    ),
+                    "evidence_id": event.evidence_id,
+                }
+            )
+        return messages
+
     @with_session_lock
     def diagnose(self, session_id: str) -> DiagnosisReport:
         session = self._store.load(session_id)
@@ -625,6 +699,17 @@ class MultiAgentOrchestrator:
         hint = session.metadata.get("enhanced_context_hint")
         if isinstance(hint, str) and hint.strip():
             diagnose_meta["enhanced_context_hint"] = hint
+        context_messages = self._build_context_messages(session)
+        diagnose_meta["context_messages"] = context_messages
+        # Rough occupancy: many tool rows or long citation excerpts.
+        bulky = sum(
+            1
+            for row in context_messages
+            if len(str(row.get("content") or "")) > 400
+        )
+        diagnose_meta["context_occupancy"] = min(
+            1.0, (len(context_messages) / 40.0) + (0.15 * bulky)
+        )
         result, degraded = run_with_quality_gate(
             lambda: self._diagnosis.run(
                 self._ctx(
@@ -787,6 +872,9 @@ class MultiAgentOrchestrator:
     @with_session_lock
     def tutor_start(self, session_id: str, item_id: str) -> TutorTurn:
         """Begin Socratic tutoring for an assessment/practice item (grades optional)."""
+        from ilearn.core.scopes import assert_agent_scope
+
+        assert_agent_scope(self._tutor.name, "tutor:hint")
         session = self._store.load(session_id)
         PhaseGuard.assert_ready_for("tutor", session)
         paper = self._require_paper_for_tutor(session)
@@ -837,6 +925,35 @@ class MultiAgentOrchestrator:
             enrichment if isinstance(enrichment, dict) else None
         )
         frustration = self._frustration_level(session)
+        if previous.phase == "done":
+            from ilearn.orchestration.unexpected import record_unexpected_state
+
+            knowledge_id = (item.knowledge_ids or ["unknown"])[0]
+            record_unexpected_state(
+                session,
+                checkpoint_dir=self._checkpoint_dir(),
+                context={
+                    "raw_input": user_message,
+                    "item_id": item_id,
+                    "tutor_phase": previous.phase,
+                    "knowledge_id": knowledge_id,
+                },
+                stage=session.phase,
+                agent=self._tutor.name,
+            )
+            turn = TutorTurn(
+                phase="done",
+                message=(
+                    "当前辅导路径已结束，你的输入暂无法映射到预设状态转移，"
+                    "会话已记录脱轨点并暂停。请老师或开发者使用 "
+                    "`ilearn resume` 注入处理决策后再继续。"
+                ),
+                error_tag=previous.error_tag,
+                action="unexpected_pause",
+            )
+            session.tutor_by_item[item_id] = turn
+            self._store.save(session)
+            return turn
         if previous.error_tag or diagnosis_ctx:
             turn = self._tutor.get_socratic_hint_with_diagnosis(
                 item,
@@ -871,6 +988,8 @@ class MultiAgentOrchestrator:
             self._tutor.name,
             session.phase,
             "tutoring hint",
+            input_payload={"item_id": item_id, "user_len": len(user_message or "")},
+            output_payload={"phase": turn.phase},
         )
         self._store.save(session)
         return turn
@@ -878,6 +997,24 @@ class MultiAgentOrchestrator:
     def _guard_turn(
         self, session: SessionState, item, turn: TutorTurn
     ) -> TutorTurn:
+        from ilearn.rails.base import AnswerLeakRail, HintLadderRail, run_rails
+
+        rails_verdict = run_rails(
+            [HintLadderRail(), AnswerLeakRail(self._guard)],
+            phase=turn.phase,
+            item=item,
+            model_message=turn.message,
+            stage="post",
+        )
+        if not rails_verdict.ok:
+            self._record_decision(
+                session,
+                "guard",
+                SessionPhase.PRACTICE,
+                f"rail blocked ({rails_verdict.reason})",
+                ok=False,
+            )
+            return turn.model_copy(update={"message": SAFE_FALLBACK})
         verdict = self._guard.check(turn.message, item.answer_key)
         if verdict.is_leak and verdict.confidence > 0.7:
             self._record_decision(

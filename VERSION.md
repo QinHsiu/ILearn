@@ -60,6 +60,11 @@ ILearn 当前版本说明：定位、本版范围、更新记录与近期 Todo�
 
 | 阶段 | 要点 | 测试 |
 | --- | --- | --- |
+| Orchestration audit readiness A | `HostStateMachineBackend` 默认；`event_log` 事件溯源；回执 `content_hash` + `attestation_log`；`AUDIT.md`；`ilearn trace` / `audit replay` / `resume`；TutorRail / Perception / ContextCompactor 接口 | 新增用例已过（编排/审计/rails 子集） |
+| Audit readiness wiring B | 批改 attestation 落盘；TutorRails 接线；`UNEXPECTED_STATE`+脱轨率；Diagnosis 上下文压缩呈现；constructed 开放题分层回执；`grade_perception_outputs` | 接线子集已过 |
+| Audit readiness wiring C | diagnose 自动注入 context_messages；`SpeechAssessmentAdapter`；citation `region`/`edition` 消歧 | 接线子集已过 |
+| Audit readiness wiring D | `agent_scopes.yaml` 职责分离；curriculum/practice scope 校验；脱轨率快照落盘 | 接线子集已过 |
+| Audit readiness wiring E | 全流水线 Agent scope；可选 attestation HMAC 链；session-close 仪式 API/UI 一并合入 | 审计相关 41 用例已过 |
 | Soft-launch companion depth A | `progress_delta` + `companion_line`；学生/家长可读陪伴面板；比上次证据优先 | **eval_winbars 39** |
 | Multi-Agent P0 + Composition Phase 1 | 6 Agent 编排、ItemGrader / GradingReceipt、课标 keyword RAG、评测 CLI | 177 |
 | Phase 1 收尾 | StepAttempt、contextual 画像、citation ids、completeness CLI 等 | 177 |

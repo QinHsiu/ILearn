@@ -29,7 +29,9 @@ _REPORT_EXCERPT_LINES = 12
 
 app = typer.Typer(help="ILearn MVP CLI")
 agents_app = typer.Typer(help="Multi-agent pipeline commands")
+audit_app = typer.Typer(help="Audit / trace / resume commands")
 app.add_typer(agents_app, name="agents")
+app.add_typer(audit_app, name="audit")
 
 _PHASE_LABELS = {
     SessionPhase.ONBOARD: "建档",
@@ -275,6 +277,107 @@ def agents_run(
     if session.loop_count:
         typer.echo(f"Practice loops: {session.loop_count}")
     typer.echo(f"Report: {report_path}")
+
+
+@app.command("trace")
+def trace_session(
+    session_id: str = typer.Argument(..., help="Session id to render as a span tree"),
+) -> None:
+    """Show OpenTelemetry-inspired span tree for one session's event_log."""
+    import json
+
+    from ilearn.orchestration.events import build_span_tree
+
+    store = SessionStore(_resolve_sessions_dir())
+    try:
+        session = store.load(session_id)
+    except FileNotFoundError:
+        typer.echo(f"Session not found: {session_id}", err=True)
+        raise typer.Exit(code=1)
+    tree = build_span_tree(session.event_log or [])
+    typer.echo(json.dumps(tree, ensure_ascii=False, indent=2))
+
+
+@audit_app.command("replay")
+def audit_replay(
+    session_id: str = typer.Argument(..., help="Session id"),
+) -> None:
+    """Replay decision digests chronologically (read-only verification view)."""
+    store = SessionStore(_resolve_sessions_dir())
+    try:
+        session = store.load(session_id)
+    except FileNotFoundError:
+        typer.echo(f"Session not found: {session_id}", err=True)
+        raise typer.Exit(code=1)
+    events = session.event_log or []
+    if not events:
+        typer.echo("No event_log entries (legacy session may only have decision_log).")
+        for row in session.decision_log or []:
+            phase = row.phase.value if hasattr(row.phase, "value") else str(row.phase)
+            typer.echo(f"- {phase} · {row.agent} · ok={row.ok} · {row.reason}")
+        return
+    for event in events:
+        if event.kind == "stage_span":
+            continue
+        stage = event.stage.value if hasattr(event.stage, "value") else str(event.stage)
+        typer.echo(
+            f"{event.ts.isoformat()} · {event.kind} · {stage} · {event.agent} · "
+            f"in={event.input_digest[:12]} out={event.output_digest[:12]} · "
+            f"hash={event.content_hash[:12]}"
+        )
+
+
+@audit_app.command("derailment")
+def audit_derailment(
+    persist: bool = typer.Option(
+        True,
+        "--persist/--no-persist",
+        help="Write reports/derailment_latest.json under the sessions dir",
+    ),
+) -> None:
+    """Aggregate UNEXPECTED_STATE events across sessions (derailment rate view)."""
+    import json
+
+    from ilearn.orchestration.unexpected import (
+        derailment_report,
+        persist_derailment_report,
+    )
+
+    sessions_dir = _resolve_sessions_dir()
+    store = SessionStore(sessions_dir)
+    report = derailment_report(store.list_all())
+    typer.echo(json.dumps(report, ensure_ascii=False, indent=2))
+    if persist:
+        path = persist_derailment_report(sessions_dir / "reports", report)
+        typer.echo(f"Persisted: {path}")
+
+
+@app.command("resume")
+def resume_cmd(
+    session_id: str = typer.Argument(..., help="Session id paused on UNEXPECTED_STATE"),
+    decision: str = typer.Option(
+        "continue",
+        "--decision",
+        help="continue | replan | human_takeover",
+    ),
+    note: str = typer.Option("", "--note", help="Operator note"),
+) -> None:
+    """Inject a handling decision and append a resume event."""
+    from ilearn.orchestration.unexpected import resume_session
+
+    store = SessionStore(_resolve_sessions_dir())
+    try:
+        session = store.load(session_id)
+    except FileNotFoundError:
+        typer.echo(f"Session not found: {session_id}", err=True)
+        raise typer.Exit(code=1)
+    try:
+        event = resume_session(session, decision=decision, note=note)
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1)
+    store.save(session)
+    typer.echo(f"Resumed with decision={decision} event_id={event.event_id}")
 
 
 if __name__ == "__main__":

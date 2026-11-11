@@ -22,6 +22,7 @@ import GradingReceiptPanel from './components/GradingReceiptPanel'
 import StudentSummaryPanel from './components/StudentSummaryPanel'
 import MasteryEvidencePanel from './components/MasteryEvidencePanel'
 import CompanionContinuityPanel from './components/CompanionContinuityPanel'
+import SessionCloseRitual from './components/SessionCloseRitual'
 import ReplanExplainPanel from './components/ReplanExplainPanel'
 import EvidenceChain from './components/EvidenceChain'
 import PDFExportButton from './components/PDFExportButton'
@@ -568,6 +569,8 @@ function StudentApp() {
             {session.loop_count ? ` · 巩固轮次 ${session.loop_count}` : ''}
           </p>
 
+          {sessionId ? <SessionCloseRitual sessionId={sessionId} /> : null}
+
           <h3 className="student-section-title">作答复盘</h3>
           <table className="table answer-review-table">
             <thead>
@@ -762,6 +765,7 @@ function StudentApp() {
           {sessionId ? (
             <StudentSummaryPanel sessionId={sessionId} nickname={profile.nickname} />
           ) : null}
+          {sessionId ? <SessionCloseRitual sessionId={sessionId} /> : null}
           {sessionId ? <ReplanExplainPanel sessionId={sessionId} refreshKey={replanRefresh} /> : null}
           {(profile.nickname || '').trim() ? (
             <CompanionContinuityPanel

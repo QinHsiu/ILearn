@@ -119,6 +119,13 @@ class PlanningAgent:
         self._planner = Planner(curriculum)
 
     def run(self, ctx: AgentContext) -> AgentResult:
+        from ilearn.core.scopes import assert_agent_scope
+
+        assert_agent_scope(
+            self.name,
+            "planning:run",
+            api_key=ctx.metadata.get("scope_api_key"),
+        )
         if ctx.diagnosis is None:
             raise ValueError("PlanningAgent requires diagnosis in context")
         plan = self._planner.plan(ctx.profile, ctx.diagnosis, portrait=ctx.portrait)
