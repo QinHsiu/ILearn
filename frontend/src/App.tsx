@@ -151,6 +151,12 @@ function StudentApp() {
   const [historyNickname, setHistoryNickname] = useState('')
   const [, setFocusItemId] = useState<string | null>(null)
   const [pilotGrades, setPilotGrades] = useState<number[]>(DEFAULT_PILOT_GRADES)
+  const [companionGrades, setCompanionGrades] = useState<number[]>([
+    ...DEFAULT_PILOT_GRADES,
+    7,
+    8,
+    9,
+  ])
   const [pdfBackend, setPdfBackend] = useState<{
     backend: string
     fallback_active: boolean
@@ -201,10 +207,15 @@ function StudentApp() {
   useEffect(() => {
     void api.getCapabilities().then((caps) => {
       if (caps.pilot_grades?.length) setPilotGrades(caps.pilot_grades)
+      if (caps.companion_grades?.length) setCompanionGrades(caps.companion_grades)
+      else if (caps.pilot_grades?.length) {
+        setCompanionGrades([...caps.pilot_grades, 7, 8, 9])
+      }
     }).catch(() => setPilotGrades(DEFAULT_PILOT_GRADES))
   }, [])
 
-  const isGradeSupported = (grade: number) => pilotGrades.includes(grade)
+  const isGradeSupported = (grade: number) => companionGrades.includes(grade)
+  const isAssessmentGrade = (grade: number) => pilotGrades.includes(grade)
 
   useEffect(() => {
     if (step < 4) return
@@ -287,7 +298,7 @@ function StudentApp() {
   async function onStart(e: FormEvent) {
     e.preventDefault()
     if (!isGradeSupported(Number(profile.grade))) {
-      setError(`该年级暂未开放，请选择 ${pilotGrades.join('、')} 年级数学试点内容。`)
+      setError(`该年级暂未开放，请选择 ${companionGrades.join('、')} 年级。`)
       return
     }
     setBusy(true)
@@ -498,11 +509,14 @@ function StudentApp() {
                 </div>
                 {!isGradeSupported(Number(profile.grade)) ? (
                   <p className="field-hint field-hint-error">
-                    当前仅试点 {pilotGrades.join('、')} 年级，其他年级暂未开放
+                    同伴对话开放 {companionGrades.join('、')} 年级；其他年级暂未开放
                   </p>
                 ) : null}
                 <p className="field-hint">
-                  当前试点：{pilotGrades.join('、')} 年级 · 北京·人教
+                  同伴对话：{companionGrades.join('、')} 年级 · 测评组卷：{pilotGrades.join('、')} 年级
+                  {!isAssessmentGrade(Number(profile.grade))
+                    ? '（当前年级可问答；测评需改到试点年级）'
+                    : ''}
                 </p>
               </div>
               <div className="field">

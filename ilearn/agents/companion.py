@@ -237,9 +237,13 @@ class CompanionAgent:
                 citations = []
         if not citations:
             body = (
-                "我这边没有命中可引用的课标/例题片段。"
+                "未命中可引用的课标/例题片段。"
                 "你可以换个说法，或启动测评让我用题目定位缺口。"
             )
+            if life_stage not in {"primary", "junior_high"}:
+                body = (
+                    f"当前学段（{life_stage}）内容包尚未就绪。" + body
+                )
         else:
             bits = []
             for c in citations[:2]:

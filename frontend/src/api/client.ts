@@ -279,6 +279,7 @@ export type EffectivenessResponse = {
 export type CapabilitiesResponse = {
   llm_available: boolean
   pilot_grades: number[]
+  companion_grades?: number[]
   features: Array<{ name: string; tier: string; available: boolean }>
   tiers: Record<string, string>
 }

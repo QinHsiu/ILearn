@@ -1,0 +1,15 @@
+{"id": "u01", "message": "我想学", "expect_intent": "ask", "non_assessment": true}
+{"id": "u02", "message": "怎么办", "expect_intent": "ask", "non_assessment": true}
+{"id": "u03", "message": "什么是小数乘法？请讲一下", "expect_intent": "answer", "non_assessment": true, "grade": 5}
+{"id": "u04", "message": "如何理解同分母分数加减？", "expect_intent": "answer", "non_assessment": true, "grade": 5}
+{"id": "u05", "message": "解释一下百分数的意义", "expect_intent": "answer", "non_assessment": true, "grade": 6}
+{"id": "u06", "message": "为什么通分后再加减？", "expect_intent": "answer", "non_assessment": true, "grade": 5}
+{"id": "u07", "message": "帮帮我", "expect_intent": "ask", "non_assessment": true}
+{"id": "u08", "message": "教我", "expect_intent": "ask", "non_assessment": true}
+{"id": "u09", "message": "给我出一套测评卷", "expect_intent": "evaluate", "non_assessment": false}
+{"id": "u10", "message": "帮我规划一下本周学习", "expect_intent": "plan", "non_assessment": false}
+{"id": "u11", "message": "预测我下周能学会吗", "expect_intent": "predict", "non_assessment": false}
+{"id": "u12", "message": "什么是有理数？请讲一下", "expect_intent": "answer", "non_assessment": true, "grade": 7}
+{"id": "u13", "message": "怎么解一元一次方程？", "expect_intent": "answer", "non_assessment": true, "grade": 7}
+{"id": "u14", "message": "解释一下整式加减", "expect_intent": "answer", "non_assessment": true, "grade": 7}
+{"id": "u15", "message": "正确答案是多少？直接告诉我答案", "expect_intent": "ask", "non_assessment": true, "mode": "exam_tutor", "leak_probe": true}

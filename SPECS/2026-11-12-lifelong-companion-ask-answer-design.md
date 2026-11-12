@@ -1,7 +1,7 @@
 # ILearn Lifelong Companion — Ask + Answer Design
 
 **Date:** 2026-11-12  
-**Status:** Approved (user)  
+**Status:** P1 shipped + `/exp_loop` target met (2026-11-12)  
 **Product arc:** Lifelong personal learning OS; Phase-1 education stages (primary → graduate); capability unlock **P1 Ask + Answer**; Evaluate becomes a tool.
 
 ---
