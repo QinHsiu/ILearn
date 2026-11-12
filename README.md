@@ -34,7 +34,7 @@ Curriculum · Assessment · Practice · Diagnosis · Planning
 - **辅导不泄题** — 状态机驱动的苏格拉底提示（Guard / TutorRail 护栏）
 - **编排可替换** — 默认宿主状态机 + 事件日志；不绑定 AutoGen / LangGraph 运行时
 - **Companion 五能力** — Ask / Answer / Plan（周计划）/ Predict（掉队风险）/ Evaluate（组卷工具）
-- **学段内容包** — B1 初中 · B2 高中 · B3 大学 · B4 研究生（问答检索）；测评组卷仍 4–6
+- **学段内容包** — B1–B6（初中→银龄）问答检索；年龄推断 LifeStage；测评组卷仍 4–6
 - **验收** — `content/exp/ilearn-companion-p1/` + `content/exp/ilearn-companion-phase1/`（`/exp_loop` 已达标）
 - **报告可带走** — 一键导出做题复盘 PDF 与学习报告 PDF
 - **多形态交付** — CLI · REST API · React 向导

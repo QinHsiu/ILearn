@@ -35,6 +35,20 @@ _ASK_SHORT = re.compile(r"^(我想学|怎么办|不会|教我|帮帮我)[\s\W]*$
 def infer_life_stage(profile: StudentProfile) -> LifeStage:
     if profile.life_stage:
         return profile.life_stage
+    age = int(profile.age)
+    # Age-first for lifelong stages outside K12 grade semantics.
+    if age < 6:
+        return "early_childhood"
+    if age >= 65:
+        return "elder"
+    if age >= 45:
+        return "midlife"
+    if age >= 23:
+        return "career"
+    if age >= 22:
+        return "graduate"
+    if age >= 18:
+        return "undergrad"
     grade = int(profile.grade)
     if grade <= 6:
         return "primary"
@@ -276,10 +290,8 @@ class CompanionAgent:
                 "未命中可引用的课标/例题片段。"
                 "你可以换个说法，或启动测评让我用题目定位缺口。"
             )
-            if life_stage not in {"primary", "junior_high"}:
-                body = (
-                    f"当前学段（{life_stage}）内容包尚未就绪。" + body
-                )
+            if life_stage in {"early_childhood"}:
+                body = f"当前学段（{life_stage}）内容包仍较薄。" + body
         else:
             bits = []
             for c in citations[:2]:

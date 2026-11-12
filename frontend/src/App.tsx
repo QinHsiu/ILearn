@@ -521,8 +521,8 @@ function StudentApp() {
                 <input
                   id="age"
                   type="number"
-                  min={6}
-                  max={18}
+                  min={3}
+                  max={120}
                   value={profile.age}
                   onChange={(e) =>
                     setProfile({ ...profile, age: Number(e.target.value) })

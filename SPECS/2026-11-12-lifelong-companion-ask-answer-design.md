@@ -140,7 +140,7 @@ Append `OrchestrationEvent` with `kind` in:
 - [x] Predict: probe-gap / derailment risk (`companion_predict`)  
 - [x] B1 junior-high math source pack  
 - [x] Thin packs senior_high / undergrad / graduate (B2–B4)  
-- [ ] Career/elder stage plugins (Phase-2 Life-OS)  
+- [x] Career/midlife/elder stage packs + age-based LifeStage inference (thin hooks)  
 
 ---
 

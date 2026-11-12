@@ -1,0 +1,26 @@
+[
+  {
+    "source_id": "cn-elder-curiosity-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "银龄学习·兴趣微课",
+    "excerpt": "短时、低压力、可重复。每次只学一个小概念，用生活例子巩固，强调乐趣与社交分享。",
+    "keywords": ["银龄", "兴趣", "微课", "生活数学", "轻松"],
+    "source_label": "通用·银龄学习",
+    "life_stage": "elder",
+    "content_hash": "sha256:b6elder001"
+  },
+  {
+    "source_id": "cn-midlife-reset-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "中年学习·目标重置",
+    "excerpt": "先澄清「为什么学」，再选每周两块固定时间。进度用完成次数而非时长衡量。",
+    "keywords": ["中年", "目标", "时间块", "复盘", "重置"],
+    "source_label": "通用·生涯学习",
+    "life_stage": "midlife",
+    "content_hash": "sha256:b6midlife001"
+  }
+]
