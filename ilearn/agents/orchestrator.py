@@ -235,6 +235,40 @@ class MultiAgentOrchestrator:
         reply = self._companion.chat(
             session, message, perception=perception, mode=mode
         )
+        # Evaluate tool: start_assessment generates the paper (no nested lock).
+        if any(a.type == "start_assessment" for a in reply.actions) and session.paper is None:
+            session = self._ensure_enhanced_profile(session)
+            assess_meta: dict = {}
+            weak_queue = build_weak_first_knowledge_ids(session)
+            if weak_queue:
+                assess_meta["weak_knowledge_ids"] = weak_queue
+            result, degraded = run_with_quality_gate(
+                lambda: self._assessment.run(
+                    self._ctx(session, phase=SessionPhase.ASSESS, metadata=assess_meta)
+                ),
+                valid_assessment_result,
+            )
+            if degraded:
+                result = degraded_assessment_result(session.profile)
+            else:
+                paper, _ = self._validate_and_revise_paper(
+                    session, result.payload["paper"]
+                )
+                result.payload["paper"] = paper
+            session.paper = result.payload["paper"]
+            self._bind_pending_questions(session, session.paper)
+            session.answers = []
+            session.image_answers = []
+            session.grades = []
+            mark_assessment_started(session)
+            self._set_phase(session, result.phase)
+            self._record_decision(
+                session,
+                self._companion.name,
+                SessionPhase.ASSESS,
+                "companion.evaluate.start_assessment",
+                output_payload={"item_count": len(session.paper.items)},
+            )
         self._store.save(session)
         return reply
 

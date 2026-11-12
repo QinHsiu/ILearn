@@ -2330,6 +2330,103 @@ button.role-card:disabled {
   color: var(--il-muted, #5f6368);
 }
 
+.companion-chat .companion-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.companion-chip {
+  border: 1px solid var(--il-line);
+  background: var(--il-soft);
+  color: var(--il-ink);
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.companion-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.companion-turns {
+  max-height: 22rem;
+  overflow-y: auto;
+  border-top: 1px solid var(--il-line);
+  border-bottom: 1px solid var(--il-line);
+  padding: 0.75rem 0;
+  margin-bottom: 0.85rem;
+}
+
+.companion-empty {
+  color: var(--il-muted);
+  margin: 0.5rem 0;
+}
+
+.companion-turn {
+  margin: 0.65rem 0;
+  padding: 0.55rem 0.7rem;
+  background: var(--il-soft);
+}
+
+.companion-turn-user {
+  background: transparent;
+  border-left: 3px solid var(--il-blue);
+}
+
+.companion-turn-assistant {
+  border-left: 3px solid var(--il-ink);
+}
+
+.companion-turn-role {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--il-muted);
+}
+
+.companion-turn-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.companion-composer textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 4rem;
+  border: 1px solid var(--il-line);
+  background: var(--il-paper);
+  color: var(--il-ink);
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+}
+
+.companion-composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+}
+
+.companion-mic.is-listening {
+  outline: 2px solid var(--il-blue);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (max-width: 640px) {
   .waitlist-form {
     grid-template-columns: 1fr;

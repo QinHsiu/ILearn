@@ -35,12 +35,18 @@
 
 ### Task 3: Orchestrator bridge + API
 
-- [ ] `MultiAgentOrchestrator.companion_chat(...)`
-- [ ] `POST /sessions/{id}/companion/chat` (message and/or perception)
-- [ ] `POST /sessions/{id}/companion/transcribe` → SpeechAssessmentAdapter hook
-- [ ] Evaluate action triggers assessment generation message/action
+- [x] `MultiAgentOrchestrator.companion_chat(...)`
+- [x] `POST /sessions/{id}/companion/chat` (message and/or perception)
+- [x] `POST /sessions/{id}/companion/transcribe` → SpeechAssessmentAdapter hook
+- [x] Evaluate action triggers assessment generation message/action
 
-### Task 4: Docs + ship
+### Task 4: Frontend companion entry + voice UI
 
-- [ ] README / INTRODUCTION / AUDIT touch
-- [ ] Pytest green; commit + PR
+- [x] Wizard step「同伴对话」after onboard
+- [x] `CompanionChat` + mic/TTS hooks + client API types
+- [x] Evaluate → advance to assessment step
+
+### Task 5: Docs + ship
+
+- [x] README / INTRODUCTION / AUDIT touch
+- [x] Pytest / Vitest green; commit + PR (#42)

@@ -22,6 +22,7 @@ import GradingReceiptPanel from './components/GradingReceiptPanel'
 import StudentSummaryPanel from './components/StudentSummaryPanel'
 import MasteryEvidencePanel from './components/MasteryEvidencePanel'
 import CompanionContinuityPanel from './components/CompanionContinuityPanel'
+import CompanionChat from './components/CompanionChat'
 import SessionCloseRitual from './components/SessionCloseRitual'
 import ReplanExplainPanel from './components/ReplanExplainPanel'
 import EvidenceChain from './components/EvidenceChain'
@@ -43,7 +44,7 @@ import { applyTheme } from './theme'
 import './styles.css'
 import './dashboard.css'
 
-const STEPS = ['建档', '测评作答', '批改与学情', '学习计划'] as const
+const STEPS = ['建档', '同伴对话', '测评作答', '批改与学情', '学习计划'] as const
 
 const ALL_GRADES = Array.from({ length: 12 }, (_, i) => i + 1)
 const DEFAULT_PILOT_GRADES = [4, 5, 6]
@@ -186,7 +187,7 @@ function StudentApp() {
         setAnswers(answersFromSession(next))
         lastSyncedAnswersRef.current = answersFromSession(next)
         setPaper(next.paper || null)
-        setStep(1)
+        setStep(2)
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : String(err))
@@ -206,7 +207,7 @@ function StudentApp() {
   const isGradeSupported = (grade: number) => pilotGrades.includes(grade)
 
   useEffect(() => {
-    if (step < 3) return
+    if (step < 4) return
     void api.getPdfBackend().then((info) => {
       setPdfBackend({
         backend: info.backend,
@@ -318,6 +319,18 @@ function StudentApp() {
     }
   }
 
+  function resetToOnboard() {
+    setStep(0)
+    setSessionId(null)
+    setSession(null)
+    setPaper(null)
+    setReport(null)
+    setAnswers({})
+    lastSyncedAnswersRef.current = {}
+    setImageUploads({})
+    setFocusItemId(null)
+  }
+
   async function onAdaptiveComplete(payload: AssessmentCompletePayload) {
     if (!sessionId) return
     setBusy(true)
@@ -340,7 +353,7 @@ function StudentApp() {
       setSession(nextReport.session)
       lastSyncedAnswersRef.current = answersFromSession(nextReport.session)
       setFocusItemId(null)
-      setStep(2)
+      setStep(3)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
       throw err
@@ -350,7 +363,7 @@ function StudentApp() {
   }
 
   useEffect(() => {
-    if (!sessionId || step < 2) {
+    if (!sessionId || step < 3) {
       setInviteCode(null)
       setInviteHint(null)
       return
@@ -525,7 +538,7 @@ function StudentApp() {
             </div>
             <div className="actions">
               <button className="btn" type="submit" disabled={busy || !isGradeSupported(Number(profile.grade))}>
-                {busy ? '生成中…' : '开始测评'}
+                {busy ? '创建中…' : '进入同伴对话'}
               </button>
             </div>
           </form>
@@ -541,26 +554,24 @@ function StudentApp() {
       )}
 
       {step === 1 && sessionId ? (
+        <CompanionChat
+          sessionId={sessionId}
+          onStartAssessment={() => setStep(2)}
+          onBack={resetToOnboard}
+        />
+      ) : null}
+
+      {step === 2 && sessionId ? (
         <Assessment
           sessionId={sessionId}
           profile={profile}
           onComplete={onAdaptiveComplete}
           onError={onAssessmentError}
-          onBack={() => {
-            setStep(0)
-            setSessionId(null)
-            setSession(null)
-            setPaper(null)
-            setReport(null)
-            setAnswers({})
-            lastSyncedAnswersRef.current = {}
-            setImageUploads({})
-            setFocusItemId(null)
-          }}
+          onBack={() => setStep(1)}
         />
       ) : null}
 
-      {step === 2 && session && (
+      {step === 3 && session && (
         <section className="panel student-panel student-diagnosis">
           <p className="student-panel-eyebrow">DIAGNOSIS / MASTERY</p>
           <h2>批改与学情</h2>
@@ -737,14 +748,17 @@ function StudentApp() {
                 </button>
               </>
             ) : null}
-            <button className="btn secondary" type="button" onClick={() => setStep(3)}>
+            <button className="btn secondary" type="button" onClick={() => setStep(4)}>
               查看学习计划
+            </button>
+            <button className="btn secondary" type="button" onClick={() => setStep(1)}>
+              回到同伴对话
             </button>
           </div>
         </section>
       )}
 
-      {step === 3 && session && (
+      {step === 4 && session && (
         <section className="panel student-panel student-plan">
           <p className="student-panel-eyebrow">PLAN / NEXT STEP</p>
           <h2>学习计划</h2>
@@ -795,8 +809,11 @@ function StudentApp() {
                   : ''}
               </p>
             ) : null}
-            <button className="btn secondary" type="button" onClick={() => setStep(2)}>
+            <button className="btn secondary" type="button" onClick={() => setStep(3)}>
               返回学情
+            </button>
+            <button className="btn secondary" type="button" onClick={() => setStep(1)}>
+              回到同伴对话
             </button>
             {sessionId ? (
               <>
@@ -825,16 +842,7 @@ function StudentApp() {
             <button
               className="btn"
               type="button"
-              onClick={() => {
-                setStep(0)
-                setSessionId(null)
-                setSession(null)
-                setPaper(null)
-                setReport(null)
-                setAnswers({})
-                lastSyncedAnswersRef.current = {}
-                setImageUploads({})
-              }}
+              onClick={resetToOnboard}
             >
               新会话
             </button>

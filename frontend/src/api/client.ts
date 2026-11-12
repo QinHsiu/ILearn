@@ -149,6 +149,47 @@ export type TutorTurn = {
   action?: string | null
 }
 
+export type CompanionModality = 'text' | 'speech' | 'image' | 'mixed'
+export type CompanionMode = 'exam_tutor' | 'open_explore'
+export type CompanionIntent = 'ask' | 'answer' | 'evaluate' | 'plan' | 'predict'
+
+export type CompanionSpeechOut = {
+  ssml_or_text: string
+  locale?: string
+  speakable?: boolean
+}
+
+export type CompanionPerceptionIn = {
+  source_type?: CompanionModality
+  text?: string | null
+  audio_ref?: string | null
+  image_ref?: string | null
+  confidence?: number
+}
+
+export type CompanionAction = {
+  type: string
+  payload?: Record<string, unknown>
+}
+
+export type CompanionReply = {
+  intent: CompanionIntent
+  reply: string
+  speech: CompanionSpeechOut
+  citations?: Array<Record<string, unknown>>
+  actions?: CompanionAction[]
+  input_modality?: CompanionModality
+  mode?: CompanionMode
+  life_stage?: string | null
+}
+
+export type CompanionHistoryTurn = {
+  kind: string
+  reason: string
+  ts: string
+  metadata?: Record<string, unknown>
+}
+
 export type SessionSummary = {
   session_id: string
   nickname?: string | null
@@ -669,6 +710,38 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ item_id: itemId, user_message: userMessage }),
     })
+  },
+  companionChat(
+    sessionId: string,
+    body: {
+      message?: string | null
+      perception?: CompanionPerceptionIn | null
+      mode?: CompanionMode
+    },
+  ) {
+    return request<CompanionReply>(`/sessions/${sessionId}/companion/chat`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  },
+  companionTranscribe(
+    sessionId: string,
+    body: { audio_ref: string; text_fallback?: string | null },
+  ) {
+    return request<{
+      text: string
+      source_type: string
+      confidence: number
+      raw_ref: string
+    }>(`/sessions/${sessionId}/companion/transcribe`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  },
+  companionHistory(sessionId: string) {
+    return request<{ session_id: string; turns: CompanionHistoryTurn[] }>(
+      `/sessions/${sessionId}/companion/history`,
+    )
   },
   replan(sessionId: string) {
     return request<{ markdown: string; status?: string }>(
