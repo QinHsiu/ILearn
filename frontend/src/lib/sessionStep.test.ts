@@ -13,10 +13,31 @@ describe('stepFromSession', () => {
   it('returns 0 when server has no paper, grades, or plan', () => {
     expect(stepFromSession(emptySession)).toBe(0)
   })
+
+  it('maps paper → assessment, grades → diagnosis, plan → plan', () => {
+    expect(
+      stepFromSession({
+        ...emptySession,
+        paper: { items: [], grade: 5, curriculum_label: 'x' },
+      } as SessionState),
+    ).toBe(2)
+    expect(
+      stepFromSession({
+        ...emptySession,
+        grades: [{ item_id: 'i1', final_correct: true }],
+      } as SessionState),
+    ).toBe(3)
+    expect(
+      stepFromSession({
+        ...emptySession,
+        plan: { status: 'draft' },
+      } as SessionState),
+    ).toBe(4)
+  })
 })
 
 describe('nextStepOnSync', () => {
-  it('does not drop step 1 to 0 when server has no paper', () => {
+  it('does not drop companion step to 0 when server has no paper', () => {
     expect(nextStepOnSync(1, emptySession)).toBe(1)
   })
 
@@ -25,9 +46,9 @@ describe('nextStepOnSync', () => {
       ...emptySession,
       grades: [{ item_id: 'i1', final_correct: true }],
     } as SessionState
-    expect(nextStepOnSync(1, withGrades)).toBe(2)
+    expect(nextStepOnSync(1, withGrades)).toBe(3)
 
     const withPlan = { ...emptySession, plan: { status: 'draft' } } as SessionState
-    expect(nextStepOnSync(2, withPlan)).toBe(3)
+    expect(nextStepOnSync(2, withPlan)).toBe(4)
   })
 })

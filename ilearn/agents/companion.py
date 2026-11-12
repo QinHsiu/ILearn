@@ -97,6 +97,7 @@ class CompanionAgent:
                 mode=mode,
                 citations=[],
                 actions=[],
+                user_text=text,
             )
 
         intent = self.route_intent(text)
@@ -117,6 +118,7 @@ class CompanionAgent:
                 citations=[],
                 actions=actions,
                 life_stage=life_stage,
+                user_text=text,
             )
 
         if intent == "plan":
@@ -130,6 +132,7 @@ class CompanionAgent:
                 citations=[],
                 actions=[],
                 life_stage=life_stage,
+                user_text=text,
             )
 
         if intent == "predict":
@@ -143,6 +146,7 @@ class CompanionAgent:
                 citations=[],
                 actions=[],
                 life_stage=life_stage,
+                user_text=text,
             )
 
         if intent == "ask":
@@ -156,6 +160,7 @@ class CompanionAgent:
                 citations=[],
                 actions=[],
                 life_stage=life_stage,
+                user_text=text,
             )
 
         # answer
@@ -189,6 +194,7 @@ class CompanionAgent:
             if intent == "answer"
             else [],
             life_stage=life_stage,
+            user_text=text,
         )
 
     @staticmethod
@@ -278,6 +284,7 @@ class CompanionAgent:
         citations: list,
         actions: list[CompanionAction],
         life_stage: LifeStage | None = None,
+        user_text: str = "",
     ) -> CompanionReply:
         speech = _speech_envelope(reply_text)
         reply = CompanionReply(
@@ -295,9 +302,18 @@ class CompanionAgent:
             agent=self.name,
             stage=session.phase,
             reason=f"companion:{intent}",
-            input_payload={"modality": modality, "mode": mode},
-            output_payload={"intent": intent, "actions": [a.type for a in actions]},
+            input_payload={"modality": modality, "mode": mode, "user_text": user_text},
+            output_payload={
+                "intent": intent,
+                "reply": reply_text,
+                "actions": [a.type for a in actions],
+            },
             kind=f"companion_{intent}",
-            metadata={"input_modality": modality},
+            metadata={
+                "input_modality": modality,
+                "user_text": user_text,
+                "reply": reply_text,
+                "intent": intent,
+            },
         )
         return reply
