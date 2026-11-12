@@ -55,6 +55,9 @@ from ilearn.api.demo import create_demo_router
 from ilearn.api.waitlist import create_waitlist_router
 from ilearn.core.schemas import (
     AssessmentPaper,
+    CompanionMode,
+    CompanionPerceptionIn,
+    CompanionReply,
     DiagnosisReport,
     GradeResult,
     ImageAnswer,
@@ -124,6 +127,17 @@ class TutorStartRequest(BaseModel):
 class TutorHintRequest(BaseModel):
     item_id: str
     user_message: str
+
+
+class CompanionChatRequest(BaseModel):
+    message: str | None = None
+    mode: CompanionMode = "exam_tutor"
+    perception: CompanionPerceptionIn | None = None
+
+
+class CompanionTranscribeRequest(BaseModel):
+    audio_ref: str
+    text_fallback: str | None = None
 
 
 class AdaptiveStartRequest(BaseModel):
@@ -501,6 +515,51 @@ def create_app(
         return orchestrator.tutor_hint(
             session_id, body.item_id, body.user_message
         )
+
+    @app.post("/sessions/{session_id}/companion/chat", response_model=CompanionReply)
+    def companion_chat(session_id: str, body: CompanionChatRequest) -> CompanionReply:
+        if not (body.message and body.message.strip()) and body.perception is None:
+            raise HTTPException(
+                status_code=400,
+                detail="message or perception is required",
+            )
+        return orchestrator.companion_chat(
+            session_id,
+            message=body.message,
+            perception=body.perception,
+            mode=body.mode,
+        )
+
+    @app.post("/sessions/{session_id}/companion/transcribe")
+    def companion_transcribe(
+        session_id: str, body: CompanionTranscribeRequest
+    ) -> dict:
+        # session_id reserved for future per-session ASR policy / audit
+        _ = store.load(session_id)
+        out = orchestrator.companion_transcribe(
+            body.audio_ref, text_fallback=body.text_fallback
+        )
+        return {
+            "text": out.text,
+            "source_type": out.source_type,
+            "confidence": out.confidence,
+            "raw_ref": out.raw_ref,
+        }
+
+    @app.get("/sessions/{session_id}/companion/history")
+    def companion_history(session_id: str) -> dict:
+        session = store.load(session_id)
+        rows = [
+            {
+                "kind": e.kind,
+                "reason": e.reason,
+                "ts": e.ts.isoformat() if hasattr(e.ts, "isoformat") else str(e.ts),
+                "metadata": e.metadata,
+            }
+            for e in (session.event_log or [])
+            if str(e.kind).startswith("companion_")
+        ]
+        return {"session_id": session_id, "turns": rows}
 
     @app.post("/sessions/{session_id}/replan", response_model=LearningPlanReport)
     def replan(session_id: str) -> LearningPlanReport:

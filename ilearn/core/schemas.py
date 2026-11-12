@@ -44,6 +44,45 @@ class SessionPhase(str, Enum):
     IDLE = "idle"
 
 
+LifeStage = Literal[
+    "early_childhood",
+    "primary",
+    "junior_high",
+    "senior_high",
+    "undergrad",
+    "graduate",
+    "career",
+    "midlife",
+    "elder",
+]
+CompanionIntent = Literal["ask", "answer", "evaluate", "plan", "predict"]
+CompanionMode = Literal["exam_tutor", "open_learn"]
+CompanionModality = Literal["text", "speech", "image"]
+
+
+class CompanionPerceptionIn(BaseModel):
+    """Multimodal companion input; speech/image resolve to text via perception adapters."""
+
+    source_type: CompanionModality = "text"
+    text: str | None = None
+    audio_ref: str | None = None
+    image_ref: str | None = None
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
+class CompanionSpeechOut(BaseModel):
+    """TTS-ready envelope — P1 fills text; audio bytes come from a future TTS adapter."""
+
+    ssml_or_text: str
+    locale: str = "zh-CN"
+    speakable: bool = True
+
+
+class CompanionAction(BaseModel):
+    type: str
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+
 class StudentProfile(BaseModel):
     """Learner context collected at session start."""
 
@@ -54,6 +93,7 @@ class StudentProfile(BaseModel):
     nickname: str | None = None
     gender: Gender = "unspecified"
     learning_difficulty: bool | None = None
+    life_stage: LifeStage | None = None
 
 
 KcType = Literal["fact", "skill", "principle"]
@@ -406,6 +446,17 @@ class CurriculumCitation(BaseModel):
     # Disambiguate multi source-pack coexistence (region curriculum packs).
     region: str | None = None
     edition: str | None = None
+
+
+class CompanionReply(BaseModel):
+    intent: CompanionIntent
+    reply: str
+    speech: CompanionSpeechOut
+    citations: list[CurriculumCitation] = Field(default_factory=list)
+    actions: list[CompanionAction] = Field(default_factory=list)
+    input_modality: CompanionModality = "text"
+    mode: CompanionMode = "exam_tutor"
+    life_stage: LifeStage | None = None
 
 
 class AgentDecision(BaseModel):

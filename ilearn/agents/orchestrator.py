@@ -13,6 +13,7 @@ from ilearn.agents.diagnosis import DiagnosisAgent
 from ilearn.agents.guard import SAFE_FALLBACK, GuardAgent
 from ilearn.agents.planning import PlanningAgent
 from ilearn.agents.practice import PracticeAgent, evidence_from_grades
+from ilearn.agents.companion import CompanionAgent
 from ilearn.agents.tutor import TutorAgent
 from ilearn.core.context_budget import trim_context
 from ilearn.core.datetime_utils import utc_now
@@ -45,6 +46,9 @@ from ilearn.core.session_lock import with_session_lock
 from ilearn.core.schemas import (
     MAX_HINTS_PER_ITEM,
     AssessmentPaper,
+    CompanionMode,
+    CompanionPerceptionIn,
+    CompanionReply,
     DiagnosisReport,
     GradeResult,
     HintInteraction,
@@ -86,6 +90,7 @@ class MultiAgentOrchestrator:
         self._diagnosis = DiagnosisAgent(curriculum)
         self._planning = PlanningAgent(curriculum)
         self._tutor = tutor or TutorAgent(llm=llm)
+        self._companion = CompanionAgent(curriculum, llm=llm)
         self._guard = GuardAgent()
         stub_mode = llm is None or not getattr(llm, "available", lambda: False)()
         from ilearn.agents.enhanced.diagnosis import ErrorDiagnosisAgent
@@ -216,6 +221,51 @@ class MultiAgentOrchestrator:
 
     def create_session(self, profile: StudentProfile) -> str:
         return self._store.create(profile).session_id
+
+    @with_session_lock
+    def companion_chat(
+        self,
+        session_id: str,
+        *,
+        message: str | None = None,
+        perception: CompanionPerceptionIn | None = None,
+        mode: CompanionMode = "exam_tutor",
+    ) -> CompanionReply:
+        session = self._store.load(session_id)
+        reply = self._companion.chat(
+            session, message, perception=perception, mode=mode
+        )
+        self._store.save(session)
+        return reply
+
+    def companion_transcribe(self, audio_ref: str, *, text_fallback: str | None = None):
+        """Speech hook: use SpeechAssessmentAdapter when backend configured."""
+        from ilearn.perception.adapter import PerceptionOutput
+        from ilearn.perception.speech import SpeechAssessmentAdapter
+
+        if text_fallback:
+            return PerceptionOutput(
+                text=text_fallback,
+                source_type="speech",
+                confidence=0.5,
+                raw_ref=audio_ref,
+            )
+
+        def _backend(path: str) -> PerceptionOutput:
+            raise NotImplementedError(
+                "Configure SpeechAssessmentAdapter(transcribe_fn=...) for live ASR"
+            )
+
+        adapter = SpeechAssessmentAdapter(transcribe_fn=_backend)
+        try:
+            return adapter.transcribe(audio_ref)
+        except (NotImplementedError, FileNotFoundError) as exc:
+            return PerceptionOutput(
+                text="",
+                source_type="speech",
+                confidence=0.0,
+                raw_ref=f"{audio_ref}|error:{exc}",
+            )
 
     @with_session_lock
     def get_session(self, session_id: str) -> SessionState:
