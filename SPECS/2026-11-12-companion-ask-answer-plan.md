@@ -49,4 +49,4 @@
 ### Task 5: Docs + ship
 
 - [x] README / INTRODUCTION / AUDIT touch
-- [ ] Pytest / Vitest green; commit + PR
+- [x] Pytest / Vitest green; commit + PR (#42)
