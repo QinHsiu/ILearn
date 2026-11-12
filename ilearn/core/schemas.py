@@ -88,7 +88,7 @@ class StudentProfile(BaseModel):
 
     region: str
     grade: GradeLevel
-    age: int = Field(ge=6, le=18)
+    age: int = Field(ge=3, le=120)
     subject: Subject = "math"
     nickname: str | None = None
     gender: Gender = "unspecified"

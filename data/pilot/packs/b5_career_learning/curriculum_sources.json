@@ -1,0 +1,26 @@
+[
+  {
+    "source_id": "cn-career-skill-loop-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "职场学习·技能闭环",
+    "excerpt": "用「目标→最小练习→反馈→复盘」闭环学新技能。每周只推进一个可验证产出，避免课程囤积。",
+    "keywords": ["职场", "技能", "复盘", "刻意练习", "项目"],
+    "source_label": "通用·生涯学习",
+    "life_stage": "career",
+    "content_hash": "sha256:b5career001"
+  },
+  {
+    "source_id": "cn-career-quant-basics-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "职场·量化表达基础",
+    "excerpt": "用比率、增长与置信区间讲清业务变化；先画清对比口径，再谈模型。",
+    "keywords": ["量化", "比率", "增长", "指标", "职场数学"],
+    "source_label": "通用·生涯学习",
+    "life_stage": "career",
+    "content_hash": "sha256:b5career002"
+  }
+]
