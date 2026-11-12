@@ -55,6 +55,16 @@
 
 审计与追踪 CLI：`ilearn trace`、`ilearn audit replay`、`ilearn audit derailment`、`ilearn resume`（见 [AUDIT.md](AUDIT.md)）。
 
+### Companion（Ask / Answer）
+
+| 路由 | 说明 |
+| --- | --- |
+| `POST /sessions/{id}/companion/chat` | 文本或 `perception`（speech/image→text）；回复含 `speech` TTS 信封 |
+| `POST /sessions/{id}/companion/transcribe` | ASR 钩子（`SpeechAssessmentAdapter`） |
+| `GET /sessions/{id}/companion/history` | `event_log` 中 `companion_*` 回合 |
+
+意图：`ask` / `answer` / `evaluate`（挂测评工具）/ `plan`·`predict`（桩）。设计见 `SPECS/2026-11-12-lifelong-companion-ask-answer-design.md`。
+
 ### 会话阶段
 
 ```text

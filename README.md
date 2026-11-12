@@ -33,6 +33,7 @@ Curriculum · Assessment · Practice · Diagnosis · Planning
 - **掌握度严谨** — practice / probe 双轨 + 证据日志
 - **辅导不泄题** — 状态机驱动的苏格拉底提示（Guard / TutorRail 护栏）
 - **编排可替换** — 默认宿主状态机 + 事件日志；不绑定 AutoGen / LangGraph 运行时
+- **Companion 对话** — Ask/Answer 入口（`/companion/chat`）；语音感知与 TTS 信封预留；测评变为可调用工具
 - **报告可带走** — 一键导出做题复盘 PDF 与学习报告 PDF
 - **多形态交付** — CLI · REST API · React 向导
 - **零 LLM 可跑** — 无 API Key 亦可离线演示全流程

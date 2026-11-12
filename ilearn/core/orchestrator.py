@@ -5,6 +5,9 @@ from __future__ import annotations
 from ilearn.agents.orchestrator import MultiAgentOrchestrator
 from ilearn.core.schemas import (
     AssessmentPaper,
+    CompanionMode,
+    CompanionPerceptionIn,
+    CompanionReply,
     DiagnosisReport,
     GradeResult,
     LearningPlanReport,
@@ -109,6 +112,23 @@ class Orchestrator:
         self, session_id: str, item_id: str, user_message: str
     ) -> TutorTurn:
         return self._inner.tutor_step(session_id, item_id, user_message)
+
+    def companion_chat(
+        self,
+        session_id: str,
+        *,
+        message: str | None = None,
+        perception: CompanionPerceptionIn | None = None,
+        mode: CompanionMode = "exam_tutor",
+    ) -> CompanionReply:
+        return self._inner.companion_chat(
+            session_id, message=message, perception=perception, mode=mode
+        )
+
+    def companion_transcribe(self, audio_ref: str, *, text_fallback: str | None = None):
+        return self._inner.companion_transcribe(
+            audio_ref, text_fallback=text_fallback
+        )
 
     def request_replan(self, session_id: str) -> LearningPlanReport:
         return self._inner.request_replan(session_id)
