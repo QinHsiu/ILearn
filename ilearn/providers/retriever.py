@@ -114,7 +114,7 @@ class KeywordCurriculumRetriever:
         candidates: list[tuple[float, dict]] = []
 
         for entry in self._sources:
-            if entry.get("grade") != profile.grade:
+            if not _entry_matches_stage_or_grade(profile, entry):
                 continue
             region = entry.get("region", "")
             if not _entry_matches_profile(profile.region, region):
@@ -169,10 +169,29 @@ def _entry_doc_text(entry: dict) -> str:
     )
 
 
+def _profile_life_stage(profile: StudentProfile) -> str | None:
+    if getattr(profile, "life_stage", None):
+        return profile.life_stage
+    try:
+        from ilearn.agents.companion import infer_life_stage
+
+        return infer_life_stage(profile)
+    except Exception:
+        return None
+
+
+def _entry_matches_stage_or_grade(profile: StudentProfile, entry: dict) -> bool:
+    """Exact grade match, or stage-tagged pack (undergrad/graduate) match."""
+    entry_stage = entry.get("life_stage")
+    if entry_stage:
+        return entry_stage == _profile_life_stage(profile)
+    return entry.get("grade") == profile.grade
+
+
 def _filter_entries(profile: StudentProfile, sources: list[dict]) -> list[dict]:
     filtered: list[dict] = []
     for entry in sources:
-        if entry.get("grade") != profile.grade:
+        if not _entry_matches_stage_or_grade(profile, entry):
             continue
         region = entry.get("region", "")
         if not _entry_matches_profile(profile.region, region):

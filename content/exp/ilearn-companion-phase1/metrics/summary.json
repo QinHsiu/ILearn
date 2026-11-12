@@ -1,0 +1,121 @@
+{
+  "experiment_id": "ilearn-companion-phase1",
+  "all_pass": true,
+  "gates": {
+    "five_intents_ok": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    },
+    "plan_week_ok": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    },
+    "predict_risk_ok": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    },
+    "stage_pack_cite_rate": {
+      "value": 1.0,
+      "threshold": 0.75,
+      "pass": true
+    },
+    "p1_eval_pass": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    },
+    "leak_suite_pass": {
+      "value": 1.0,
+      "threshold": 1.0,
+      "pass": true
+    }
+  },
+  "metrics": {
+    "five_intents_ok": 1.0,
+    "plan_week_ok": 1.0,
+    "predict_risk_ok": 1.0,
+    "stage_pack_cite_rate": 1.0,
+    "p1_eval_pass": 1.0,
+    "leak_suite_pass": 1.0,
+    "suite_intent_rate": 1.0
+  },
+  "details": [
+    {
+      "id": "ask",
+      "intent_match": true,
+      "got": "ask",
+      "week": false,
+      "risk": false,
+      "citations": 0
+    },
+    {
+      "id": "answer",
+      "intent_match": true,
+      "got": "answer",
+      "week": false,
+      "risk": false,
+      "citations": 2
+    },
+    {
+      "id": "evaluate",
+      "intent_match": true,
+      "got": "evaluate",
+      "week": false,
+      "risk": false,
+      "citations": 0
+    },
+    {
+      "id": "plan",
+      "intent_match": true,
+      "got": "plan",
+      "week": true,
+      "risk": false,
+      "citations": 0
+    },
+    {
+      "id": "predict",
+      "intent_match": true,
+      "got": "predict",
+      "week": false,
+      "risk": true,
+      "citations": 0
+    },
+    {
+      "id": "b1",
+      "intent_match": true,
+      "got": "answer",
+      "week": false,
+      "risk": false,
+      "citations": 3
+    },
+    {
+      "id": "b2",
+      "intent_match": true,
+      "got": "answer",
+      "week": false,
+      "risk": false,
+      "citations": 1
+    },
+    {
+      "id": "b3",
+      "intent_match": true,
+      "got": "answer",
+      "week": false,
+      "risk": false,
+      "citations": 3
+    },
+    {
+      "id": "b4",
+      "intent_match": true,
+      "got": "answer",
+      "week": false,
+      "risk": false,
+      "citations": 3
+    }
+  ],
+  "p1_stdout_tail": ",\n    \"answer_grounded_rate\": {\n      \"value\": 1.0,\n      \"threshold\": 1.0,\n      \"pass\": true\n    },\n    \"leak_suite_pass\": {\n      \"value\": 1.0,\n      \"threshold\": 1.0,\n      \"pass\": true\n    },\n    \"offline_nonempty_rate\": {\n      \"value\": 1.0,\n      \"threshold\": 1.0,\n      \"pass\": true\n    },\n    \"b1_citation_rate\": {\n      \"value\": 1.0,\n      \"threshold\": 0.66,\n      \"pass\": true\n    }\n  }\n}\n",
+  "leak_stdout_tail": ".........                                                                [100%]\n9 passed in 0.53s\n"
+}

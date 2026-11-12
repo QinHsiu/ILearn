@@ -1,0 +1,9 @@
+{"id": "ask", "message": "我想学", "expect_intent": "ask", "grade": 5}
+{"id": "answer", "message": "什么是小数乘法？请讲一下", "expect_intent": "answer", "grade": 5}
+{"id": "evaluate", "message": "给我出一套测评卷", "expect_intent": "evaluate", "grade": 5}
+{"id": "plan", "message": "帮我规划一下本周学习", "expect_intent": "plan", "grade": 5, "require_week": true}
+{"id": "predict", "message": "预测我下周能学会吗", "expect_intent": "predict", "grade": 5, "require_risk": true}
+{"id": "b1", "message": "什么是有理数？请讲一下", "expect_intent": "answer", "grade": 7, "require_cite": true}
+{"id": "b2", "message": "什么是函数？请讲一下", "expect_intent": "answer", "grade": 10, "require_cite": true}
+{"id": "b3", "message": "什么是微积分？请讲一下", "expect_intent": "answer", "grade": 12, "life_stage": "undergrad", "require_cite": true}
+{"id": "b4", "message": "怎么做文献精读？请讲一下", "expect_intent": "answer", "grade": 12, "life_stage": "graduate", "require_cite": true}

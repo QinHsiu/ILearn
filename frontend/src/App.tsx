@@ -151,12 +151,9 @@ function StudentApp() {
   const [historyNickname, setHistoryNickname] = useState('')
   const [, setFocusItemId] = useState<string | null>(null)
   const [pilotGrades, setPilotGrades] = useState<number[]>(DEFAULT_PILOT_GRADES)
-  const [companionGrades, setCompanionGrades] = useState<number[]>([
-    ...DEFAULT_PILOT_GRADES,
-    7,
-    8,
-    9,
-  ])
+  const [companionGrades, setCompanionGrades] = useState<number[]>(
+    Array.from({ length: 9 }, (_, i) => i + 4),
+  )
   const [pdfBackend, setPdfBackend] = useState<{
     backend: string
     fallback_active: boolean
@@ -209,7 +206,7 @@ function StudentApp() {
       if (caps.pilot_grades?.length) setPilotGrades(caps.pilot_grades)
       if (caps.companion_grades?.length) setCompanionGrades(caps.companion_grades)
       else if (caps.pilot_grades?.length) {
-        setCompanionGrades([...caps.pilot_grades, 7, 8, 9])
+        setCompanionGrades(Array.from({ length: 9 }, (_, i) => i + 4))
       }
     }).catch(() => setPilotGrades(DEFAULT_PILOT_GRADES))
   }, [])

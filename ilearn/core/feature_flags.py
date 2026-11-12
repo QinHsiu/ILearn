@@ -7,8 +7,8 @@ from typing import Any
 
 from ilearn.providers.curriculum import PILOT_GRADES
 
-# Companion Answer pack stretch (B1 junior-high) — not full assessment unlock.
-COMPANION_GRADES = frozenset(PILOT_GRADES | {7, 8, 9})
+# Companion Answer packs (B1–B4) — not full assessment unlock.
+COMPANION_GRADES = frozenset(range(4, 13))  # 4–12 education window
 
 
 class FeatureTier(str, Enum):
