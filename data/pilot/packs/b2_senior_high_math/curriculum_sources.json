@@ -1,0 +1,35 @@
+[
+  {
+    "source_id": "bj-g10-function-2024",
+    "region": "北京",
+    "grade": 10,
+    "subject": "math",
+    "title": "人教版高一·函数概念",
+    "excerpt": "函数是两个非空数集之间的对应关系。关注定义域、值域与对应法则；常见模型包括一次、二次、指数与对数函数。",
+    "keywords": ["函数", "定义域", "值域", "对应法则", "二次函数", "指数函数"],
+    "source_label": "北京·人教·高中数学",
+    "content_hash": "sha256:b2g10fn001"
+  },
+  {
+    "source_id": "bj-g11-derivative-2024",
+    "region": "北京",
+    "grade": 11,
+    "subject": "math",
+    "title": "人教版高二·导数及其应用",
+    "excerpt": "导数描述瞬时变化率，可用于求切线、判断单调性与极值。注意复合函数求导与实际问题建模。",
+    "keywords": ["导数", "切线", "单调性", "极值", "求导"],
+    "source_label": "北京·人教·高中数学",
+    "content_hash": "sha256:b2g11der002"
+  },
+  {
+    "source_id": "bj-g12-probability-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "人教版高三·概率统计复习",
+    "excerpt": "梳理古典概型、条件概率与统计抽样；用频率估计概率，关注分布列与期望。",
+    "keywords": ["概率", "统计", "条件概率", "期望", "分布列"],
+    "source_label": "北京·人教·高中数学",
+    "content_hash": "sha256:b2g12prob003"
+  }
+]

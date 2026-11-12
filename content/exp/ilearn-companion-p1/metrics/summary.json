@@ -142,7 +142,7 @@
       "nonempty": true,
       "citations": 0,
       "grounded": null,
-      "reply_preview": "规划（日程/路径编排）能力将在下一期开放；当前可先答疑或启动测评收集证据。"
+      "reply_preview": "这是本周可执行安排（primary · 尚无测评证据，使用学段默认周计划；建议先测评再精修。）：\n- 周一放学后：口算巩固（约 25 分钟）\n- 周二放学后：概念微课（约 25 分钟）\n- 周三放学后：错题重练（约 25 分钟）\n- 周四放"
     },
     {
       "id": "u11",
@@ -152,7 +152,7 @@
       "nonempty": true,
       "citations": 0,
       "grounded": null,
-      "reply_preview": "预测（掌握风险/复习预警）能力将在下一期开放；当前可先测评或提问。"
+      "reply_preview": "学习掉队/未掌握风险：**偏高**（score=4）。\n- 还没有测评证据，掌握情况不确定\n- 公开掌握度偏低（0%）\n建议：先做一轮短测评或针对薄弱点练习，再让我更新预测。"
     },
     {
       "id": "u12",
@@ -198,7 +198,7 @@
   "leak": {
     "leak_suite_pass": 1.0,
     "returncode": 0,
-    "stdout_tail": "...........                                                              [100%]\n11 passed in 0.54s\n",
+    "stdout_tail": "...........                                                              [100%]\n11 passed in 0.56s\n",
     "stderr_tail": ""
   }
 }

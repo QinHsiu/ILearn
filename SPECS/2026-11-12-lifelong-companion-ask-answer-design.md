@@ -136,10 +136,11 @@ Append `OrchestrationEvent` with `kind` in:
 
 ## 9. Open follow-ups (post-P1)
 
-- Plan: executable week schedule  
-- Predict: probe-gap / derailment risk  
-- B1 junior-high math source pack  
-- Career/elder stage plugins  
+- [x] Plan: executable week schedule (`companion_week_plan`)  
+- [x] Predict: probe-gap / derailment risk (`companion_predict`)  
+- [x] B1 junior-high math source pack  
+- [x] Thin packs senior_high / undergrad / graduate (B2–B4)  
+- [ ] Career/elder stage plugins (Phase-2 Life-OS)  
 
 ---
 

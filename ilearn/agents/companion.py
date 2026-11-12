@@ -122,7 +122,26 @@ class CompanionAgent:
             )
 
         if intent == "plan":
-            reply_text = "规划（日程/路径编排）能力将在下一期开放；当前可先答疑或启动测评收集证据。"
+            from ilearn.core.companion_week_plan import (
+                build_week_plan,
+                format_week_plan_reply,
+            )
+
+            week = build_week_plan(session)
+            meta = dict(session.metadata or {})
+            meta["companion_week_plan"] = week
+            session.metadata = meta
+            reply_text = format_week_plan_reply(week)
+            actions = [
+                CompanionAction(type="open_week_plan", payload={"source": week["source"]})
+            ]
+            if week["source"] == "stage_default":
+                actions.append(
+                    CompanionAction(
+                        type="suggest_evaluate",
+                        payload={"prompt": "先测评可生成更贴合薄弱点的周计划"},
+                    )
+                )
             return self._finalize(
                 session,
                 intent=intent,
@@ -130,13 +149,30 @@ class CompanionAgent:
                 modality=modality,
                 mode=mode,
                 citations=[],
-                actions=[],
+                actions=actions,
                 life_stage=life_stage,
                 user_text=text,
             )
 
         if intent == "predict":
-            reply_text = "预测（掌握风险/复习预警）能力将在下一期开放；当前可先测评或提问。"
+            from ilearn.core.companion_predict import (
+                build_risk_forecast,
+                format_risk_reply,
+            )
+
+            forecast = build_risk_forecast(session)
+            meta = dict(session.metadata or {})
+            meta["companion_risk_forecast"] = forecast
+            session.metadata = meta
+            reply_text = format_risk_reply(forecast)
+            actions: list[CompanionAction] = []
+            if forecast["level"] in {"medium", "high"}:
+                actions.append(
+                    CompanionAction(
+                        type="suggest_evaluate",
+                        payload={"prompt": "建议启动短测评以更新风险预测"},
+                    )
+                )
             return self._finalize(
                 session,
                 intent=intent,
@@ -144,7 +180,7 @@ class CompanionAgent:
                 modality=modality,
                 mode=mode,
                 citations=[],
-                actions=[],
+                actions=actions,
                 life_stage=life_stage,
                 user_text=text,
             )

@@ -56,14 +56,19 @@ def test_route_evaluate_when_user_asks_for_test():
     assert any(a.type == "start_assessment" for a in reply.actions)
 
 
-def test_plan_predict_are_stubs():
+def test_plan_predict_are_executable():
     pilot = Path(__file__).resolve().parents[1] / "data" / "pilot"
     agent = CompanionAgent(PilotBeijingRenjiaoProvider(pilot))
-    plan = agent.chat(_session(), "帮我规划一下本周学习")
+    session = _session()
+    plan = agent.chat(session, "帮我规划一下本周学习")
     assert plan.intent == "plan"
-    assert "下一期" in plan.reply or "尚未" in plan.reply
-    pred = agent.chat(_session(), "预测我下周能学会吗")
+    assert "周一" in plan.reply
+    assert any(a.type == "open_week_plan" for a in plan.actions)
+    assert session.metadata.get("companion_week_plan")
+    pred = agent.chat(session, "预测我下周能学会吗")
     assert pred.intent == "predict"
+    assert "风险" in pred.reply
+    assert session.metadata.get("companion_risk_forecast")
 
 
 def test_speech_perception_input_sets_modality():

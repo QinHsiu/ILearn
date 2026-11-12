@@ -1,0 +1,26 @@
+[
+  {
+    "source_id": "cn-ug-calc1-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "大学一年级·微积分要点",
+    "excerpt": "极限、连续、导数与积分是微积分主干。先抓住定义与几何意义，再练习基本求导积分公式。",
+    "keywords": ["微积分", "极限", "导数", "积分", "连续"],
+    "source_label": "通用·大学数学",
+    "life_stage": "undergrad",
+    "content_hash": "sha256:b3ugcalc001"
+  },
+  {
+    "source_id": "cn-ug-linear-alg-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "大学·线性代数要点",
+    "excerpt": "矩阵运算、行列式、线性方程组与特征值构成主线。强调概念联系：空间、变换与方程组同解。",
+    "keywords": ["线性代数", "矩阵", "行列式", "特征值", "向量空间"],
+    "source_label": "通用·大学数学",
+    "life_stage": "undergrad",
+    "content_hash": "sha256:b3ugla002"
+  }
+]

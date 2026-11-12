@@ -1,0 +1,26 @@
+[
+  {
+    "source_id": "cn-grad-research-method-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "研究生·研究方法清单",
+    "excerpt": "问题定义→相关工作→方法设计→实验/证明→写作。每周固定文献精读与可验证检查点，避免只堆积笔记。",
+    "keywords": ["研究生", "文献精读", "研究方法", "实验设计", "写作"],
+    "source_label": "通用·研究生学习",
+    "life_stage": "graduate",
+    "content_hash": "sha256:b4grad001"
+  },
+  {
+    "source_id": "cn-grad-math-proof-2024",
+    "region": "北京",
+    "grade": 12,
+    "subject": "math",
+    "title": "研究生·证明与推导习惯",
+    "excerpt": "先写清假设与目标，再拆引理；每步标注引用。对关键不等式或收敛性单独做小证明卡片。",
+    "keywords": ["证明", "推导", "引理", "收敛", "研究生数学"],
+    "source_label": "通用·研究生学习",
+    "life_stage": "graduate",
+    "content_hash": "sha256:b4grad002"
+  }
+]

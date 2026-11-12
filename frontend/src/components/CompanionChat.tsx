@@ -16,7 +16,13 @@ type CompanionChatProps = {
   onBack?: () => void
 }
 
-const SUGGESTIONS = ['什么是分数？', '我想学', '给我出一套测评卷', '帮我规划本周学习']
+const SUGGESTIONS = [
+  '什么是分数？',
+  '我想学',
+  '给我出一套测评卷',
+  '帮我规划本周学习',
+  '预测我下周能学会吗',
+]
 
 export default function CompanionChat({
   sessionId,
