@@ -237,38 +237,68 @@ class MultiAgentOrchestrator:
         )
         # Evaluate tool: start_assessment generates the paper (no nested lock).
         if any(a.type == "start_assessment" for a in reply.actions) and session.paper is None:
-            session = self._ensure_enhanced_profile(session)
-            assess_meta: dict = {}
-            weak_queue = build_weak_first_knowledge_ids(session)
-            if weak_queue:
-                assess_meta["weak_knowledge_ids"] = weak_queue
-            result, degraded = run_with_quality_gate(
-                lambda: self._assessment.run(
-                    self._ctx(session, phase=SessionPhase.ASSESS, metadata=assess_meta)
-                ),
-                valid_assessment_result,
-            )
-            if degraded:
-                result = degraded_assessment_result(session.profile)
-            else:
-                paper, _ = self._validate_and_revise_paper(
-                    session, result.payload["paper"]
+            from ilearn.providers.curriculum import CurriculumError, PILOT_GRADES
+
+            try:
+                session = self._ensure_enhanced_profile(session)
+                assess_meta: dict = {}
+                weak_queue = build_weak_first_knowledge_ids(session)
+                if weak_queue:
+                    assess_meta["weak_knowledge_ids"] = weak_queue
+                result, degraded = run_with_quality_gate(
+                    lambda: self._assessment.run(
+                        self._ctx(
+                            session, phase=SessionPhase.ASSESS, metadata=assess_meta
+                        )
+                    ),
+                    valid_assessment_result,
                 )
-                result.payload["paper"] = paper
-            session.paper = result.payload["paper"]
-            self._bind_pending_questions(session, session.paper)
-            session.answers = []
-            session.image_answers = []
-            session.grades = []
-            mark_assessment_started(session)
-            self._set_phase(session, result.phase)
-            self._record_decision(
-                session,
-                self._companion.name,
-                SessionPhase.ASSESS,
-                "companion.evaluate.start_assessment",
-                output_payload={"item_count": len(session.paper.items)},
-            )
+                if degraded:
+                    result = degraded_assessment_result(session.profile)
+                else:
+                    paper, _ = self._validate_and_revise_paper(
+                        session, result.payload["paper"]
+                    )
+                    result.payload["paper"] = paper
+                session.paper = result.payload["paper"]
+                self._bind_pending_questions(session, session.paper)
+                session.answers = []
+                session.image_answers = []
+                session.grades = []
+                mark_assessment_started(session)
+                self._set_phase(session, result.phase)
+                self._record_decision(
+                    session,
+                    self._companion.name,
+                    SessionPhase.ASSESS,
+                    "companion.evaluate.start_assessment",
+                    output_payload={"item_count": len(session.paper.items)},
+                )
+            except CurriculumError:
+                # B1 stretch: junior-high Answer works; assessment still 4–6.
+                grades = "、".join(str(g) for g in sorted(PILOT_GRADES))
+                msg = (
+                    f"测评组卷目前仅覆盖小学试点 {grades} 年级。"
+                    "你所在学段可以继续问答（初中 B1 内容包），"
+                    "或把年级改为试点年级后再启动测评。"
+                )
+                reply = reply.model_copy(
+                    update={
+                        "reply": msg,
+                        "speech": reply.speech.model_copy(
+                            update={"ssml_or_text": msg}
+                        ),
+                        "actions": [],
+                    }
+                )
+                self._record_decision(
+                    session,
+                    self._companion.name,
+                    session.phase,
+                    "companion.evaluate.pack_unavailable",
+                    ok=False,
+                    output_payload={"grade": session.profile.grade},
+                )
         self._store.save(session)
         return reply
 

@@ -54,6 +54,11 @@ def load_curriculum_sources(pilot_dir: str | Path) -> list[dict]:
     if regions_dir.is_dir():
         for region_pack in sorted(regions_dir.glob("*/curriculum_sources.json")):
             sources.extend(json.loads(region_pack.read_text(encoding="utf-8")))
+    # Stage packs (e.g. B1 junior-high stretch) — Companion Answer retrieval.
+    packs_dir = pilot_path / "packs"
+    if packs_dir.is_dir():
+        for pack_sources in sorted(packs_dir.glob("*/curriculum_sources.json")):
+            sources.extend(json.loads(pack_sources.read_text(encoding="utf-8")))
     return sources
 
 

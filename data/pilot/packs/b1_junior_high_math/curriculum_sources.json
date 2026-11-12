@@ -1,0 +1,57 @@
+[
+  {
+    "source_id": "bj-g7-rational-2024",
+    "region": "北京",
+    "grade": 7,
+    "subject": "math",
+    "title": "人教版七年级·有理数",
+    "excerpt": "有理数包括整数和分数。数轴上表示有理数；绝对值表示到原点的距离；有理数加减遵循同号相加、异号相减的法则。",
+    "keywords": ["有理数", "整数", "分数", "数轴", "绝对值", "正数", "负数"],
+    "source_label": "北京·人教·初中数学",
+    "content_hash": "sha256:b1g7rational001"
+  },
+  {
+    "source_id": "bj-g7-linear-eq-2024",
+    "region": "北京",
+    "grade": 7,
+    "subject": "math",
+    "title": "人教版七年级·一元一次方程",
+    "excerpt": "一元一次方程只含一个未知数，且未知数的次数是 1。解法：去分母、去括号、移项、合并同类项、系数化为 1。",
+    "keywords": ["一元一次方程", "方程", "移项", "合并同类项", "解方程", "未知数"],
+    "source_label": "北京·人教·初中数学",
+    "content_hash": "sha256:b1g7lineareq002"
+  },
+  {
+    "source_id": "bj-g7-polynomial-2024",
+    "region": "北京",
+    "grade": 7,
+    "subject": "math",
+    "title": "人教版七年级·整式的加减",
+    "excerpt": "单项式与多项式统称整式。整式加减的关键是合并同类项：系数相加，字母与指数不变。",
+    "keywords": ["整式", "整式加减", "单项式", "多项式", "同类项", "合并同类项"],
+    "source_label": "北京·人教·初中数学",
+    "content_hash": "sha256:b1g7poly003"
+  },
+  {
+    "source_id": "bj-g8-linear-system-2024",
+    "region": "北京",
+    "grade": 8,
+    "subject": "math",
+    "title": "人教版八年级·二元一次方程组",
+    "excerpt": "二元一次方程组可用代入法或加减法消元，化为一元一次方程求解。",
+    "keywords": ["二元一次方程组", "代入法", "加减法", "消元"],
+    "source_label": "北京·人教·初中数学",
+    "content_hash": "sha256:b1g8system004"
+  },
+  {
+    "source_id": "bj-g9-quadratic-2024",
+    "region": "北京",
+    "grade": 9,
+    "subject": "math",
+    "title": "人教版九年级·一元二次方程",
+    "excerpt": "一元二次方程可用公式法、配方法、因式分解法求解；判别式决定实根个数。",
+    "keywords": ["一元二次方程", "求根公式", "判别式", "配方法"],
+    "source_label": "北京·人教·初中数学",
+    "content_hash": "sha256:b1g9quad005"
+  }
+]

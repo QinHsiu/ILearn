@@ -45,7 +45,7 @@ def test_route_answer_for_concept_question():
     assert reply.reply
     assert reply.speech.ssml_or_text
     # citation or explicit miss
-    assert reply.citations or ("未命中" in reply.reply or "没有找到" in reply.reply)
+    assert reply.citations or ("未命中" in reply.reply)
 
 
 def test_route_evaluate_when_user_asks_for_test():

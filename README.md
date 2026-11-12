@@ -33,7 +33,8 @@ Curriculum · Assessment · Practice · Diagnosis · Planning
 - **掌握度严谨** — practice / probe 双轨 + 证据日志
 - **辅导不泄题** — 状态机驱动的苏格拉底提示（Guard / TutorRail 护栏）
 - **编排可替换** — 默认宿主状态机 + 事件日志；不绑定 AutoGen / LangGraph 运行时
-- **Companion 对话** — 学生向导「同伴对话」步；Ask/Answer + 麦克风/朗读钩子；`start_assessment` 真组卷后进入测评
+- **Companion 对话** — 学生向导「同伴对话」步；Ask/Answer + 麦克风/朗读钩子；`start_assessment` 真组卷后进入测评；B1 初中问答包（7–9 年级检索，测评仍 4–6）
+- **Companion P1 指标** — `content/exp/ilearn-companion-p1/`（`/exp_loop` 已达标）
 - **报告可带走** — 一键导出做题复盘 PDF 与学习报告 PDF
 - **多形态交付** — CLI · REST API · React 向导
 - **零 LLM 可跑** — 无 API Key 亦可离线演示全流程

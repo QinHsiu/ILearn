@@ -7,6 +7,9 @@ from typing import Any
 
 from ilearn.providers.curriculum import PILOT_GRADES
 
+# Companion Answer pack stretch (B1 junior-high) — not full assessment unlock.
+COMPANION_GRADES = frozenset(PILOT_GRADES | {7, 8, 9})
+
 
 class FeatureTier(str, Enum):
     OFFLINE = "offline"
@@ -60,4 +63,5 @@ class FeatureRegistry:
             "features": features,
             "tiers": cls.offline_status(),
             "pilot_grades": sorted(PILOT_GRADES),
+            "companion_grades": sorted(COMPANION_GRADES),
         }
