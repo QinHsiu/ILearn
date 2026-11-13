@@ -63,7 +63,7 @@
 | `POST /sessions/{id}/companion/transcribe` | ASR 钩子（`SpeechAssessmentAdapter`） |
 | `GET /sessions/{id}/companion/history` | `event_log` 中 `companion_*` 回合 |
 
-意图：`ask` / `answer` / `evaluate`（挂测评工具）/ `plan`·`predict`（桩）。设计见 `SPECS/2026-11-12-lifelong-companion-ask-answer-design.md`。
+意图：`ask` / `answer` / `evaluate`（挂测评工具）/ `plan`（周计划）/ `predict`（掉队风险）。另见学习者状态 API：`GET /learners/{nickname}/state`、`GET /wiki/search`。
 
 ### 会话阶段
 
