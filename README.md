@@ -1,21 +1,24 @@
 # ILearn
 
-**课标在环 · 多 Agent 协同 · 自适应个性化学习引擎**
+**课标在环 · 多 Agent 协同 · 终身学习同伴**
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](./frontend)
-[![Tests](https://img.shields.io/badge/tests-522%20passed-2ea44f)](./tests)
+[![Tests](https://img.shields.io/badge/tests-pytest-2ea44f)](./tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub](https://img.shields.io/badge/GitHub-QinHsiu%2FILearn-181717?logo=github)](https://github.com/QinHsiu/ILearn)
 
-让每个孩子拥有课标对齐、数据驱动、持续进化的 AI 学习伙伴。
+课标对齐、证据可审计、跨会话持续陪伴的 AI 学习引擎。测评闭环仍是骨架；Companion 提供 Ask / Answer / Plan / Predict / Evaluate 统一入口。
 
 [![ILearn Demo](./runtime_evidence/demo_preview.gif)](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_720p.mp4)
 
 [720p](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_720p.mp4) · [1080p](https://github.com/QinHsiu/ILearn/releases/download/goai-demo/demo_1080p.mp4) · [Release](https://github.com/QinHsiu/ILearn/releases/tag/goai-demo)
 
 ```text
+Companion（Ask · Answer · Plan · Predict · Evaluate）
+        │
+        ▼
 测评 → 批改 → 诊断 → 规划 → 巩固
   │       │       │       │       │
   ▼       ▼       ▼       ▼       ▼
@@ -24,7 +27,7 @@ Curriculum · Assessment · Practice · Diagnosis · Planning
                        苏格拉底引导
 ```
 
-当前试点：小学数学（四至六年级）· 北京·人教。架构按多学科 / 全学段扩展预留。
+当前测评试点：小学数学（四至六年级）· 北京·人教。问答与同伴对话覆盖更广学段（初中→银龄内容包）；架构按多学科扩展预留。
 
 ## 特性
 
@@ -33,15 +36,13 @@ Curriculum · Assessment · Practice · Diagnosis · Planning
 - **掌握度严谨** — practice / probe 双轨 + 证据日志
 - **辅导不泄题** — 状态机驱动的苏格拉底提示（Guard / TutorRail 护栏）
 - **编排可替换** — 默认宿主状态机 + 事件日志；不绑定 AutoGen / LangGraph 运行时
-- **版本化学习者状态** — `LearnerState` 事件投影（L1）；跨会话同一 `state_hash`；SM-2 主动调度回执；经验先验只读注入；生命周期模板注册
-- **L2 Wiki 知识记忆** — 课标/概念卡摄入为可查询页面；BM25 + `skill_id` 加权；与 Curriculum RAG 并联
-- **Companion 五能力** — Ask / Answer / Plan（周计划）/ Predict（掉队风险）/ Evaluate（组卷工具）
-- **学段内容包** — B1–B6（初中→银龄）问答检索；年龄推断 LifeStage；测评组卷仍 4–6
-- **验收** — companion + `content/exp/ilearn-learner-state/`（P0–P3 `/exp_loop`）
+- **跨会话学习者状态** — 版本化 `LearnerState` 事件投影；SM-2 主动调度回执；经验先验只读注入
+- **Wiki 知识记忆** — 课标/概念卡可查询；BM25 + 薄弱技能加权；与 Curriculum RAG 并联
+- **Companion 五能力** — Ask / Answer / Plan（周计划）/ Predict（掉队风险）/ Evaluate（组卷）
+- **学段内容包** — 初中→银龄问答检索；年龄推断 LifeStage；测评组卷仍以 4–6 年级试点为主
 - **报告可带走** — 一键导出做题复盘 PDF 与学习报告 PDF
 - **多形态交付** — CLI · REST API · React 向导
 - **零 LLM 可跑** — 无 API Key 亦可离线演示全流程
-- **522+ 测试** — 离线基准保障工程质量
 
 ## 60 秒上手
 
