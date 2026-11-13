@@ -35,6 +35,8 @@ class LearnerState(BaseModel):
     mastery: dict[str, MasteryEstimate] = Field(default_factory=dict)
     misconceptions: list[Misconception] = Field(default_factory=list)
     review_schedule: dict[str, datetime] = Field(default_factory=dict)
+    # Per-skill SM-2 meta: {skill_id: {interval_days, ease_factor, review_count, last_quality}}
+    review_meta: dict[str, dict[str, Any]] = Field(default_factory=dict)
     engagement_signals: dict[str, Any] = Field(default_factory=dict)
     state_hash: str = ""
 
@@ -112,6 +114,17 @@ def _on_misconception(state: LearnerState, payload: dict) -> None:
 def _on_review_scheduled(state: LearnerState, payload: dict) -> None:
     skill_id = str(payload["skill_id"])
     state.review_schedule[skill_id] = _parse_ts(payload["due_at"])
+    meta = dict(state.review_meta.get(skill_id) or {})
+    if "interval_days" in payload:
+        meta["interval_days"] = float(payload["interval_days"])
+    if "ease_factor" in payload:
+        meta["ease_factor"] = float(payload["ease_factor"])
+    if "review_count" in payload:
+        meta["review_count"] = int(payload["review_count"])
+    if "last_quality" in payload and payload["last_quality"] is not None:
+        meta["last_quality"] = int(payload["last_quality"])
+    if meta:
+        state.review_meta[skill_id] = meta
 
 
 def _on_engagement_updated(state: LearnerState, payload: dict) -> None:

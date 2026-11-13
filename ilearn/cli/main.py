@@ -33,6 +33,14 @@ audit_app = typer.Typer(help="Audit / trace / resume commands")
 app.add_typer(agents_app, name="agents")
 app.add_typer(audit_app, name="audit")
 
+# Bypass scheduler + read-only experience (must not call LLM)
+from ilearn.cli.experience import app as experience_app  # noqa: E402
+from ilearn.cli.scheduler import app as scheduler_app  # noqa: E402
+
+app.add_typer(scheduler_app, name="scheduler")
+app.add_typer(experience_app, name="experience")
+
+
 _PHASE_LABELS = {
     SessionPhase.ONBOARD: "建档",
     SessionPhase.ASSESS: "组题",

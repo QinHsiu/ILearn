@@ -248,20 +248,38 @@ class MultiAgentOrchestrator:
             learner_state = self._load_learner_state(session)
             context_metadata["learner_state_version"] = learner_state.version
             context_metadata["learner_state_hash"] = learner_state.state_hash
-            # P2: optional experience prior (read-only)
+            # P2: optional experience prior (read-only — never calls LLM)
             from ilearn.agents.companion import infer_life_stage
 
             stage = infer_life_stage(session.profile)
-            prior = self._experience.prior_for(
+            skill_ids = list(learner_state.mastery.keys())
+            target_skill = skill_ids[0] if skill_ids else None
+            # Prefer exact-situation aggregate prior when enough support exists
+            exact = None
+            if target_skill:
+                exact = self._experience.retrieve(
+                    {"stage": stage, "skill": target_skill},
+                    "hint_before_attempt",
+                    min_support=3,
+                )
+            prior = exact or self._experience.prior_for(
                 {
                     "stage": stage,
                     "text": " ".join(learner_state.goals)
                     or f"grade {session.profile.grade} plan",
                 }
             )
-            if prior.experience_refs:
+            if prior and prior.experience_refs:
                 context_metadata["experience_refs"] = prior.experience_refs
                 context_metadata["experience_prior"] = prior.model_dump(mode="json")
+                context_metadata.setdefault("decision_log_extra", []).append(
+                    {
+                        "event": "experience.prior_injected",
+                        "prior_confidence": prior.confidence,
+                        "prior_support": prior.support,
+                        "experience_refs": prior.experience_refs,
+                    }
+                )
             # P3: selected lifecycle template
             tmpl = self._templates.select(stage, "assess_remediate")
             context_metadata["state_machine_template"] = tmpl.template_id
