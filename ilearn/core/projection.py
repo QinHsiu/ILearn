@@ -59,3 +59,24 @@ def load_state_at(
         if state.version == version:
             return state
     raise LookupError(f"version {version} not found for learner={learner_id}")
+
+
+def load_all_states(
+    *,
+    learners_root: str | Path | None = None,
+) -> dict[str, LearnerState]:
+    """Load all learner projections under the learners root (fairness audit)."""
+    from ilearn.storage.learner_state_store import LearnerStateStore
+
+    root = Path(learners_root) if learners_root else Path("data/learners")
+    store = LearnerStateStore(root)
+    out: dict[str, LearnerState] = {}
+    if not root.exists():
+        return out
+    for path in sorted(root.iterdir()):
+        if not path.is_dir():
+            continue
+        lid = path.name
+        out[lid] = store.load(lid)
+    return out
+

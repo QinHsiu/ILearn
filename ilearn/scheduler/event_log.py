@@ -85,3 +85,46 @@ class SchedulerEventLog:
     def list_pending_receipts(self, learner_id: str):
         consumed = self.consumed_receipt_ids(learner_id)
         return [r for r in self.list_dispatches(learner_id) if r.receipt_id not in consumed]
+
+    def list_learner_ids(self) -> list[str]:
+        if not self.root.exists():
+            return []
+        return sorted(p.name for p in self.root.iterdir() if p.is_dir())
+
+    def read_learner(self, learner_id: str, *, days: int | None = None) -> list[dict[str, Any]]:
+        rows = self.list_events(learner_id)
+        if days is None:
+            return rows
+        from datetime import timedelta
+
+        cutoff = utc_now() - timedelta(days=int(days))
+        out = []
+        for row in rows:
+            raw = row.get("occurred_at")
+            try:
+                from datetime import datetime
+
+                ts = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+            except Exception:
+                out.append(row)
+                continue
+            if ts.tzinfo is None:
+                from datetime import timezone
+
+                ts = ts.replace(tzinfo=timezone.utc)
+            if ts >= cutoff:
+                out.append(row)
+        return out
+
+    def read_recent(self, *, days: int = 90) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for lid in self.list_learner_ids():
+            rows.extend(self.read_learner(lid, days=days))
+        return rows
+
+    def list_by_type(self, event_type: str, *, days: int | None = None) -> list[dict[str, Any]]:
+        rows = self.read_recent(days=days) if days is not None else []
+        if days is None:
+            for lid in self.list_learner_ids():
+                rows.extend(self.list_events(lid))
+        return [r for r in rows if r.get("event_type") == event_type]

@@ -33,14 +33,23 @@ audit_app = typer.Typer(help="Audit / trace / resume commands")
 app.add_typer(agents_app, name="agents")
 app.add_typer(audit_app, name="audit")
 
-# Bypass scheduler + read-only experience + migration (must not call LLM)
+# Bypass scheduler + read-only experience + migration + audit (must not call LLM)
 from ilearn.cli.experience import app as experience_app  # noqa: E402
+from ilearn.cli.fairness import app as fairness_app  # noqa: E402
 from ilearn.cli.migrate import register as register_migrate  # noqa: E402
+from ilearn.cli.safety import app as safety_app  # noqa: E402
 from ilearn.cli.scheduler import app as scheduler_app  # noqa: E402
+from ilearn.cli.skills import app as skills_app  # noqa: E402
+from ilearn.cli.trajectory import app as trajectory_app  # noqa: E402
 
 app.add_typer(scheduler_app, name="scheduler")
 app.add_typer(experience_app, name="experience")
+app.add_typer(fairness_app, name="fairness")
+app.add_typer(safety_app, name="safety")
+app.add_typer(skills_app, name="skills")
+app.add_typer(trajectory_app, name="trajectory")
 register_migrate(app)
+
 
 
 

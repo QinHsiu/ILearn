@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from ilearn.core.learner_state import LearnerState
+from ilearn.experience.feedback_weights import ExperienceFeedbackRouter
 from ilearn.scheduler.consumption import DispatchConsumption
 from ilearn.scheduler.spaced_repetition import SM2State, next_due, sm2_update
 from ilearn.scheduler.trigger_policy import TriggerPolicy
@@ -19,6 +20,8 @@ def apply_consumption(
     consumption: DispatchConsumption,
     receipt_state_version: int | None = None,
     policy: TriggerPolicy | None = None,
+    feedback_router: ExperienceFeedbackRouter | None = None,
+    applied_strategy: str | None = None,
     *,
     skill_ids: list[str] | None = None,
 ) -> LearnerState:
@@ -84,8 +87,17 @@ def apply_consumption(
         success = consumption.outcome == "responded" and (consumption.quality or 0) >= 4
         policy.update(consumption.trigger, success)
 
+    if feedback_router is not None and applied_strategy:
+        if consumption.outcome == "responded" and (consumption.quality or 0) >= 4:
+            feedback_router.observe(applied_strategy, "positive")
+        elif consumption.outcome == "responded" and (consumption.quality or 0) <= 2:
+            feedback_router.observe(applied_strategy, "negative")
+        else:
+            feedback_router.observe(applied_strategy, "neutral")
+
     new.state_hash = new.compute_hash()
     return new
+
 
 
 def _as_aware(dt: datetime) -> datetime:

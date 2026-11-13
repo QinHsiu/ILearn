@@ -7,10 +7,12 @@ from datetime import datetime, timezone
 from typing import Any
 
 from ilearn.experience.decay import DecayConfig, combined_score, time_weight
+from ilearn.experience.feedback_weights import ExperienceFeedbackRouter
 from ilearn.experience.models import ExperiencePrior, ExperienceRecord
 from ilearn.experience.signature import StructuralSignature
 
 __all__ = ["ExperienceRecord", "ExperiencePrior", "ExperienceStore"]
+
 
 
 def _overlap_score(left: str, right: str) -> float:
@@ -46,9 +48,12 @@ class ExperienceStore:
         self,
         records: list[ExperienceRecord] | None = None,
         cfg: DecayConfig | None = None,
+        feedback: ExperienceFeedbackRouter | None = None,
     ) -> None:
         self._records = list(records or [])
         self._cfg = cfg or DecayConfig()
+        self._feedback = feedback or ExperienceFeedbackRouter()
+
 
     def add(self, record: ExperienceRecord) -> None:
         self._records.append(record)
@@ -144,8 +149,15 @@ class ExperienceStore:
                 "neutral": 0.0,
             }.get(r.outcome, 0.0)
             form_weight = 1.5 if r.form == "distilled" else 1.0
-            w = combined_score(1.0, age, vdist, self._cfg) * sign * form_weight
+            feedback_weight = self._feedback.get_weight(r.strategy)
+            w = (
+                combined_score(1.0, age, vdist, self._cfg)
+                * sign
+                * form_weight
+                * feedback_weight
+            )
             scores[r.strategy] = scores.get(r.strategy, 0.0) + w
+
             counts[r.strategy] = counts.get(r.strategy, 0) + 1
             recency.setdefault(r.strategy, []).append(time_weight(age, self._cfg))
 
@@ -234,6 +246,7 @@ class ExperienceStore:
         *,
         weighted: bool = False,
         by_form: bool = False,
+        weights: bool = False,
         now: datetime | None = None,
     ) -> dict[str, Any]:
         total = len(self._records)
@@ -249,6 +262,8 @@ class ExperienceStore:
             "neutral": total - judged,
             "hit_rate": round(effective / judged, 3) if judged else 0.0,
         }
+        if weights:
+            report["strategy_weights"] = self._feedback.snapshot()
         if by_form:
             forms: dict[str, dict[str, int]] = {}
             for r in self._records:
