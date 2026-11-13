@@ -144,3 +144,9 @@ class Orchestrator:
 
     def current_phase(self, session_id: str) -> SessionPhase:
         return self._inner.current_phase(session_id)
+
+    def get_learner_state(self, learner_id: str):
+        return self._inner.get_learner_state(learner_id)
+
+    def list_due_dispatches(self, learner_id: str):
+        return self._inner.list_due_dispatches(learner_id)
