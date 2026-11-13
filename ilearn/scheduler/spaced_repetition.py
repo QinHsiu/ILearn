@@ -1,4 +1,4 @@
-"""SM-2 spaced repetition — pure functions for audit replay."""
+"""SM-2 spaced repetition — pure functions for audit replay (no LLM)."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 
-@dataclass
+@dataclass(frozen=True)
 class SM2State:
     review_count: int = 0
     ease_factor: float = 2.5
@@ -14,8 +14,10 @@ class SM2State:
 
 
 def sm2_update(state: SM2State, quality: int) -> SM2State:
-    """quality: 0–5. Pure; no DB access."""
-    quality = max(0, min(5, int(quality)))
+    """SM-2 pure function. quality ∈ [0,5]. No DB, clock, or randomness."""
+    if not 0 <= int(quality) <= 5:
+        raise ValueError(f"quality must be in [0,5], got {quality}")
+    quality = int(quality)
     if quality < 3:
         return SM2State(review_count=0, ease_factor=state.ease_factor, interval_days=1.0)
     ef = max(
@@ -29,12 +31,16 @@ def sm2_update(state: SM2State, quality: int) -> SM2State:
         interval = 6.0
     else:
         interval = round(state.interval_days * ef, 1)
-    return SM2State(state.review_count + 1, ef, interval)
+    return SM2State(state.review_count + 1, round(ef, 3), interval)
 
 
-def due_at(state: SM2State, *, now: datetime | None = None) -> datetime:
+def next_due(state: SM2State, now: datetime | None = None) -> datetime:
     now = now or datetime.now(timezone.utc)
     return now + timedelta(days=float(state.interval_days))
+
+
+# Alias kept for existing call sites.
+due_at = next_due
 
 
 def quality_from_mastery(mastery: float) -> int:
