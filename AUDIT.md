@@ -13,6 +13,7 @@ ILearn 的可审计性以**宿主状态机 + append-only 事件日志 + 回执�
 | 跨会话学习者状态 | `LearnerState` + `StateEvent` 哈希链投影（`ilearn.core.projection`）；诊断后折叠到 `data/learners/` |
 | 主动调度回执 | `ProactiveDispatchReceipt`（SM-2 / engagement）；经验先验只读注入 `experience_refs` |
 | 生命周期模板 | `TemplateRegistry`（K12 host FSM + adult companion）；event schema 跨模板兼容 |
+| L2 Wiki 记忆 | `ilearn.wiki` BM25 + skill graph；与 Curriculum RAG 并联；`/wiki/search` `/wiki/ingest` |
 
 ## GAF-AI-EDU 映射（IEEE / 教育 AI 治理语言）
 

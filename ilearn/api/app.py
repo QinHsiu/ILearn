@@ -638,6 +638,22 @@ def create_app(
         sessions = store.list_by_nickname(nickname)
         return build_weekly_report(nickname, sessions).model_dump()
 
+    @app.post("/wiki/ingest")
+    def wiki_ingest() -> dict:
+        """P4: ingest pilot curriculum + concept cards into L2 wiki."""
+        return orchestrator._inner.ingest_wiki()
+
+    @app.get("/wiki/search")
+    def wiki_search(
+        q: str,
+        nickname: str | None = None,
+        top_k: int = 5,
+    ) -> dict:
+        """P4: BM25 wiki search; optional nickname boosts weak L1 skills."""
+        learner_id = f"nick:{nickname.strip()}" if (nickname or "").strip() else None
+        hits = orchestrator._inner.search_wiki(q, learner_id=learner_id, top_k=top_k)
+        return {"query": q, "hits": hits, "count": len(hits)}
+
     @app.get("/sessions/{session_id}/grading-receipts")
     def get_grading_receipts(session_id: str) -> dict:
         session = store.load(session_id)

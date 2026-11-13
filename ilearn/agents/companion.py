@@ -66,10 +66,21 @@ def _speech_envelope(text: str, *, locale: str = "zh-CN") -> CompanionSpeechOut:
 class CompanionAgent:
     name = "companion"
 
-    def __init__(self, curriculum: CurriculumProvider, llm: Any | None = None) -> None:
+    def __init__(
+        self,
+        curriculum: CurriculumProvider,
+        llm: Any | None = None,
+        *,
+        wiki_store: Any | None = None,
+        learner_store: Any | None = None,
+    ) -> None:
         self._curriculum = curriculum
         self._llm = llm
+        self._wiki = wiki_store
+        self._learner_store = learner_store
+        self._wiki_ready = False
         pilot_dir = getattr(curriculum, "_data_dir", None)
+        self._pilot_dir = pilot_dir
         self._retriever = None
         if pilot_dir is not None:
             from ilearn.providers.curriculum_rag import CurriculumRagRetriever
@@ -271,6 +282,40 @@ class CompanionAgent:
             f"你刚才说「{text[:40]}」，可以再具体一点吗？"
         )
 
+    def _ensure_wiki(self):
+        if self._wiki is not None:
+            if not self._wiki_ready and self._pilot_dir is not None:
+                if not self._wiki.list_pages():
+                    from ilearn.wiki.ingest import ingest_pilot_wiki
+
+                    ingest_pilot_wiki(self._wiki, self._pilot_dir)
+                self._wiki_ready = True
+            return self._wiki
+        if self._pilot_dir is None:
+            return None
+        from pathlib import Path
+
+        from ilearn.wiki.ingest import ingest_pilot_wiki
+        from ilearn.wiki.store import WikiStore
+
+        wiki_root = Path(self._pilot_dir).parent / "wiki"
+        self._wiki = WikiStore(wiki_root)
+        if not self._wiki.list_pages():
+            ingest_pilot_wiki(self._wiki, self._pilot_dir)
+        self._wiki_ready = True
+        return self._wiki
+
+    def _load_learner_state_for_session(self, session: SessionState):
+        if self._learner_store is None:
+            return None
+        try:
+            from ilearn.core.learner_bridge import resolve_learner_id
+
+            lid = resolve_learner_id(session.profile, fallback=session.session_id)
+            return self._learner_store.load(lid)
+        except Exception:
+            return None
+
     def _answer_reply(
         self,
         session: SessionState,
@@ -285,6 +330,34 @@ class CompanionAgent:
                 citations = self._retriever.retrieve(session.profile, text, top_k=3)
             except Exception:
                 citations = []
+
+        # P4: parallel L2 wiki BM25 (+ L1 skill boost)
+        wiki = self._ensure_wiki()
+        if wiki is not None:
+            try:
+                from ilearn.wiki.retrieve import hits_to_citations, retrieve_wiki
+
+                learner_state = self._load_learner_state_for_session(session)
+                hits = retrieve_wiki(
+                    wiki, text, learner_state=learner_state, top_k=3
+                )
+                wiki_cites = hits_to_citations(hits)
+                # Prefer wiki pages that match weak skills, then fill with curriculum
+                merged = list(wiki_cites) + list(citations)
+                # Dedupe by title+excerpt prefix
+                seen: set[str] = set()
+                citations = []
+                for c in merged:
+                    key = f"{c.title}|{c.excerpt[:40]}"
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    citations.append(c)
+                    if len(citations) >= 4:
+                        break
+            except Exception:
+                pass
+
         if not citations:
             body = (
                 "未命中可引用的课标/例题片段。"
@@ -294,9 +367,9 @@ class CompanionAgent:
                 body = f"当前学段（{life_stage}）内容包仍较薄。" + body
         else:
             bits = []
-            for c in citations[:2]:
+            for c in citations[:3]:
                 bits.append(f"「{c.title}」：{c.excerpt[:120]}")
-            body = "根据课标检索，我这样理解：\n" + "\n".join(bits)
+            body = "根据课标与知识库检索，我这样理解：\n" + "\n".join(bits)
             body += "\n\n要不要我再出几道相关练习，或直接启动测评？"
 
         if mode == "exam_tutor":

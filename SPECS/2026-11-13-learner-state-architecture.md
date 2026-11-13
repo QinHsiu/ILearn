@@ -22,8 +22,9 @@ Upgrade session-scoped `StudentProfile` / append-only `event_log` into:
 | P2 | Decision context may include `experience_refs`; retrieve is read-only |
 | P3 | K12 flow registered as first template; schema stays cross-template compatible |
 
-## Non-goals (this PR)
+## Follow-ups
 
-- L2 wiki BM25+KG subsystem (P4)
-- Online RL / ProactRL training
-- Replacing HostStateMachineBackend runtime
+- [x] L2 wiki BM25+skill graph (P4) — see `SPECS/2026-11-13-wiki-l2-memory-design.md`
+- Online RL / ProactRL training — out of scope
+- Replacing HostStateMachineBackend runtime — out of scope
+- L3 SQLite FTS5 session memory — later

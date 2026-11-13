@@ -34,6 +34,7 @@ Curriculum · Assessment · Practice · Diagnosis · Planning
 - **辅导不泄题** — 状态机驱动的苏格拉底提示（Guard / TutorRail 护栏）
 - **编排可替换** — 默认宿主状态机 + 事件日志；不绑定 AutoGen / LangGraph 运行时
 - **版本化学习者状态** — `LearnerState` 事件投影（L1）；跨会话同一 `state_hash`；SM-2 主动调度回执；经验先验只读注入；生命周期模板注册
+- **L2 Wiki 知识记忆** — 课标/概念卡摄入为可查询页面；BM25 + `skill_id` 加权；与 Curriculum RAG 并联
 - **Companion 五能力** — Ask / Answer / Plan（周计划）/ Predict（掉队风险）/ Evaluate（组卷工具）
 - **学段内容包** — B1–B6（初中→银龄）问答检索；年龄推断 LifeStage；测评组卷仍 4–6
 - **验收** — companion + `content/exp/ilearn-learner-state/`（P0–P3 `/exp_loop`）
