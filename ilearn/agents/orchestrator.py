@@ -99,7 +99,16 @@ class MultiAgentOrchestrator:
         self._diagnosis = DiagnosisAgent(curriculum)
         self._planning = PlanningAgent(curriculum)
         self._tutor = tutor or TutorAgent(llm=llm)
-        self._companion = CompanionAgent(curriculum, llm=llm)
+        from ilearn.wiki.store import WikiStore
+
+        wiki_root = Path(store.root).parent / "wiki"
+        self._wiki_store = WikiStore(wiki_root)
+        self._companion = CompanionAgent(
+            curriculum,
+            llm=llm,
+            wiki_store=self._wiki_store,
+            learner_store=self._learner_store,
+        )
         self._guard = GuardAgent()
         stub_mode = llm is None or not getattr(llm, "available", lambda: False)()
         from ilearn.agents.enhanced.diagnosis import ErrorDiagnosisAgent
@@ -314,6 +323,29 @@ class MultiAgentOrchestrator:
                 evidence_refs=list(evidence_refs or []),
             )
         )
+
+    def ingest_wiki(self, pilot_dir: Path | None = None) -> dict:
+        from ilearn.wiki.ingest import ingest_pilot_wiki
+
+        root = pilot_dir or Path(
+            getattr(self._curriculum, "_data_dir", Path("data/pilot"))
+        )
+        return ingest_pilot_wiki(self._wiki_store, root)
+
+    def search_wiki(
+        self,
+        query: str,
+        *,
+        learner_id: str | None = None,
+        top_k: int = 5,
+    ) -> list[dict]:
+        from ilearn.wiki.retrieve import retrieve_wiki
+
+        state = self._learner_store.load(learner_id) if learner_id else None
+        hits = retrieve_wiki(
+            self._wiki_store, query, learner_state=state, top_k=top_k
+        )
+        return [h.model_dump(mode="json") for h in hits]
 
     @with_session_lock
     def companion_chat(
