@@ -10,6 +10,9 @@ ILearn 的可审计性以**宿主状态机 + append-only 事件日志 + 回执�
 | LangGraph | 可选同构适配器 **stub**，非默认依赖（见 `ilearn.orchestration.backend`） |
 | AutoGen | **不依赖**；已进入维护态并并入 Microsoft Agent Framework，ILearn 不将其列为推荐后端 |
 | 决策证据 | `SessionState.event_log`（不可变事件）+ 兼容视图 `decision_log` |
+| 跨会话学习者状态 | `LearnerState` + `StateEvent` 哈希链投影（`ilearn.core.projection`）；诊断后折叠到 `data/learners/` |
+| 主动调度回执 | `ProactiveDispatchReceipt`（SM-2 / engagement）；经验先验只读注入 `experience_refs` |
+| 生命周期模板 | `TemplateRegistry`（K12 host FSM + adult companion）；event schema 跨模板兼容 |
 
 ## GAF-AI-EDU 映射（IEEE / 教育 AI 治理语言）
 

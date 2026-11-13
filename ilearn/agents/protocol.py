@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
+from typing import TYPE_CHECKING
+
 from ilearn.core.schemas import (
     AssessmentPaper,
     DiagnosisReport,
@@ -13,6 +15,9 @@ from ilearn.core.schemas import (
     StudentAnswer,
     StudentProfile,
 )
+
+if TYPE_CHECKING:
+    from ilearn.core.learner_state import LearnerState
 
 __all__ = ["Agent", "AgentContext", "AgentResult", "SessionPhase"]
 
@@ -33,6 +38,7 @@ class AgentContext:
     evidence_log: list[KnowledgeEvidence] = field(default_factory=list)
     hint_interactions: dict | None = None
     metadata: dict = field(default_factory=dict)
+    learner_state: "LearnerState | None" = None
 
 
 @dataclass

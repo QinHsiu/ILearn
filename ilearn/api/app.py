@@ -613,6 +613,23 @@ def create_app(
         sessions = store.list_by_nickname(nickname)
         return build_learner_continuity(nickname, sessions).model_dump()
 
+    @app.get("/learners/{nickname}/state")
+    def get_learner_state(nickname: str) -> dict:
+        """P0: versioned LearnerState projection (L1 portrait)."""
+        learner_id = f"nick:{nickname.strip()}"
+        state = orchestrator._inner.get_learner_state(learner_id)
+        return state.model_dump(mode="json")
+
+    @app.get("/learners/{nickname}/dispatches/due")
+    def get_due_dispatches(nickname: str) -> dict:
+        """P1: proactive SM-2 / engagement dispatch receipts."""
+        learner_id = f"nick:{nickname.strip()}"
+        receipts = orchestrator._inner.list_due_dispatches(learner_id)
+        return {
+            "learner_id": learner_id,
+            "receipts": [r.model_dump(mode="json") for r in receipts],
+        }
+
     @app.get("/learners/{nickname}/weekly-report")
     def get_learner_weekly_report(nickname: str) -> dict:
         """W3: calendar-week (Mon–Sun, Beijing) evidence report, this week vs last week."""

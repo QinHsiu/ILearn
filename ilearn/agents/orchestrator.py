@@ -76,9 +76,18 @@ class MultiAgentOrchestrator:
         curriculum: CurriculumProvider,
         llm: LLMClient | None = None,
         tutor: TutorAgent | None = None,
+        learner_store: "LearnerStateStore | None" = None,
     ) -> None:
+        from ilearn.experience.store import ExperienceStore
+        from ilearn.orchestration.template_registry import TemplateRegistry
+        from ilearn.storage.learner_state_store import LearnerStateStore
+
         self._store = store
         self._curriculum = curriculum
+        learners_root = Path(store.root).parent / "learners"
+        self._learner_store = learner_store or LearnerStateStore(learners_root)
+        self._experience = ExperienceStore()
+        self._templates = TemplateRegistry()
         pilot_dir = getattr(
             curriculum,
             "_data_dir",
@@ -184,8 +193,35 @@ class MultiAgentOrchestrator:
             update={"message": f"{hint.strip()}\n\n{turn.message}"}
         )
 
-    @staticmethod
+    def _load_learner_state(self, session: SessionState):
+        from ilearn.core.learner_bridge import resolve_learner_id
+
+        learner_id = resolve_learner_id(session.profile, fallback=session.session_id)
+        return self._learner_store.load(learner_id)
+
+    def _project_diagnosis_to_learner(self, session: SessionState):
+        from ilearn.core.learner_bridge import (
+            events_from_diagnosis,
+            events_from_engagement,
+            resolve_learner_id,
+        )
+        from ilearn.scheduler.dispatcher import build_review_events_from_mastery
+
+        learner_id = resolve_learner_id(session.profile, fallback=session.session_id)
+        for ev in events_from_diagnosis(session):
+            self._learner_store.append(learner_id, ev)
+        for ev in events_from_engagement(
+            session,
+            frustration=self._frustration_level(session),
+        ):
+            self._learner_store.append(learner_id, ev)
+        state = self._learner_store.load(learner_id)
+        for ev in build_review_events_from_mastery(state):
+            self._learner_store.append(learner_id, ev)
+        return self._learner_store.load(learner_id)
+
     def _ctx(
+        self,
         session: SessionState,
         *,
         phase: SessionPhase | None = None,
@@ -198,6 +234,30 @@ class MultiAgentOrchestrator:
                 item_id: [row.model_dump(mode="json") for row in rows]
                 for item_id, rows in session.hint_interactions.items()
             }
+        learner_state = None
+        try:
+            learner_state = self._load_learner_state(session)
+            context_metadata["learner_state_version"] = learner_state.version
+            context_metadata["learner_state_hash"] = learner_state.state_hash
+            # P2: optional experience prior (read-only)
+            from ilearn.agents.companion import infer_life_stage
+
+            stage = infer_life_stage(session.profile)
+            prior = self._experience.prior_for(
+                {
+                    "stage": stage,
+                    "text": " ".join(learner_state.goals)
+                    or f"grade {session.profile.grade} plan",
+                }
+            )
+            if prior.experience_refs:
+                context_metadata["experience_refs"] = prior.experience_refs
+                context_metadata["experience_prior"] = prior.model_dump(mode="json")
+            # P3: selected lifecycle template
+            tmpl = self._templates.select(stage, "assess_remediate")
+            context_metadata["state_machine_template"] = tmpl.template_id
+        except Exception:
+            logger.exception("learner_state context attach failed; continuing")
         return trim_context(
             deepcopy(
                 AgentContext(
@@ -215,12 +275,45 @@ class MultiAgentOrchestrator:
                     evidence_log=list(session.evidence_log),
                     hint_interactions=dict(session.hint_interactions or {}),
                     metadata=context_metadata,
+                    learner_state=learner_state,
                 )
             )
         )
 
     def create_session(self, profile: StudentProfile) -> str:
         return self._store.create(profile).session_id
+
+    def get_learner_state(self, learner_id: str):
+        return self._learner_store.load(learner_id)
+
+    def list_due_dispatches(self, learner_id: str):
+        from ilearn.scheduler.dispatcher import due_dispatches
+
+        state = self._learner_store.load(learner_id)
+        return due_dispatches(state)
+
+    def seed_experience(
+        self,
+        *,
+        record_id: str,
+        stage: str,
+        situation: str,
+        strategy: str,
+        outcome: str = "effective",
+        evidence_refs: list[str] | None = None,
+    ) -> None:
+        from ilearn.experience.store import ExperienceRecord
+
+        self._experience.add(
+            ExperienceRecord(
+                record_id=record_id,
+                learner_segment={"stage": stage},
+                situation=situation,
+                strategy=strategy,
+                outcome=outcome,  # type: ignore[arg-type]
+                evidence_refs=list(evidence_refs or []),
+            )
+        )
 
     @with_session_lock
     def companion_chat(
@@ -860,6 +953,24 @@ class MultiAgentOrchestrator:
             ok=not degraded,
             degraded=degraded,
         )
+        # P0: fold diagnosis into versioned LearnerState (cross-session projection).
+        try:
+            learner_state = self._project_diagnosis_to_learner(session)
+            session.metadata["learner_state_version"] = learner_state.version
+            session.metadata["learner_state_hash"] = learner_state.state_hash
+            self._record_decision(
+                session,
+                "learner_state",
+                SessionPhase.DIAGNOSE,
+                "learner_state.projected",
+                output_payload={
+                    "version": learner_state.version,
+                    "state_hash": learner_state.state_hash,
+                    "mastery_skills": len(learner_state.mastery),
+                },
+            )
+        except Exception:
+            logger.exception("learner_state projection failed; session continues")
         session = self._maybe_update_enhanced_profile(session)
         self._store.save(session)
         return session.diagnosis
