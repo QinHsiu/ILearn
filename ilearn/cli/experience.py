@@ -22,6 +22,11 @@ def stats(
         "--events",
         help="JSON/JSONL event dump to extract from (optional)",
     ),
+    weighted: bool = typer.Option(
+        False,
+        "--weighted",
+        help="Include time-decay weighted hit rate",
+    ),
 ) -> None:
     """统计经验命中/未命中率（离线）。"""
     records = []
@@ -35,8 +40,9 @@ def stats(
         records = extract_experiences(events)
 
     store = ExperienceStore(records)
-    report = store.hit_rate()
+    report = store.hit_rate(weighted=weighted)
     typer.echo(json.dumps(report, ensure_ascii=False, indent=2))
+
 
 
 @app.command("extract")
