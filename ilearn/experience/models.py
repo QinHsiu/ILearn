@@ -12,13 +12,16 @@ class ExperienceRecord(BaseModel):
     record_id: str
     learner_segment: dict[str, Any] = Field(default_factory=dict)
     situation: str
+    structural_signature: list[str] = Field(default_factory=list)
     strategy: str
     outcome: Literal["effective", "ineffective", "neutral"] = "neutral"
+    form: Literal["episodic", "distilled"] = "episodic"
     evidence_refs: list[str] = Field(default_factory=list)
     created_at: datetime | str = ""
     state_version_at_creation: int = 0
     valid_from: datetime | None = None
     valid_until: datetime | None = None
+    derived_from: list[str] = Field(default_factory=list)
 
     @field_validator("created_at", mode="before")
     @classmethod
@@ -46,6 +49,6 @@ class ExperiencePrior(BaseModel):
     recency_score: float = 1.0
     version_distance: int = 0
     refs: list[ExperienceRecord] = Field(default_factory=list)
-    # Backward-compatible fields used by MultiAgentOrchestrator._ctx
     records: list[ExperienceRecord] = Field(default_factory=list)
     experience_refs: list[str] = Field(default_factory=list)
+    structural_fallback: bool = False

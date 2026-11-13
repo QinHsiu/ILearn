@@ -27,6 +27,11 @@ def stats(
         "--weighted",
         help="Include time-decay weighted hit rate",
     ),
+    by_form: bool = typer.Option(
+        False,
+        "--by-form",
+        help="Break down stats by episodic vs distilled",
+    ),
 ) -> None:
     """统计经验命中/未命中率（离线）。"""
     records = []
@@ -40,8 +45,9 @@ def stats(
         records = extract_experiences(events)
 
     store = ExperienceStore(records)
-    report = store.hit_rate(weighted=weighted)
+    report = store.hit_rate(weighted=weighted, by_form=by_form)
     typer.echo(json.dumps(report, ensure_ascii=False, indent=2))
+
 
 
 
@@ -63,3 +69,22 @@ def extract(
     if out:
         out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         typer.echo(f"wrote {out}")
+
+
+@app.command("distill")
+def distill(
+    records_file: Path = typer.Argument(..., help="ExperienceRecord JSON array"),
+    learner_id: str = typer.Option("offline", "--learner-id"),
+) -> None:
+    """对 episodic 记录运行蒸馏，写出 experience.distilled（幂等）。"""
+    from ilearn.experience.distill_runner import run_distillation
+    from ilearn.experience.models import ExperienceRecord
+    from ilearn.scheduler.event_log import SchedulerEventLog
+
+    raw = json.loads(records_file.read_text(encoding="utf-8"))
+    records = [ExperienceRecord.model_validate(r) for r in raw]
+    store = ExperienceStore(records)
+    log = SchedulerEventLog(_PROJECT_ROOT / "data" / "scheduler_events")
+    created = run_distillation(store, log, learner_id)
+    typer.echo(json.dumps({"created": created, "total": len(store.records)}, indent=2))
+

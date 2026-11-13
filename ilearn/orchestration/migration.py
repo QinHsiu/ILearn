@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from datetime import datetime
+from typing import Any, Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, model_validator
@@ -17,13 +18,25 @@ class SkillMapping(BaseModel):
     confidence: float = 1.0
 
 
+class DerivationSpec(BaseModel):
+    """派生层：从源证据重新推导目标空间初始掌握度（纯函数规则标识）。"""
+
+    target_skill: str
+    rule: Literal[
+        "evidence_mean", "evidence_max", "evidence_decay_mean", "constant"
+    ]
+    source_skills: list[str] = Field(default_factory=list)
+    constant: float | None = None
+    half_life_days: float = 90.0
+
+
 class StateMigrationContract(BaseModel):
     contract_id: str = Field(default_factory=lambda: f"ctr-{uuid4().hex[:12]}")
     source_template_id: str
     target_template_id: str
     skill_mappings: list[SkillMapping] = Field(default_factory=list)
+    derivations: list[DerivationSpec] = Field(default_factory=list)
     default_target_skill: str | None = None
-    # Keep user-spec spelling for wire format; alias preferred spelling too.
     misconcepiton_prefix_map: dict[str, str] = Field(default_factory=dict)
     misconception_prefix_map: dict[str, str] = Field(default_factory=dict)
 
@@ -48,6 +61,7 @@ class MigrationReceipt(BaseModel):
     mapped_skills: dict[str, str] = Field(default_factory=dict)
     orphaned_skills: list[str] = Field(default_factory=list)
     migrated_at: datetime = Field(default_factory=utc_now)
+    derivation_traces: list[dict[str, Any]] = Field(default_factory=list)
     receipt_hash: str = ""
 
     def compute_hash(self) -> str:
