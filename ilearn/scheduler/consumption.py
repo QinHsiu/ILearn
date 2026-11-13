@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, model_validator
 from ilearn.core.datetime_utils import utc_now
 
 ConsumptionOutcome = Literal["responded", "expired", "dismissed"]
+DispatchTrigger = Literal["spaced_repetition", "engagement_drop", "goal_deviation"]
 
 
 class DispatchConsumption(BaseModel):
@@ -24,8 +25,9 @@ class DispatchConsumption(BaseModel):
     quality: int | None = None  # SM-2 quality 0-5; None for expired/dismissed
     consumed_at: datetime = Field(default_factory=utc_now)
     evidence_refs: list[str] = Field(default_factory=list)
-    # Skills taken from the matched receipt — needed for apply_consumption feedback
     skill_ids: list[str] = Field(default_factory=list)
+    trigger: DispatchTrigger = "spaced_repetition"
+    receipt_state_version: int = 0
     consumption_hash: str = ""
 
     def compute_hash(self) -> str:

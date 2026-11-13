@@ -8,6 +8,7 @@ from typing import Any
 
 from ilearn.experience.decay import DecayConfig, combined_score, time_weight
 from ilearn.experience.models import ExperiencePrior, ExperienceRecord
+from ilearn.experience.signature import StructuralSignature
 
 __all__ = ["ExperienceRecord", "ExperiencePrior", "ExperienceStore"]
 
@@ -62,12 +63,13 @@ class ExperienceStore:
         situation: str | dict[str, Any] | None = None,
         current_state_version: int | None = None,
         now: datetime | None = None,
+        signature: StructuralSignature | None = None,
         *,
         min_support: int = 3,
         top_k: int = 5,
+        structural_prefix: int = 2,
     ) -> ExperiencePrior | list[ExperienceRecord] | None:
-        """Segment+situation aggregate prior (with optional decay), or legacy similarity list."""
-        # Legacy: single dict with "text" / no exact situation string
+        """两阶段检索：结构签名粗筛 → 时间/版本/form 精排；无 signature 时退化为语义检索。"""
         if situation is None and isinstance(segment, dict):
             if "text" in segment or "situation" not in segment or isinstance(
                 segment.get("situation"), (dict, type(None))
@@ -100,14 +102,33 @@ class ExperienceStore:
                 or r.learner_segment.get("skill") == seg.get("skill")
             )
             and r.situation == sit
-            and (r.valid_until is None or _as_dt(r.valid_until) is None or _as_dt(r.valid_until) > now_aware)
+            and (
+                r.valid_until is None
+                or _as_dt(r.valid_until) is None
+                or _as_dt(r.valid_until) > now_aware
+            )
         ]
+
+        structural_fallback = False
+        if signature is not None:
+            prefix = list(signature.tokens[:structural_prefix])
+            structural = [
+                r
+                for r in pool
+                if list(r.structural_signature[:structural_prefix]) == prefix
+            ]
+            if len(structural) >= min_support:
+                pool = structural
+            else:
+                structural_fallback = True
+
         if len(pool) < min_support:
             return None
 
-        # Without version/now context — keep P2 Counter aggregation
-        if current_state_version is None and now is None:
-            return self._aggregate_static(sit, pool)
+        if current_state_version is None and now is None and signature is None:
+            prior = self._aggregate_static(sit, pool)
+            prior.structural_fallback = structural_fallback
+            return prior
 
         version = int(current_state_version or 0)
         scores: dict[str, float] = {}
@@ -117,12 +138,13 @@ class ExperienceStore:
             created = _as_dt(r.created_at) or now_aware
             age = (now_aware - created).total_seconds() / 86400.0
             vdist = version - int(r.state_version_at_creation)
-            sign = (
-                1.0
-                if r.outcome == "effective"
-                else (-1.0 if r.outcome == "ineffective" else 0.0)
-            )
-            w = combined_score(1.0, age, vdist, self._cfg) * sign
+            sign = {
+                "effective": 1.0,
+                "ineffective": -1.0,
+                "neutral": 0.0,
+            }.get(r.outcome, 0.0)
+            form_weight = 1.5 if r.form == "distilled" else 1.0
+            w = combined_score(1.0, age, vdist, self._cfg) * sign * form_weight
             scores[r.strategy] = scores.get(r.strategy, 0.0) + w
             counts[r.strategy] = counts.get(r.strategy, 0) + 1
             recency.setdefault(r.strategy, []).append(time_weight(age, self._cfg))
@@ -146,6 +168,7 @@ class ExperienceStore:
             refs=best_refs,
             records=best_refs,
             experience_refs=[r.record_id for r in best_refs],
+            structural_fallback=structural_fallback,
         )
 
     def _aggregate_static(self, sit: str, pool: list[ExperienceRecord]) -> ExperiencePrior:
@@ -194,7 +217,6 @@ class ExperienceStore:
     def prior_for(
         self, situation: dict[str, Any], top_k: int = 5
     ) -> ExperiencePrior:
-        """Legacy similarity prior for orchestrator decision context."""
         records = self._retrieve_similar(situation, top_k=top_k)
         return ExperiencePrior(
             situation=situation,
@@ -207,21 +229,34 @@ class ExperienceStore:
             recommended_strategy=records[0].strategy if records else None,
         )
 
-    def hit_rate(self, *, weighted: bool = False, now: datetime | None = None) -> dict[str, float | int]:
-        """Aggregate outcome stats for `ilearn experience stats`."""
+    def hit_rate(
+        self,
+        *,
+        weighted: bool = False,
+        by_form: bool = False,
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
         total = len(self._records)
         if total == 0:
             return {"total": 0, "hit_rate": 0.0, "effective": 0, "ineffective": 0}
         effective = sum(1 for r in self._records if r.outcome == "effective")
         ineffective = sum(1 for r in self._records if r.outcome == "ineffective")
         judged = effective + ineffective
-        report: dict[str, float | int] = {
+        report: dict[str, Any] = {
             "total": total,
             "effective": effective,
             "ineffective": ineffective,
             "neutral": total - judged,
             "hit_rate": round(effective / judged, 3) if judged else 0.0,
         }
+        if by_form:
+            forms: dict[str, dict[str, int]] = {}
+            for r in self._records:
+                bucket = forms.setdefault(r.form, {"count": 0, "effective": 0})
+                bucket["count"] += 1
+                if r.outcome == "effective":
+                    bucket["effective"] += 1
+            report["by_form"] = forms
         if weighted:
             now_aware = now or datetime.now(timezone.utc)
             if now_aware.tzinfo is None:

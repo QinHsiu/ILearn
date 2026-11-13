@@ -12,7 +12,9 @@ from ilearn.orchestration.k12_template import (
     K12MathHostTemplate,
     K12Template,
 )
+from ilearn.orchestration.derivation import derive_mastery
 from ilearn.orchestration.migration import (
+    DerivationSpec,
     MigrationReceipt,
     SkillMapping,
     StateMigrationContract,
@@ -34,9 +36,12 @@ __all__ = [
     "AdultCompanionTemplate",
     "TemplateRegistry",
     "SkillMapping",
+    "DerivationSpec",
     "StateMigrationContract",
     "MigrationReceipt",
     "StateMigrator",
     "replay_migration",
+    "derive_mastery",
 ]
+
 

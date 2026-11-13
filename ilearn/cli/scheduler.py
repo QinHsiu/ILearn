@@ -175,7 +175,11 @@ def consume(
         learner_id,
     )
     state = load_latest_state(learner_id, learners_root=_learners_root())
-    new_state = apply_consumption(state, cons)
+    new_state = apply_consumption(
+        state,
+        cons,
+        receipt_state_version=cons.receipt_state_version,
+    )
     _persist_state(new_state, reason=f"consumption:{cons.consumption_id}")
     typer.echo(
         f"consumed {cons.receipt_id} → {cons.outcome} quality={cons.quality}"

@@ -117,9 +117,11 @@ def test_apply_consumption_expired_resets_interval(state_factory, now):
         evidence_refs=[],
         skill_ids=["frac.add"],
     )
-    new = apply_consumption(state, cons)
+    new = apply_consumption(state, cons, receipt_state_version=state.version)
     assert new.review_meta["frac.add"]["review_count"] == 0
     assert new.review_meta["frac.add"]["interval_days"] == 1.0
+    assert new.review_meta["frac.add"]["last_reset"] is True
+    assert new.review_meta["frac.add"]["reset_reason"] == "dispatch_expired"
     assert new.review_schedule["frac.add"] == now
     # Source untouched (派生)
     assert state.review_meta["frac.add"]["review_count"] == 3

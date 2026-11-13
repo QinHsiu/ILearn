@@ -85,6 +85,8 @@ class ConsumptionMatcher:
                 consumed_at=now,
                 evidence_refs=refs,
                 skill_ids=skill_ids,
+                trigger=receipt.trigger,
+                receipt_state_version=receipt.state_version,
             ).seal()
             expired.append(cons)
             self._pending.pop(receipt_id, None)
@@ -121,4 +123,6 @@ class ConsumptionMatcher:
             consumed_at=_as_aware(event["occurred_at"]),
             evidence_refs=[eid] if eid else [],
             skill_ids=skill_ids,
+            trigger=receipt.trigger,
+            receipt_state_version=receipt.state_version,
         ).seal()

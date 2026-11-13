@@ -14,6 +14,7 @@ from ilearn.scheduler.spaced_repetition import (
     quality_from_mastery,
     sm2_update,
 )
+from ilearn.scheduler.trigger_policy import Trigger, TriggerPolicy
 
 
 class EventLogWriter(Protocol):
@@ -32,63 +33,71 @@ class Scheduler:
         self,
         event_log: EventLogWriter | None = None,
         clock: Callable[[], datetime] | None = None,
+        policy: TriggerPolicy | None = None,
     ) -> None:
         self._log = event_log or _NullEventLog()
         self._clock = clock or (lambda: datetime.now(timezone.utc))
+        self._policy = policy or TriggerPolicy()
+
+    @property
+    def policy(self) -> TriggerPolicy:
+        return self._policy
 
     def scan(self, state: LearnerState) -> list[ProactiveDispatchReceipt]:
         now = self._clock()
-        receipts: list[ProactiveDispatchReceipt] = []
+        candidates: dict[Trigger, list[str]] = {}
 
         due_items = self._due_review_items(state, now)
         if due_items:
-            receipts.append(
-                self._make_receipt(
-                    state=state,
-                    trigger="spaced_repetition",
-                    reason=f"{len(due_items)} 个知识点的复习间隔已到",
-                    skill_ids=[item.skill_id for item in due_items],
-                )
-            )
+            candidates["spaced_repetition"] = [item.skill_id for item in due_items]
 
         engagement = state.engagement_signals or {}
         inactive = int(engagement.get("consecutive_inactive_days") or 0)
         loops = int(engagement.get("loop_count") or 0)
         frustration = float(engagement.get("frustration") or 0.0)
         if inactive >= 3 or (loops >= 2 and frustration >= 0.6):
-            skill_ids = list(state.mastery.keys())[-3:]
-            reason = (
-                f"连续 {inactive} 天无学习活动"
-                if inactive >= 3
-                else "巩固轮次升高且挫败信号偏高，建议主动短干预"
-            )
-            receipts.append(
-                self._make_receipt(
-                    state=state,
-                    trigger="engagement_drop",
-                    reason=reason,
-                    skill_ids=skill_ids,
-                )
-            )
+            candidates["engagement_drop"] = list(state.mastery.keys())[-3:]
 
         deviation = float(engagement.get("goal_deviation_ratio") or 0.0)
         if deviation > 0.3:
-            receipts.append(
-                self._make_receipt(
-                    state=state,
-                    trigger="goal_deviation",
-                    reason=f"当前进度偏离目标 {deviation:.0%}",
-                    skill_ids=[],
-                )
-            )
+            candidates["goal_deviation"] = []
 
-        for receipt in receipts:
+        ordered = self._policy.rank(list(candidates.keys()))
+        receipts: list[ProactiveDispatchReceipt] = []
+        for trigger in ordered:
+            skill_ids = candidates[trigger]
+            receipt = self._make_receipt(
+                state=state,
+                trigger=trigger,
+                reason=self._reason_for(trigger, skill_ids, engagement),
+                skill_ids=skill_ids,
+            )
             self._log.append(
                 "scheduler.dispatch",
                 receipt.model_dump(mode="json"),
                 state.learner_id,
             )
+            receipts.append(receipt)
+
+        if receipts:
+            self._log.append(
+                "scheduler.policy_snapshot",
+                {"policy": self._policy.snapshot(), "ordered": ordered},
+                state.learner_id,
+            )
         return receipts
+
+    def _reason_for(
+        self, trigger: Trigger, skill_ids: list[str], engagement: dict
+    ) -> str:
+        if trigger == "spaced_repetition":
+            return f"{len(skill_ids)} 个知识点的复习间隔已到"
+        if trigger == "engagement_drop":
+            inactive = int(engagement.get("consecutive_inactive_days") or 0)
+            if inactive >= 3:
+                return f"连续 {inactive} 天无学习活动"
+            return "巩固轮次升高且挫败信号偏高，建议主动短干预"
+        return f"当前进度偏离目标 {float(engagement.get('goal_deviation_ratio') or 0):.0%}"
 
     def _due_review_items(self, state: LearnerState, now: datetime) -> list[ReviewItem]:
         items: list[ReviewItem] = []
