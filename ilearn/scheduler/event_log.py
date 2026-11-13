@@ -60,3 +60,28 @@ class SchedulerEventLog:
             if payload.get("receipt_id") == receipt_id:
                 return ProactiveDispatchReceipt.model_validate(payload)
         raise KeyError(f"receipt not found: {receipt_id}")
+
+    def list_dispatches(self, learner_id: str):
+        from ilearn.scheduler.models import ProactiveDispatchReceipt
+
+        out = []
+        for row in self.list_events(learner_id):
+            if row.get("event_type") != "scheduler.dispatch":
+                continue
+            out.append(ProactiveDispatchReceipt.model_validate(row.get("payload") or {}))
+        return out
+
+    def consumed_receipt_ids(self, learner_id: str) -> set[str]:
+        ids: set[str] = set()
+        for row in self.list_events(learner_id):
+            if row.get("event_type") != "scheduler.consumed":
+                continue
+            payload = row.get("payload") or {}
+            rid = payload.get("receipt_id")
+            if rid:
+                ids.add(str(rid))
+        return ids
+
+    def list_pending_receipts(self, learner_id: str):
+        consumed = self.consumed_receipt_ids(learner_id)
+        return [r for r in self.list_dispatches(learner_id) if r.receipt_id not in consumed]

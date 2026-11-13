@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ExperienceRecord(BaseModel):
@@ -14,7 +15,24 @@ class ExperienceRecord(BaseModel):
     strategy: str
     outcome: Literal["effective", "ineffective", "neutral"] = "neutral"
     evidence_refs: list[str] = Field(default_factory=list)
-    created_at: str = ""
+    created_at: datetime | str = ""
+    state_version_at_creation: int = 0
+    valid_from: datetime | None = None
+    valid_until: datetime | None = None
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def _coerce_created_at(cls, value: Any) -> Any:
+        if value is None or value == "":
+            return ""
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value.replace("Z", "+00:00"))
+            except ValueError:
+                return value
+        return value
 
 
 class ExperiencePrior(BaseModel):
@@ -23,7 +41,10 @@ class ExperiencePrior(BaseModel):
     situation: str | dict[str, Any] = ""
     recommended_strategy: str | None = None
     confidence: float = 0.0
+    weighted_confidence: float = 0.0
     support: int = 0
+    recency_score: float = 1.0
+    version_distance: int = 0
     refs: list[ExperienceRecord] = Field(default_factory=list)
     # Backward-compatible fields used by MultiAgentOrchestrator._ctx
     records: list[ExperienceRecord] = Field(default_factory=list)

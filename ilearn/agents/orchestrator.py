@@ -255,11 +255,15 @@ class MultiAgentOrchestrator:
             skill_ids = list(learner_state.mastery.keys())
             target_skill = skill_ids[0] if skill_ids else None
             # Prefer exact-situation aggregate prior when enough support exists
+            from ilearn.core.datetime_utils import utc_now
+
             exact = None
             if target_skill:
                 exact = self._experience.retrieve(
                     {"stage": stage, "skill": target_skill},
                     "hint_before_attempt",
+                    current_state_version=learner_state.version,
+                    now=utc_now(),
                     min_support=3,
                 )
             prior = exact or self._experience.prior_for(
@@ -276,10 +280,14 @@ class MultiAgentOrchestrator:
                     {
                         "event": "experience.prior_injected",
                         "prior_confidence": prior.confidence,
+                        "weighted_confidence": prior.weighted_confidence,
+                        "recency_score": prior.recency_score,
+                        "version_distance": prior.version_distance,
                         "prior_support": prior.support,
                         "experience_refs": prior.experience_refs,
                     }
                 )
+
             # P3: selected lifecycle template
             tmpl = self._templates.select(stage, "assess_remediate")
             context_metadata["state_machine_template"] = tmpl.template_id

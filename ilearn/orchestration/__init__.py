@@ -12,6 +12,13 @@ from ilearn.orchestration.k12_template import (
     K12MathHostTemplate,
     K12Template,
 )
+from ilearn.orchestration.migration import (
+    MigrationReceipt,
+    SkillMapping,
+    StateMigrationContract,
+)
+from ilearn.orchestration.migration_replay import replay_migration
+from ilearn.orchestration.migrator import StateMigrator
 from ilearn.orchestration.registry import TemplateRegistry
 from ilearn.orchestration.template import StateMachineTemplate
 
@@ -26,4 +33,10 @@ __all__ = [
     "K12MathHostTemplate",
     "AdultCompanionTemplate",
     "TemplateRegistry",
+    "SkillMapping",
+    "StateMigrationContract",
+    "MigrationReceipt",
+    "StateMigrator",
+    "replay_migration",
 ]
+
