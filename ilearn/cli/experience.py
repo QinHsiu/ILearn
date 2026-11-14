@@ -32,6 +32,11 @@ def stats(
         "--by-form",
         help="Break down stats by episodic vs distilled",
     ),
+    weights: bool = typer.Option(
+        False,
+        "--weights",
+        help="Include strategy feedback weights snapshot",
+    ),
 ) -> None:
     """统计经验命中/未命中率（离线）。"""
     records = []
@@ -45,8 +50,9 @@ def stats(
         records = extract_experiences(events)
 
     store = ExperienceStore(records)
-    report = store.hit_rate(weighted=weighted, by_form=by_form)
+    report = store.hit_rate(weighted=weighted, by_form=by_form, weights=weights)
     typer.echo(json.dumps(report, ensure_ascii=False, indent=2))
+
 
 
 

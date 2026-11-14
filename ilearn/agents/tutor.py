@@ -32,9 +32,52 @@ _CALM_PREFIX = (
 class TutorAgent:
     name = "tutor"
 
-    def __init__(self, llm: Any | None = None) -> None:
-        """Optional free-LLM client (``available`` / ``chat_text``); else rule engine."""
+    def __init__(self, llm: Any | None = None, safety: Any | None = None) -> None:
+        """Optional free-LLM client (``available`` / ``chat_text``); else rule engine.
+
+        Optional ``safety`` is a SafetyReviewAgent — rule-based, no LLM.
+        """
         self._llm = llm
+        self._safety = safety
+
+    def review_outgoing(
+        self,
+        turn: TutorTurn,
+        *,
+        learner_id: str = "",
+        phase: str = "",
+        hint_level: int = 0,
+        target_skill: str = "",
+    ) -> TutorTurn:
+        """Gate an outgoing TutorTurn through SafetyReviewAgent when configured."""
+        if self._safety is None:
+            return turn
+        import hashlib
+        from uuid import uuid4
+
+        from ilearn.safety.reviewer import ReviewRequest
+
+        decision = self._safety.review(
+            ReviewRequest(
+                request_id=f"rv-{uuid4().hex[:8]}",
+                learner_id=learner_id or "unknown",
+                originating_agent="tutor",
+                content=turn.message,
+                content_hash=hashlib.sha256(turn.message.encode("utf-8")).hexdigest(),
+                context={
+                    "phase": phase,
+                    "hint_level": hint_level,
+                    "target_skill": target_skill,
+                },
+            )
+        )
+        if decision.decision == "block":
+            return TutorTurn(
+                phase=turn.phase,
+                message="（内容已拦截：安全审查未通过，请换一种问法。）",
+                error_tag=turn.error_tag,
+            )
+        return turn
 
     @staticmethod
     def _redact_answer(message: str, item: AssessmentItem) -> str:
